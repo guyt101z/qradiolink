@@ -21,14 +21,16 @@ SOURCES += main.cpp \
          decoder.cpp \
     speech.cpp \
     dtmf.cpp \
-    audiointerface.cpp
+    audiointerface.cpp \
+    dtmfdecoder.cpp
 
 HEADERS += DtmfDetector.hpp \
         DtmfGenerator.hpp \
         types_cpp.hpp \
     speech.h \
     dtmf.h \
-    audiointerface.h
+    audiointerface.h \
+    dtmfdecoder.h
 
 
 unix:!symbian: LIBS += -lespeak -lpulse-simple

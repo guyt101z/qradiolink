@@ -4,6 +4,7 @@
  * it under the terms of the GNU Lesser General Public License 
  * All rights reserved. 
  */
+// Modified by Adrian Musceac, October 2013
 
 #include <cassert>
 #include <iostream>
