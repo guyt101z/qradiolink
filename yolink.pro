@@ -22,7 +22,8 @@ SOURCES += main.cpp \
     speech.cpp \
     dtmf.cpp \
     audiointerface.cpp \
-    dtmfdecoder.cpp
+    dtmfdecoder.cpp \
+    telnetclient.cpp
 
 HEADERS += DtmfDetector.hpp \
         DtmfGenerator.hpp \
@@ -30,7 +31,8 @@ HEADERS += DtmfDetector.hpp \
     speech.h \
     dtmf.h \
     audiointerface.h \
-    dtmfdecoder.h
+    dtmfdecoder.h \
+    telnetclient.h
 
 
 unix:!symbian: LIBS += -lespeak -lpulse-simple
