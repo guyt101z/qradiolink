@@ -1,25 +1,39 @@
 #include <QCoreApplication>
 #include <QThread>
-#include <dtmfdecoder.h>
 #include <QObject>
+#include <QDateTime>
+#include <QString>
+#include "dtmfdecoder.h"
+#include "serverwrapper.h"
+#include "speech.h"
+
 
 int main(int argc, char *argv[])
 {
-    int detector(char* name);
+
     QCoreApplication a(argc, argv);
-    //_start_time= QDateTime::currentDateTime().toString("d/MMM/yyyy hh:mm:ss");
-    QThread *t= new QThread;
+    QString _start_time= QDateTime::currentDateTime().toString("d/MMM/yyyy hh:mm:ss");
+
+    QThread *t1= new QThread;
     DtmfDecoder *decoder = new DtmfDecoder;
-    decoder->moveToThread(t);
-    //connect(decoder, SIGNAL(haveMobilePosition(double,double)), this, SLOT(moveMobile(double,double)));
-    //connect(decoder, SIGNAL(haveSignalReading(double, double, int,QString,double,Signal*)), this, SLOT(showSignalReading(double, double, int,QString,double,Signal*)));
+    decoder->moveToThread(t1);
 
-    QObject::connect(t, SIGNAL(started()), decoder, SLOT(run()));
-    QObject::connect(decoder, SIGNAL(finished()), t, SLOT(quit()));
+    QObject::connect(t1, SIGNAL(started()), decoder, SLOT(run()));
+    QObject::connect(decoder, SIGNAL(finished()), t1, SLOT(quit()));
     QObject::connect(decoder, SIGNAL(finished()), decoder, SLOT(deleteLater()));
-    QObject::connect(t, SIGNAL(finished()), t, SLOT(deleteLater()));
+    QObject::connect(t1, SIGNAL(finished()), t1, SLOT(deleteLater()));
+    t1->start();
 
-    t->start();
+
+    QThread *t2= new QThread;
+    ServerWrapper *telnet_server_wrapper = new ServerWrapper;
+    telnet_server_wrapper->moveToThread(t2);
+
+    QObject::connect(t2, SIGNAL(started()), telnet_server_wrapper, SLOT(run()));
+    QObject::connect(telnet_server_wrapper, SIGNAL(finished()), t2, SLOT(quit()));
+    QObject::connect(telnet_server_wrapper, SIGNAL(finished()), telnet_server_wrapper, SLOT(deleteLater()));
+    QObject::connect(t2, SIGNAL(finished()), t2, SLOT(deleteLater()));
+    t2->start();
 
     return a.exec();
 }

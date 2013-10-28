@@ -23,7 +23,7 @@ public:
     void cd(QString dir);
     void dataMode();
     void promptMode();
-    void disconnectFromFGFS();
+    void disconnectFromHost();
     unsigned inline status() {return _status;}
 
 public slots:

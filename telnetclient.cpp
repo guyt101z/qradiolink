@@ -61,7 +61,7 @@ void TelnetClient::connectToHost(const QString &host, const unsigned &port)
 
 }
 
-void TelnetClient::disconnectFromFGFS()
+void TelnetClient::disconnectFromHost()
 {
     _socket->disconnectFromHost();
     _status=0;

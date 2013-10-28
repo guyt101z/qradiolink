@@ -88,8 +88,8 @@ const unsigned DtmfDetector::COEFF_NUMBER;
 // 8000 K sampling
 const INT16 DtmfDetector::CONSTANTS[COEFF_NUMBER] = {27906, 26802, 25597, 24295, 19747, 16529, 12773, 9166, 21319, 29769, 32706, 32210, 31778, 31226, -1009, -12772, -22811, -30555};
 INT32 DtmfDetector::powerThreshold = 328;
-INT32 DtmfDetector::dialTonesToOhersTones = 4;
-INT32 DtmfDetector::dialTonesToOhersDialTones = 3;
+INT32 DtmfDetector::dialTonesToOhersTones = 16;
+INT32 DtmfDetector::dialTonesToOhersDialTones = 4;
 const INT32 DtmfDetector::SAMPLES = 102;     
 //--------------------------------------------------------------------
 DtmfDetector::DtmfDetector(INT32 frameSize_): frameSize(frameSize_)

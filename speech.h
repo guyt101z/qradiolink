@@ -2,6 +2,7 @@
 #define SPEECH_H
 
 #include <QObject>
+#include "audiointerface.h"
 #include <espeak/speak_lib.h>
 
 class Speech : public QObject

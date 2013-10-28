@@ -49,7 +49,7 @@ int AudioInterface::write(short *buf, short bufsize)
         return 1;
     if(pa_simple_write(_s_play, buf, bufsize, &_error) < 0)
     {
-        fprintf(stderr, __FILE__": pa_simple_read() failed: %s\n", pa_strerror(_error));
+        fprintf(stderr, __FILE__": pa_simple_write() failed: %s\n", pa_strerror(_error));
         return 1;
     }
     return 0;
