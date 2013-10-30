@@ -8,7 +8,7 @@ QT       += core network sql
 
 QT       -= gui
 
-TARGET = yolink
+TARGET = qradiolink
 CONFIG   += console
 CONFIG   -= app_bundle
 
