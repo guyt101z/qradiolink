@@ -1,0 +1,12 @@
+*.pro.user
+*.lo
+*.la
+*.so.*
+*.so
+*.o
+*.a
+build/*
+iaxclient/build/*
+.directory
+iaxclient/*
+
