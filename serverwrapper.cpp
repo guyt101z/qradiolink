@@ -14,10 +14,11 @@ void ServerWrapper::stop()
 void ServerWrapper::run()
 {
     TelnetServer *server = new TelnetServer;
-    qDebug() << "wrapper running";
-    server->run();
+    qDebug() << "Server running";
+    //server->run();
     while(true)
     {
+        QCoreApplication::processEvents();
         if(_stop)
             break;
     }

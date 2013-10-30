@@ -25,7 +25,8 @@ SOURCES += main.cpp \
     dtmfdecoder.cpp \
     telnetclient.cpp \
     telnetserver.cpp \
-    serverwrapper.cpp
+    serverwrapper.cpp \
+    audioclient.cpp
 
 HEADERS += DtmfDetector.hpp \
         DtmfGenerator.hpp \
@@ -36,9 +37,13 @@ HEADERS += DtmfDetector.hpp \
     dtmfdecoder.h \
     telnetclient.h \
     telnetserver.h \
-    serverwrapper.h
+    serverwrapper.h \
+    audioclient.h
 
 
-unix:!symbian: LIBS += -lespeak -lpulse-simple
+
+unix:!symbian: LIBS += -lespeak -lpulse-simple -L$$PWD/iaxclient/build -liaxclient_lib
 DEPENDPATH += $$PWD
+DEPENDPATH += $$PWD/iaxclient/build
 INCLUDEPATH += $$PWD
+

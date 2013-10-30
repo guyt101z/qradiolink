@@ -22,6 +22,13 @@ TelnetServer::~TelnetServer()
 void TelnetServer::stop()
 {
     _stop = true;
+    for(int i =0;i<_connected_clients.size();i++)
+    {
+        QTcpSocket *s = _connected_clients.at(i);
+        s->write("Server is stopping now.");
+        s->disconnectFromHost();
+    }
+    _connected_clients.clear();
 }
 
 void TelnetServer::getConnection()
@@ -49,8 +56,6 @@ void TelnetServer::connectionFailed(QAbstractSocket::SocketError error)
 void TelnetServer::connectionSuccess()
 {
     QTcpSocket *socket = dynamic_cast<QTcpSocket*>(QObject::sender());
-    QString m = "listening";
-    socket->write(m.toUtf8());
     qDebug() << "Connect";
     qDebug() << "Connection incoming: " << socket->peerAddress().toString() << ":" << socket->peerPort();
 }
@@ -58,8 +63,8 @@ void TelnetServer::connectionSuccess()
 
 void TelnetServer::run()
 {
-    qDebug() << "server running";
-    //QObject::connect(_server,SIGNAL(error(QAbstractSocket::SocketError )),this,SLOT(connectionFailed(QAbstractSocket::SocketError)));
+    /*
+
     while(true)
     {
         if(_stop)
@@ -72,15 +77,8 @@ void TelnetServer::run()
 
         }
     }
-    // stop
-    for(int i =0;i<_connected_clients.size();i++)
-    {
-        QTcpSocket *s = _connected_clients.at(i);
-        s->disconnectFromHost();
-        delete s;
-    }
-    _connected_clients.clear();
-    emit finished();
+
+    */
 }
 
 void TelnetServer::processData()
