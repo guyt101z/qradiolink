@@ -33,6 +33,7 @@ void DtmfDecoder::run()
         dtmf->decode(buf);
 
         delete[] buf;
+        //usleep(50);
 
     }
     delete dtmf;

@@ -86,10 +86,11 @@ const UINT32 DtmfDetectorInterface::NUMBER_OF_BUTTONS;
 const unsigned DtmfDetector::COEFF_NUMBER;
 //const INT16 DtmfDetector::CONSTANTS[COEFF_NUMBER] = {27860, 26745, 25529, 24216, 19747, 16384, 12773, 8967, 21319, 29769, 32706, 32210, 31778, 31226, -1009, -12772, -22811, -30555};
 // 8000 K sampling
-const INT16 DtmfDetector::CONSTANTS[COEFF_NUMBER] = {27906, 26802, 25597, 24295, 19747, 16529, 12773, 9166, 21319, 29769, 32706, 32210, 31778, 31226, -1009, -12772, -22811, -30555};
+//const INT16 DtmfDetector::CONSTANTS[COEFF_NUMBER] = {27906, 26802, 25597, 24295, 19747, 16529, 12773, 9166, 21319, 29769, 32706, 32210, 31778, 31226, -1009, -12772, -22811, -30555};
+const INT16 DtmfDetector::CONSTANTS[COEFF_NUMBER] = {27906, 26802, 25597, 24295, 19057, 16529, 12945, 9166, 21319, 29769, 32706, 32210, 31778, 31226, -1009, -12772, -22811, -30555};
 INT32 DtmfDetector::powerThreshold = 328;
 INT32 DtmfDetector::dialTonesToOhersTones = 16;
-INT32 DtmfDetector::dialTonesToOhersDialTones = 4;
+INT32 DtmfDetector::dialTonesToOhersDialTones = 6;
 const INT32 DtmfDetector::SAMPLES = 102;     
 //--------------------------------------------------------------------
 DtmfDetector::DtmfDetector(INT32 frameSize_): frameSize(frameSize_)
@@ -176,7 +177,7 @@ char DtmfDetector::DTMF_detection(INT16 short_array_samples[])
    Sum /= SAMPLES;
    if(Sum < powerThreshold)
    {
-     std::cerr << "Sum smaller than power treshhold" << std::endl;
+     //std::cerr << "Sum smaller than power treshhold" << std::endl;
      return ' '; 
    }
       
@@ -275,7 +276,7 @@ char DtmfDetector::DTMF_detection(INT16 short_array_samples[])
 
    //If relations max row and max column to all other tones are less then
    //threshold then return
-	/*	
+    /*
    for(ii = 10; ii < COEFF_NUMBER; ii ++)
     {
      if(T[Row]/T[ii] < dialTonesToOhersTones) 

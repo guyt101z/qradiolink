@@ -778,7 +778,7 @@ static void iaxc_refresh_registrations()
 	}
 }
 
-#define LOOP_SLEEP 5 // In ms
+#define LOOP_SLEEP 16 // In ms
 static THREADFUNCDECL(main_proc_thread_func)
 {
 	//static int refresh_registration_count = 0;

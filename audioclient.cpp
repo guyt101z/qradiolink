@@ -132,7 +132,8 @@ void AudioClient::init()
     int currentFreqKhz = 10 * static_cast<int>(freq * 100 + 0.25);
     int call0;
     //std::string num = computePhoneNumber(freq, "KSFO");
-    std::string num = "adrian:supersecret@localhost/0190909090910000";
+    //std::string num = "adrian:supersecret@localhost/0190909090910000";
+    std::string num = "adrian:supersecret@localhost/500";
     qDebug() << QString(num.c_str());
     if( !num.empty() )
     {
