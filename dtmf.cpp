@@ -65,7 +65,7 @@ short* Dtmf::encode()
     DtmfGenerator dtmfGenerator(FRAME_SIZE, 400, 20);
     dtmfGenerator.dtmfGeneratorReset();
     dtmfGenerator.transmitNewDialButtonsArray(_dialButtons, 16);
-    short *audio_buffer =new short[1024*1024];
+    short *audio_buffer =new short[1024];
     AudioInterface audio(0,8000,2);
     int si = 0;
     while(!dtmfGenerator.getReadyFlag())
@@ -73,7 +73,7 @@ short* Dtmf::encode()
 
         short *buf =new short[BUFSIZE];
         dtmfGenerator.dtmfGenerating(buf);
-        audio.write(buf, BUFSIZE);
+        //audio.write(buf, BUFSIZE);
         std::copy(buf,buf+sizeof(buf),audio_buffer+si);
         si +=sizeof(buf) + 1;
     }
@@ -116,7 +116,7 @@ void Dtmf::decodeAudio(AudioInterface *audio)
 {
 
     short int buf[BUFSIZE];
-    audio->read(buf,BUFSIZE);
+    //audio->read(buf,BUFSIZE);
 
     decode(buf);
 }

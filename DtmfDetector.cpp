@@ -6,8 +6,6 @@
  */
 // Modified by Adrian Musceac, October 2013
 
-#include <cassert>
-#include <iostream>
 #include "DtmfDetector.hpp"
 
 static inline INT32 MPY48SR(INT16 o16, INT32 o32)
@@ -85,13 +83,15 @@ static inline INT16 norm_l(INT32 L_var1)
 const UINT32 DtmfDetectorInterface::NUMBER_OF_BUTTONS;
 const unsigned DtmfDetector::COEFF_NUMBER;
 //const INT16 DtmfDetector::CONSTANTS[COEFF_NUMBER] = {27860, 26745, 25529, 24216, 19747, 16384, 12773, 8967, 21319, 29769, 32706, 32210, 31778, 31226, -1009, -12772, -22811, -30555};
-// 8000 K sampling
+// 8000 K sampling, combined
 //const INT16 DtmfDetector::CONSTANTS[COEFF_NUMBER] = {27906, 26802, 25597, 24295, 19747, 16529, 12773, 9166, 21319, 29769, 32706, 32210, 31778, 31226, -1009, -12772, -22811, -30555};
+// paper way
 const INT16 DtmfDetector::CONSTANTS[COEFF_NUMBER] = {27906, 26802, 25597, 24295, 19057, 16529, 12945, 9166, 21319, 29769, 32706, 32210, 31778, 31226, -1009, -12772, -22811, -30555};
+//const INT16 DtmfDetector::CONSTANTS[COEFF_NUMBER] = {2799, 26605, 25997, 22295, 20057, 14529, 11945, 7166, 21319, 29769, 32706, 32210, 31778, 31226, -1009, -12772, -22811, -30555};
 INT32 DtmfDetector::powerThreshold = 328;
-INT32 DtmfDetector::dialTonesToOhersTones = 16;
+INT32 DtmfDetector::dialTonesToOhersTones = 2;
 INT32 DtmfDetector::dialTonesToOhersDialTones = 6;
-const INT32 DtmfDetector::SAMPLES = 102;     
+const INT32 DtmfDetector::SAMPLES = 102;
 //--------------------------------------------------------------------
 DtmfDetector::DtmfDetector(INT32 frameSize_): frameSize(frameSize_)
 {
@@ -118,7 +118,7 @@ void DtmfDetector::dtmfDetecting(INT16 input_array[])
     }
     
    frameCount += frameSize;
-   
+
    UINT32 temp_index = 0;
    if(frameCount >= SAMPLES)
     { 
@@ -209,13 +209,13 @@ char DtmfDetector::DTMF_detection(INT16 short_array_samples[])
    goertzel_filter(CONSTANTS[2], CONSTANTS[3], internalArray, &T[2], &T[3], SAMPLES); 
    goertzel_filter(CONSTANTS[4], CONSTANTS[5], internalArray, &T[4], &T[5], SAMPLES); 
    goertzel_filter(CONSTANTS[6], CONSTANTS[7], internalArray, &T[6], &T[7], SAMPLES); 
-   goertzel_filter(CONSTANTS[8], CONSTANTS[9], internalArray, &T[8], &T[9], SAMPLES); 
-   goertzel_filter(CONSTANTS[10], CONSTANTS[11], internalArray, &T[10], &T[11], SAMPLES); 
-   goertzel_filter(CONSTANTS[12], CONSTANTS[13], internalArray, &T[12], &T[13], SAMPLES); 
-   goertzel_filter(CONSTANTS[14], CONSTANTS[15], internalArray, &T[14], &T[15], SAMPLES); 
-   goertzel_filter(CONSTANTS[16], CONSTANTS[17], internalArray, &T[16], &T[17], SAMPLES); 
+   goertzel_filter(CONSTANTS[8], CONSTANTS[9], internalArray, &T[8], &T[9], SAMPLES);
+   goertzel_filter(CONSTANTS[10], CONSTANTS[11], internalArray, &T[10], &T[11], SAMPLES);
+   goertzel_filter(CONSTANTS[12], CONSTANTS[13], internalArray, &T[12], &T[13], SAMPLES);
+   goertzel_filter(CONSTANTS[14], CONSTANTS[15], internalArray, &T[14], &T[15], SAMPLES);
+   goertzel_filter(CONSTANTS[16], CONSTANTS[17], internalArray, &T[16], &T[17], SAMPLES);
 
-
+   //qDebug() << T[0] << ":" << T[1] << ":" << T[2] << ":" << T[3] << ":" << T[4];
    
    INT32 Row = 0;
    INT32 Temp = 0;
@@ -243,7 +243,7 @@ char DtmfDetector::DTMF_detection(INT16 short_array_samples[])
     
     Sum=0;
     //Find average value dial tones without max row and max column
-    for(ii = 0; ii < 8; ii++)
+    for(ii = 0; ii < 10; ii++)
      {
       Sum += T[ii];
      }     
@@ -264,7 +264,7 @@ char DtmfDetector::DTMF_detection(INT16 short_array_samples[])
    {
      return ' ';
    }
-                                
+
    //If relations max colum to max row is large then 4 then return
    if(T[Row] < (T[Column] >> 2)) return ' ';
    //If relations max colum to max row is large then 4 then return
@@ -276,7 +276,7 @@ char DtmfDetector::DTMF_detection(INT16 short_array_samples[])
 
    //If relations max row and max column to all other tones are less then
    //threshold then return
-    /*
+
    for(ii = 10; ii < COEFF_NUMBER; ii ++)
     {
      if(T[Row]/T[ii] < dialTonesToOhersTones) 
@@ -290,36 +290,37 @@ char DtmfDetector::DTMF_detection(INT16 short_array_samples[])
        return ' ';
      }
     }
-   */
+
     
    //If relations max row and max column tones to other dial tones are
    //less then threshold then return  
-   for(ii = 0; ii < 8; ii ++)
+
+   for(ii = 0; ii < 10; ii ++)
     {
      if(T[ii] != T[Column])
       {
        if(T[ii] != T[Row])
         {
          if(T[Row]/T[ii] < dialTonesToOhersDialTones) 
-	 {
-	   //std::cerr << "Row smaller than other dial tones" << std::endl;
-           return ' ';
-	 }
+         {
+               //std::cerr << "Row smaller than other dial tones" << std::endl;
+               return ' ';
+         }
          if(Column != 4)
           {
               if(T[Column]/T[ii] < dialTonesToOhersDialTones) 
-	      {
-		//std::cerr << "Column smaller than other dial tones" << std::endl;
-                return ' ';
-	      }
+              {
+                    //std::cerr << "Column smaller than other dial tones" << std::endl;
+                    return ' ';
+              }
           }
          else
           {
               if(T[Column]/T[ii] < (dialTonesToOhersDialTones/3)) 
-	      {
-		std::cerr << "Weird case scenario" << std::endl;
-                return ' ';
-	      }
+              {
+                    std::cerr << "Weird case scenario" << std::endl;
+                    return ' ';
+              }
           }
         }
       }
@@ -328,9 +329,9 @@ char DtmfDetector::DTMF_detection(INT16 short_array_samples[])
    //We are choosed a push button
    switch (Row)
    {
-    case 0: switch (Column){case 4: return_value='1'; break; //worky
-                            case 5: return_value='2'; break; // no worky -> worky 5th coeff
-                            case 6: return_value='3'; break; // no worky -> 7th coeff
+    case 0: switch (Column){case 4: return_value='1'; break; // no worky
+                            case 5: return_value='2'; break; // no worky
+                            case 6: return_value='3'; break; // no worky
                             case 7: return_value='A'; break;}; break; // no worky -> 8th coeff
     case 1: switch (Column){case 4: return_value='4'; break; //worky
                             case 5: return_value='5'; break; // no worky -> worky 5th coeff

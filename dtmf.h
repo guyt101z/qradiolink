@@ -13,7 +13,7 @@ class Dtmf : public QObject
 {
     Q_OBJECT
 public:
-    explicit Dtmf(QObject *parent = 0, unsigned frame_size = 2);
+    explicit Dtmf(QObject *parent = 0, unsigned frame_size = 160);
     ~Dtmf();
     short* transmitCode(short *buf);
     short *encode();

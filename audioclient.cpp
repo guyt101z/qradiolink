@@ -130,10 +130,10 @@ void AudioClient::init()
 
     const double freq = 910.0;
     int currentFreqKhz = 10 * static_cast<int>(freq * 100 + 0.25);
-    int call0;
+    int call0, call1;
     //std::string num = computePhoneNumber(freq, "KSFO");
     //std::string num = "adrian:supersecret@localhost/0190909090910000";
-    std::string num = "adrian:supersecret@localhost/500";
+    std::string num = "adrian:supersecret@localhost/600";
     qDebug() << QString(num.c_str());
     if( !num.empty() )
     {
@@ -141,6 +141,7 @@ void AudioClient::init()
     }
     if( call0 == -1 )
         qDebug() << "Audio: cannot call " << num.c_str();
+
 }
 
 

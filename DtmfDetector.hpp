@@ -11,6 +11,7 @@
 
 #include "types_cpp.hpp"
 #include <QDebug>
+#include <iostream>
 
 
 typedef Types<sizeof(long int), sizeof(int), sizeof(short int), sizeof(char)>::Int32     INT32;
