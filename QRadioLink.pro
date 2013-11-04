@@ -42,8 +42,7 @@ HEADERS += DtmfDetector.hpp \
 
 
 
-unix:!symbian: LIBS += -lespeak -lspandsp -lpulse-simple -L$$PWD/iaxclient/build -liaxclient_lib
-DEPENDPATH += $$PWD
+unix:!symbian: LIBS += -lespeak -lpulse-simple -L$$PWD/iaxclient/build -liaxclient_lib
 DEPENDPATH += $$PWD/iaxclient/build
-INCLUDEPATH += $$PWD
+
 
