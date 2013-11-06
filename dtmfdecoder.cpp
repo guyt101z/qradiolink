@@ -11,8 +11,6 @@ using std::exp;
 using std::log10;
 
 
-//#define buffer_size 4096
-//#define samp_rate 8000
 
 DtmfDecoder::DtmfDecoder(QObject *parent) :
     QObject(parent)
@@ -27,7 +25,9 @@ DtmfDecoder::DtmfDecoder(QObject *parent) :
     _dtmf_frequencies[6]= 1477.0;
     _dtmf_frequencies[7]= 1633.0;
     _dtmf_sequence = new QVector<char>;
+    _dtmf_command = new QVector<char>;
     _current_letter = ' ';
+    _processing = true;
 }
 
 DtmfDecoder::~DtmfDecoder()
@@ -43,6 +43,11 @@ void tone_detected(void *user_data, int code, int level, int delay)
 void DtmfDecoder::stop()
 {
     _stop = true;
+}
+
+void DtmfDecoder::process(bool p)
+{
+    _processing = p;
 }
 
 void DtmfDecoder::run()
@@ -66,6 +71,7 @@ void DtmfDecoder::run()
 
     while(true)
     {
+        if(!_processing) continue;
         if(_stop)
             break;
         //short *buf =new short[buffer_size];
@@ -81,12 +87,37 @@ void DtmfDecoder::run()
             _dtmf_sequence->remove(0);
         }
         _dtmf_sequence->append(letter);
+        // make a statistical analysis of the buffer
         analyse(analysis_buffer);
 
-        // make a statistical analysis of the buffer
+
+        if(_current_letter==' ') continue;
         if(_current_letter!=' ')
             qDebug() << QString(_current_letter);
 
+        if(_current_letter=='*')
+        {
+            _dtmf_command->clear();
+            _dtmf_command->append('*');
+        }
+        else if(((_current_letter=='C') || (_current_letter=='D')) && (_dtmf_command->size()>0))
+        {
+            _dtmf_command->append(_current_letter);
+            _processing =false;
+            emit haveCall(_dtmf_command);
+        }
+        else if(_current_letter=='#')
+        {
+            _dtmf_command->append(_current_letter);
+            _processing =false;
+            emit haveCommand(_dtmf_command);
+        }
+        else
+        {
+            _dtmf_command->append(_current_letter);
+        }
+
+        delete[] buf;
 
         //float *buf = makeTone(44100,600,buffer_size,0.5);
         //audio->write(buf,buffer_size);
@@ -116,12 +147,7 @@ void DtmfDecoder::run()
         dtmf_tx_free(dtmf_t);
         */
 
-
-
         //dtmf->decode(buf);
-        //qDebug() << digits;
-        delete[] buf;
-        //usleep(50);
 
     }
     /* spandsp
@@ -309,10 +335,10 @@ void DtmfDecoder::analyse(int analysis_buffer)
         if(letter == '#')
             xq++;
     }
-    //qDebug() << xx << " " << x1 << " "<< x2;
+
     if(_dtmf_sequence->last()==' ')
     {
-        for(int i =analysis_buffer-1;i>analysis_buffer-5;--i)
+        for(int i =analysis_buffer-1;i>analysis_buffer-5;i--)
         {
             if(_dtmf_sequence->at(i)!=' ')
                 //wait for another iteration

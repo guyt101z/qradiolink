@@ -21,9 +21,12 @@ public:
     explicit DtmfDecoder(QObject *parent = 0);
     ~DtmfDecoder();
     void stop();
+    void process(bool p);
     
 signals:
     void finished();
+    void haveCall(QVector<char>*call);
+    void haveCommand(QVector<char>*command);
     
 public slots:
     void run();
@@ -59,7 +62,9 @@ private:
     void analyse(int analysis_buffer);
     float _dtmf_frequencies[8];
     QVector<char> *_dtmf_sequence;
+    QVector<char> *_dtmf_command;
     char _current_letter;
+    bool _processing;
     const char _digit_map[4][4]=
         {
         { '1', '2', '3', 'A' },
