@@ -75,17 +75,17 @@ void DtmfDecoder::run()
 
         char letter = decode(buf,buffer_size,samp_rate, treshhold_audio_power, tone_difference);
         // fill a buffer of decoded letters
-        /*
+
         if(_dtmf_sequence->size()>20)
         {
             _dtmf_sequence->remove(0);
         }
         _dtmf_sequence->append(letter);
         analyse(analysis_buffer);
-        */
+
         // make a statistical analysis of the buffer
-        if(letter!=' ')
-            qDebug() << QString(letter);
+        if(_current_letter!=' ')
+            qDebug() << QString(_current_letter);
 
 
         //float *buf = makeTone(44100,600,buffer_size,0.5);
@@ -269,8 +269,8 @@ void DtmfDecoder::analyse(int analysis_buffer)
     if(_dtmf_sequence->size()<analysis_buffer)
         return;
 
-    int x1,x2,x3,x4,x5,x6,x7,x8,x9,x0,xa,xb,xc,xd,xx;
-    x1=x2=x3=x4=x5=x6=x7=x8=x9=x0=xa=xb=xc=xd=xx=0;
+    int x1,x2,x3,x4,x5,x6,x7,x8,x9,x0,xa,xb,xc,xd,xs,xq,xx;
+    x1=x2=x3=x4=x5=x6=x7=x8=x9=x0=xa=xb=xc=xd=xs=xq=xx=0;
     for(int o=0;o<_dtmf_sequence->size();++o)
     {
         char letter = _dtmf_sequence->at(o);
@@ -304,6 +304,10 @@ void DtmfDecoder::analyse(int analysis_buffer)
             xc++;
         if(letter == 'D')
             xd++;
+        if(letter == '*')
+            xs++;
+        if(letter == '#')
+            xq++;
     }
     //qDebug() << xx << " " << x1 << " "<< x2;
     if(_dtmf_sequence->last()==' ')
@@ -317,7 +321,7 @@ void DtmfDecoder::analyse(int analysis_buffer)
 
         }
         //end of a letter
-        //_current_letter = ' ';
+        _current_letter = ' ';
         return;
     }
     else
@@ -390,6 +394,16 @@ void DtmfDecoder::analyse(int analysis_buffer)
         if(xd > round(_dtmf_sequence->size()/2))
         {
             _current_letter = 'D';
+            return;
+        }
+        if(xs > round(_dtmf_sequence->size()/2))
+        {
+            _current_letter = '*';
+            return;
+        }
+        if(xq > round(_dtmf_sequence->size()/2))
+        {
+            _current_letter = '#';
             return;
         }
         // no letter has prevalence, wait for another iteration
