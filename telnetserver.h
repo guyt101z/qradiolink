@@ -40,7 +40,7 @@ private:
     unsigned _listen_port;
     QVector<QTcpSocket*> _unconnected_clients;
     QVector<QTcpSocket*> _connected_clients;
-    
+
 };
 
 #endif // TELNETSERVER_H

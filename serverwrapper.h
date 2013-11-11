@@ -2,6 +2,7 @@
 #define SERVERWRAPPER_H
 
 #include <QObject>
+#include <unistd.h>
 #include "telnetserver.h"
 
 class ServerWrapper : public QObject

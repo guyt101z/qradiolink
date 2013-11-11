@@ -26,7 +26,8 @@ SOURCES += main.cpp \
     telnetclient.cpp \
     telnetserver.cpp \
     serverwrapper.cpp \
-    audioclient.cpp
+    audioclient.cpp \
+    dtmfcommand.cpp
 
 HEADERS += DtmfDetector.hpp \
         DtmfGenerator.hpp \
@@ -38,7 +39,8 @@ HEADERS += DtmfDetector.hpp \
     telnetclient.h \
     telnetserver.h \
     serverwrapper.h \
-    audioclient.h
+    audioclient.h \
+    dtmfcommand.h
 
 
 

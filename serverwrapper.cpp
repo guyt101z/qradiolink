@@ -1,4 +1,5 @@
 #include "serverwrapper.h"
+#include <cstdlib>
 
 ServerWrapper::ServerWrapper(QObject *parent) :
     QObject(parent)
@@ -18,6 +19,7 @@ void ServerWrapper::run()
     //server->run();
     while(true)
     {
+        usleep(10000);
         QCoreApplication::processEvents();
         if(_stop)
             break;

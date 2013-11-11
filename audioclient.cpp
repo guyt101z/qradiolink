@@ -67,7 +67,7 @@ void AudioClient::init()
     iaxc_set_event_callback( iaxc_callback );
     // FIXME: To be implemented in IAX audio driver
     //iaxc_mic_boost_set( _micBoost_node->getIntValue() );
-    QString app = "FGCom";
+    QString app = "QRadioLink";
     QString callsign = "YR443";
     iaxc_set_callerid( callsign.toUtf8(), app.toUtf8() );
     iaxc_set_formats (IAXC_FORMAT_SPEEX, IAXC_FORMAT_SPEEX);

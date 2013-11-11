@@ -64,7 +64,9 @@ private:
     QVector<char> *_dtmf_sequence;
     QVector<char> *_dtmf_command;
     char _current_letter;
+    char _previous_letter;
     bool _processing;
+    bool _receiving;
     const char _digit_map[4][4]=
         {
         { '1', '2', '3', 'A' },

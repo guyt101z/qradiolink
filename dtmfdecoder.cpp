@@ -27,7 +27,9 @@ DtmfDecoder::DtmfDecoder(QObject *parent) :
     _dtmf_sequence = new QVector<char>;
     _dtmf_command = new QVector<char>;
     _current_letter = ' ';
+    _previous_letter= ' ';
     _processing = true;
+    _receiving = false;
 }
 
 DtmfDecoder::~DtmfDecoder()
@@ -52,7 +54,7 @@ void DtmfDecoder::process(bool p)
 
 void DtmfDecoder::run()
 {
-
+    float cw_tone_freq = 900.0;
     int buffer_size = 256;
     int samp_rate = 8000;
     float treshhold_audio_power = 10.0; // dB
@@ -71,7 +73,7 @@ void DtmfDecoder::run()
 
     while(true)
     {
-        if(!_processing) continue;
+        usleep(1000);
         if(_stop)
             break;
         //short *buf =new short[buffer_size];
@@ -79,6 +81,21 @@ void DtmfDecoder::run()
 
         audio->read(buf, buffer_size);
 
+        float audio_power = power(goertzel(buf, buffer_size, 50, samp_rate));
+        if(audio_power > 0.01)
+        {
+            _receiving = true;
+
+        }
+        else
+        {
+            _receiving = false;
+        }
+        if(!_processing)
+        {
+            sleep(1);
+            continue;
+        }
         char letter = decode(buf,buffer_size,samp_rate, treshhold_audio_power, tone_difference);
         // fill a buffer of decoded letters
 
@@ -100,8 +117,10 @@ void DtmfDecoder::run()
             _dtmf_command->clear();
             _dtmf_command->append('*');
         }
-        else if(((_current_letter=='C') || (_current_letter=='D')) && (_dtmf_command->size()>0))
+        else if(((_current_letter=='C') || (_current_letter=='D'))
+                && (_dtmf_command->size()>0) && (_previous_letter!=_current_letter))
         {
+
             _dtmf_command->append(_current_letter);
             _processing =false;
             emit haveCall(_dtmf_command);
@@ -116,11 +135,12 @@ void DtmfDecoder::run()
         {
             _dtmf_command->append(_current_letter);
         }
-
+        _previous_letter=_current_letter;
+        _current_letter=' ';
         delete[] buf;
 
-        //float *buf = makeTone(44100,600,buffer_size,0.5);
-        //audio->write(buf,buffer_size);
+        //float *cw_sound = makeTone(samp_rate,cw_tone_freq,buffer_size,1);
+        //audio->write(cw_sound,buffer_size);
         /*
         dtmf_rx(dtmf, buf, buffer_size/2);
         char digitsbuf[255];
