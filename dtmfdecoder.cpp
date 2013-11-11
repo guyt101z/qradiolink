@@ -82,7 +82,7 @@ void DtmfDecoder::run()
         audio->read(buf, buffer_size);
 
         float audio_power = power(goertzel(buf, buffer_size, 50, samp_rate));
-        if(audio_power > 0.01)
+        if(audio_power > 1)
         {
             _receiving = true;
 
@@ -189,7 +189,7 @@ char DtmfDecoder::decode(float *buf,int buffer_size,int samp_rate, float treshho
     for(int i =0;i<4;i++)
     {
         float tone_power = power(goertzel(buf, buffer_size, _dtmf_frequencies[i], samp_rate));
-        if(tone_power > 50) continue; // error
+        if(tone_power > 90) continue; // error
         for(int j=-5;j<6;j++)
         {
             float tone_power1 = power(goertzel(buf, buffer_size, _dtmf_frequencies[i]+(float)j, samp_rate));
@@ -208,7 +208,7 @@ char DtmfDecoder::decode(float *buf,int buffer_size,int samp_rate, float treshho
     for(int i =4;i<8;i++)
     {
         float tone_power = power(goertzel(buf, buffer_size, _dtmf_frequencies[i], samp_rate));
-        if(tone_power > 50) continue; // error
+        if(tone_power > 90) continue; // error
         for(int j=-5;j<6;j++)
         {
             float tone_power1 = power(goertzel(buf, buffer_size, _dtmf_frequencies[i]+(float)j, samp_rate));
@@ -493,10 +493,10 @@ float DtmfDecoder::goertzel(float *x, int N, float frequency, int samplerate) {
     for (int i=0; i<N; i++) {
     Skn2 = Skn1;
     Skn1 = Skn;
-    Skn = 2*cos(2*PI*frequency/samplerate)*Skn1 - Skn2 + x[i];
+    Skn = 2*cos(2*PI*frequency/(float)samplerate)*Skn1 - Skn2 + x[i];
     }
 
-    float WNk = exp(-2*PI*frequency/samplerate); // this one ignores complex stuff
+    float WNk = exp(-2*PI*frequency/(float)samplerate); // this one ignores complex stuff
     //float WNk = exp(-2*j*PI*k/N);
     return (Skn - WNk*Skn1);
 }
