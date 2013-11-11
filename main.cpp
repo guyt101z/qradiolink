@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
     QObject::connect(t1, SIGNAL(finished()), t1, SLOT(deleteLater()));
     t1->start();
 
-    /*
+
     QThread *t2= new QThread;
     ServerWrapper *telnet_server_wrapper = new ServerWrapper;
     telnet_server_wrapper->moveToThread(t2);
@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
     QObject::connect(telnet_server_wrapper, SIGNAL(finished()), telnet_server_wrapper, SLOT(deleteLater()));
     QObject::connect(t2, SIGNAL(finished()), t2, SLOT(deleteLater()));
     t2->start();
-    */
+
     /*
     AudioClient *client = new AudioClient;
     client->setProperties(QString("guest"),QString("guest"),QString("fgcom.flightgear.org"));

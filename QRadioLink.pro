@@ -16,9 +16,6 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp \
-        DtmfGenerator.cpp \
-        DtmfDetector.cpp \
-         decoder.cpp \
     speech.cpp \
     dtmf.cpp \
     audiointerface.cpp \
@@ -29,10 +26,7 @@ SOURCES += main.cpp \
     audioclient.cpp \
     dtmfcommand.cpp
 
-HEADERS += DtmfDetector.hpp \
-        DtmfGenerator.hpp \
-        types_cpp.hpp \
-    speech.h \
+HEADERS += speech.h \
     dtmf.h \
     audiointerface.h \
     dtmfdecoder.h \

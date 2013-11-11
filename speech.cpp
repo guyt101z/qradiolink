@@ -19,12 +19,12 @@ void Speech::speak(char* text)
     espeak_SetSynthCallback( SynthCallback);
     char * pbu = new char[120];
     espeak_Synth(text,
-    sizeof(text),
-    0,
-    POS_CHARACTER,
-    0,
-    espeakCHARS_AUTO,
-    NULL,
-    pbu);
+        sizeof(text),
+        0,
+        POS_CHARACTER,
+        0,
+        espeakCHARS_AUTO,
+        NULL,
+        pbu);
     espeak_Terminate();
 }
