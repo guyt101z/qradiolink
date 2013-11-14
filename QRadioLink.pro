@@ -17,24 +17,24 @@ TEMPLATE = app
 
 SOURCES += main.cpp \
     speech.cpp \
-    dtmf.cpp \
     audiointerface.cpp \
     dtmfdecoder.cpp \
     telnetclient.cpp \
     telnetserver.cpp \
     serverwrapper.cpp \
     audioclient.cpp \
-    dtmfcommand.cpp
+    dtmfcommand.cpp \
+    databaseapi.cpp
 
 HEADERS += speech.h \
-    dtmf.h \
     audiointerface.h \
     dtmfdecoder.h \
     telnetclient.h \
     telnetserver.h \
     serverwrapper.h \
     audioclient.h \
-    dtmfcommand.h
+    dtmfcommand.h \
+    databaseapi.h
 
 
 

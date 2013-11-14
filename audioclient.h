@@ -4,6 +4,8 @@
 #include <QObject>
 #include <QDebug>
 #include <QString>
+#include <QVector>
+#include "speech.h"
 #include "iaxclient/lib/iaxclient.h"
 
 
@@ -15,10 +17,15 @@ public:
     ~AudioClient();
     void init();
     void iaxTextEvent(struct iaxc_ev_text text);
+    void iaxCallEvent(struct iaxc_ev_call_state state);
     void setProperties(QString username, QString password, QString server);
+    void makeCall(std::string number);
 signals:
+    void readyInput();
     
 public slots:
+    void haveCall(QVector<char> *dtmf);
+    void sendDTMF(char letter);
 
 private:
     bool _initialized;

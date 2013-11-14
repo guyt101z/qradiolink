@@ -28,6 +28,8 @@ static int iaxc_callback( iaxc_event e )
         case IAXC_EVENT_TEXT:
             static_instance->iaxTextEvent(e.ev.text);
         break;
+    case IAXC_EVENT_STATE:
+        static_instance->iaxCallEvent(e.ev.call);
         default:
             return 0;
     }
@@ -41,6 +43,13 @@ void AudioClient::iaxTextEvent(struct iaxc_ev_text text)
     {
         qDebug() << text.message;
     }
+}
+
+void AudioClient::iaxCallEvent(struct iaxc_ev_call_state state)
+{
+
+        qDebug() << state.remote;
+
 }
 
 void AudioClient::setProperties(QString username, QString password, QString server)
@@ -130,10 +139,19 @@ void AudioClient::init()
 
     const double freq = 910.0;
     int currentFreqKhz = 10 * static_cast<int>(freq * 100 + 0.25);
-    int call0, call1;
+
     //std::string num = computePhoneNumber(freq, "KSFO");
     //std::string num = "adrian:supersecret@localhost/0190909090910000";
-    std::string num = "adrian:supersecret@localhost/600";
+    //std::string num = "adrian:supersecret@localhost/600";
+
+
+}
+
+void AudioClient::makeCall(std::string number)
+{
+    int call0, call1;
+    std::string num = "adrian:supersecret@localhost/";
+    num.append(number);
     qDebug() << QString(num.c_str());
     if( !num.empty() )
     {
@@ -142,6 +160,28 @@ void AudioClient::init()
     if( call0 == -1 )
         qDebug() << "Audio: cannot call " << num.c_str();
 
+}
+
+void AudioClient::sendDTMF(char letter)
+{
+    iaxc_send_dtmf(letter);
+}
+
+void AudioClient::haveCall(QVector<char> *dtmf)
+{
+    std::string number;
+    for(int i=0;i<dtmf->size();i++)
+    {
+        if((dtmf->at(i)!='*') && (dtmf->at(i)!='C'))
+        {
+            number.push_back(dtmf->at(i));
+        }
+    }
+    emit readyInput();
+    makeCall(number);
+
+
+    dtmf->clear();
 }
 
 

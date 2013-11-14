@@ -11,8 +11,10 @@
 
 #include <QObject>
 #include <QtDebug>
+#include <QCoreApplication>
 #include "audiointerface.h"
 #include "dtmf.h"
+#include "speech.h"
 
 class DtmfDecoder : public QObject
 {
@@ -30,6 +32,7 @@ signals:
     
 public slots:
     void run();
+    void resetInput();
 
 private:
     bool _stop;

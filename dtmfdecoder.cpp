@@ -52,35 +52,35 @@ void DtmfDecoder::process(bool p)
     _processing = p;
 }
 
+void DtmfDecoder::resetInput()
+{
+    process(true);
+}
+
 void DtmfDecoder::run()
 {
     float cw_tone_freq = 900.0;
     int buffer_size = 256;
     int samp_rate = 8000;
-    float treshhold_audio_power = 10.0; // dB
+    float treshhold_audio_power = 15.0; // dB
     float tone_difference = 5.0; //dB
-    int analysis_buffer = 20;
+    int analysis_buffer = 30;
+    char call_key='C';
+    char command_key='#';
+    char clear_key = '*';
     AudioInterface *audio= new AudioInterface(0,samp_rate,1);
-    // old detector
-    //Dtmf *dtmf = new Dtmf(NULL,512);
-
-    /* spandsp
-    dtmf_rx_state_t * dtmf = dtmf_rx_init(NULL, NULL, NULL);
-    dtmf_tx_state_t * dtmf_t = dtmf_tx_init(NULL);
-    dtmf_rx_set_realtime_callback(dtmf, tone_detected , NULL);
-    */
-
 
     while(true)
     {
         usleep(1000);
+        QCoreApplication::processEvents();
         if(_stop)
             break;
-        //short *buf =new short[buffer_size];
+
         float *buf = new float[buffer_size];
 
         audio->read(buf, buffer_size);
-
+        /*
         float audio_power = power(goertzel(buf, buffer_size, 50, samp_rate));
         if(audio_power > 1)
         {
@@ -91,15 +91,18 @@ void DtmfDecoder::run()
         {
             _receiving = false;
         }
+        */
         if(!_processing)
         {
             sleep(1);
             continue;
         }
+        //float *tone= makeTone(samp_rate,cw_tone_freq,buffer_size);
+        //audio->write(tone,buffer_size);
         char letter = decode(buf,buffer_size,samp_rate, treshhold_audio_power, tone_difference);
         // fill a buffer of decoded letters
 
-        if(_dtmf_sequence->size()>20)
+        if(_dtmf_sequence->size()>analysis_buffer)
         {
             _dtmf_sequence->remove(0);
         }
@@ -107,28 +110,33 @@ void DtmfDecoder::run()
         // make a statistical analysis of the buffer
         analyse(analysis_buffer);
 
-
-        if(_current_letter==' ') continue;
-        if(_current_letter!=' ')
+        delete[] buf;
+        if(_current_letter==' ')
+        {
+            _previous_letter = _current_letter;
+            continue;
+        }
+        if(_previous_letter==_current_letter) continue;
+        //if(_current_letter!=' ')
             qDebug() << QString(_current_letter);
 
-        if(_current_letter=='*')
+        if(_current_letter==clear_key)
         {
             _dtmf_command->clear();
-            _dtmf_command->append('*');
+            //_dtmf_command->append(_current_letter);
         }
-        else if(((_current_letter=='C') || (_current_letter=='D'))
-                && (_dtmf_command->size()>0) && (_previous_letter!=_current_letter))
+        else if(_current_letter==call_key)
         {
 
             _dtmf_command->append(_current_letter);
-            _processing =false;
+            //_processing =false;
+
             emit haveCall(_dtmf_command);
         }
-        else if(_current_letter=='#')
+        else if(_current_letter==command_key)
         {
             _dtmf_command->append(_current_letter);
-            _processing =false;
+            //_processing =false;
             emit haveCommand(_dtmf_command);
         }
         else
@@ -136,43 +144,15 @@ void DtmfDecoder::run()
             _dtmf_command->append(_current_letter);
         }
         _previous_letter=_current_letter;
-        _current_letter=' ';
-        delete[] buf;
+        //_current_letter=' ';
+
 
         //float *cw_sound = makeTone(samp_rate,cw_tone_freq,buffer_size,1);
         //audio->write(cw_sound,buffer_size);
-        /*
-        dtmf_rx(dtmf, buf, buffer_size/2);
-        char digitsbuf[255];
-        digitsbuf[0] = '\0';
-        int rc = dtmf_rx_get(dtmf, digitsbuf, sizeof(digitsbuf)-1);
-        if (rc > 0) {
-            printf("Rx digit: %s\n", digitsbuf);
-        }
-        */
 
-        //char digits[50];
-        //dtmf_rx_get(dtmf, digits, 50);
-
-
-        /*
-        char *dtmf_out = new char[3];
-        dtmf_out[0] ='1';
-        dtmf_out[1] ='2';
-        dtmf_out[2] ='3';
-        //dtmf_tx_set_timing 	( 	dtmf_t, 200,200 ) 	;
-        dtmf_tx_put(dtmf_t,"123",-1);
-        dtmf_tx(dtmf_t,buf,3);
-        audio->write(buf,buffer_size*sizeof(int16_t));
-        dtmf_tx_free(dtmf_t);
-        */
-
-        //dtmf->decode(buf);
 
     }
-    /* spandsp
-    dtmf_rx_free(dtmf);
-    */
+
     finish:
     delete audio;
     //delete dtmf;
@@ -195,9 +175,9 @@ char DtmfDecoder::decode(float *buf,int buffer_size,int samp_rate, float treshho
             float tone_power1 = power(goertzel(buf, buffer_size, _dtmf_frequencies[i]+(float)j, samp_rate));
             if(tone_power1>tone_power) tone_power = tone_power1;
         }
-
-        if(tone_power < treshhold_audio_power) continue;
         if(tone_power < largest_tone_power) continue;
+        if(tone_power < treshhold_audio_power) continue;
+
 
         //qDebug() << i << " " << tone_power << " "<< _dtmf_frequencies[i];
         tones[0] = (int)_dtmf_frequencies[i];
@@ -214,8 +194,9 @@ char DtmfDecoder::decode(float *buf,int buffer_size,int samp_rate, float treshho
             float tone_power1 = power(goertzel(buf, buffer_size, _dtmf_frequencies[i]+(float)j, samp_rate));
             if(tone_power1>tone_power) tone_power = tone_power1;
         }
-        if(tone_power < treshhold_audio_power) continue;
         if(tone_power < largest_tone_power) continue;
+        if(tone_power < treshhold_audio_power) continue;
+
 
         //qDebug() << i << " " << tone_power << " "<< _dtmf_frequencies[i];
         tones[1] = (int)_dtmf_frequencies[i];
@@ -356,7 +337,8 @@ void DtmfDecoder::analyse(int analysis_buffer)
             xq++;
     }
 
-    if(_dtmf_sequence->last()==' ')
+
+    if(xx > round(_dtmf_sequence->size()/2))
     {
         for(int i =analysis_buffer-1;i>analysis_buffer-5;i--)
         {
@@ -366,10 +348,11 @@ void DtmfDecoder::analyse(int analysis_buffer)
 
 
         }
-        //end of a letter
         _current_letter = ' ';
         return;
     }
+
+
     else
     {
         if(x1 > round(_dtmf_sequence->size()/2))

@@ -9,9 +9,16 @@ AudioInterface::AudioInterface(QObject *parent, unsigned sample_rate, unsigned c
     ss.rate = sample_rate;
     ss.channels = channels;
 
+    pa_sample_spec ss_short;
+    //ss.format = PA_SAMPLE_S16LE;
+    ss_short.format = PA_SAMPLE_S16LE;
+    ss_short.rate = sample_rate;
+    ss_short.channels = channels;
+
     ///
     _s_rec = NULL;
     _s_play = NULL;
+    _s_short_play = NULL;
     _error=0;
 
     if (!(_s_rec = pa_simple_new(NULL, "qradiolink", PA_STREAM_RECORD, NULL, "record", &ss, NULL, NULL, &_error)))
@@ -22,6 +29,10 @@ AudioInterface::AudioInterface(QObject *parent, unsigned sample_rate, unsigned c
     {
         fprintf(stderr, __FILE__": pa_simple_new() failed: %s\n", pa_strerror(_error));
     }
+    if (!(_s_short_play = pa_simple_new(NULL, "qradiolink", PA_STREAM_PLAYBACK, NULL, "play", &ss_short, NULL, NULL, &_error)))
+    {
+        fprintf(stderr, __FILE__": pa_simple_new() failed: %s\n", pa_strerror(_error));
+    }
 }
 
 AudioInterface::~AudioInterface()
@@ -29,6 +40,8 @@ AudioInterface::~AudioInterface()
     if (_s_rec)
       pa_simple_free(_s_rec);
     if (_s_play)
+      pa_simple_free(_s_play);
+    if (_s_short_play)
       pa_simple_free(_s_play);
 }
 
@@ -49,6 +62,18 @@ int AudioInterface::write(float *buf, short bufsize)
     if(!_s_play)
         return 1;
     if(pa_simple_write(_s_play, buf, bufsize, &_error) < 0)
+    {
+        fprintf(stderr, __FILE__": pa_simple_write() failed: %s\n", pa_strerror(_error));
+        return 1;
+    }
+    return 0;
+}
+
+int AudioInterface::write_short(short *buf, short bufsize)
+{
+    if(!_s_short_play)
+        return 1;
+    if(pa_simple_write(_s_short_play, buf, bufsize, &_error) < 0)
     {
         fprintf(stderr, __FILE__": pa_simple_write() failed: %s\n", pa_strerror(_error));
         return 1;
