@@ -20,12 +20,14 @@ public:
     void iaxCallEvent(struct iaxc_ev_call_state state);
     void setProperties(QString username, QString password, QString server);
     void makeCall(std::string number);
+    void sendDTMF(char letter);
+    void disconnectCall();
 signals:
     void readyInput();
     
 public slots:
-    void haveCall(QVector<char> *dtmf);
-    void sendDTMF(char letter);
+
+
 
 private:
     bool _initialized;
@@ -36,9 +38,7 @@ private:
     QString _server;
     std::string computePhoneNumber(const double& freq, const std::string& icao) const;
     std::vector<const char*> get_available_devices();
-    bool testForError(void *p, std::string s);
-    bool testForALError(std::string s);
-    bool testForALCError(std::string s);
+
 
 };
 

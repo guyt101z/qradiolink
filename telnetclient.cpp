@@ -70,7 +70,7 @@ void TelnetClient::disconnectFromHost()
 }
 
 
-void TelnetClient::setProperty(QString prop_name, QString value)
+void TelnetClient::send(QString prop_name, QString value)
 {
     QString command = "set " + prop_name + " " + value + CRLF;
     _socket->write(command.toUtf8());
@@ -122,53 +122,4 @@ void TelnetClient::processData()
     emit haveProperty(line);
 }
 
-void TelnetClient::getProperty(QString prop_name)
-{
 
-    QString command = "get " + prop_name +CRLF;
-    int check = _socket->write(command.toLatin1());
-    if(check==-1)
-    {
-        qDebug() << "Command was not written, an error has occured";
-    }
-    else if(check < qstrlen(command.toLatin1()))
-    {
-        qDebug() << "Fewer than required bytes written to socket";
-    }
-
-    _socket->flush();
-
-}
-
-void TelnetClient::cd(QString dir)
-{
-    qDebug() << "dir: " << dir;
-    QString command = "cd " + dir + " " +CRLF;
-    _socket->write(command.toUtf8());
-    _socket->flush();
-}
-
-
-void TelnetClient::runCmd(QString cmd)
-{
-    QString command = "run " + cmd + CRLF;
-    _socket->write(command.toUtf8());
-    _socket->flush();
-
-}
-
-void TelnetClient::dataMode()
-{
-    QString command = "data " + CRLF;
-    _socket->write(command.toUtf8());
-    _socket->flush();
-
-}
-
-void TelnetClient::promptMode()
-{
-    QString command = "prompt " + CRLF;
-    _socket->write(command.toUtf8());
-    _socket->flush();
-
-}

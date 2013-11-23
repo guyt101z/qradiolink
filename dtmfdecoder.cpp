@@ -60,11 +60,11 @@ void DtmfDecoder::resetInput()
 void DtmfDecoder::run()
 {
     float cw_tone_freq = 900.0;
-    int buffer_size = 256;
+    int buffer_size = 512;
     int samp_rate = 8000;
     float treshhold_audio_power = 15.0; // dB
     float tone_difference = 5.0; //dB
-    int analysis_buffer = 30;
+    int analysis_buffer = 20;
     char call_key='C';
     char command_key='#';
     char clear_key = '*';
@@ -73,7 +73,7 @@ void DtmfDecoder::run()
     while(true)
     {
         usleep(1000);
-        QCoreApplication::processEvents();
+        //QCoreApplication::processEvents();
         if(_stop)
             break;
 
@@ -81,17 +81,25 @@ void DtmfDecoder::run()
 
         audio->read(buf, buffer_size);
         /*
-        float audio_power = power(goertzel(buf, buffer_size, 50, samp_rate));
-        if(audio_power > 1)
+        float sum=0;
+        for(int x=0;x<buffer_size;x++)
+        {
+            if(buf[x] >= 0)
+                sum += buf[x];
+            else
+                sum -= buf[x];
+        }
+        */
+        if(1> 2)
         {
             _receiving = true;
-
+            //qDebug() << "sum: " << sum/treshhold_audio_power;
         }
         else
         {
             _receiving = false;
         }
-        */
+
         if(!_processing)
         {
             sleep(1);
@@ -117,13 +125,13 @@ void DtmfDecoder::run()
             continue;
         }
         if(_previous_letter==_current_letter) continue;
-        //if(_current_letter!=' ')
-            qDebug() << QString(_current_letter);
+
+        qDebug() << QString(_current_letter);
 
         if(_current_letter==clear_key)
         {
             _dtmf_command->clear();
-            //_dtmf_command->append(_current_letter);
+
         }
         else if(_current_letter==call_key)
         {
@@ -143,6 +151,7 @@ void DtmfDecoder::run()
         {
             _dtmf_command->append(_current_letter);
         }
+
         _previous_letter=_current_letter;
         //_current_letter=' ';
 
@@ -165,11 +174,13 @@ char DtmfDecoder::decode(float *buf,int buffer_size,int samp_rate, float treshho
     int tones[2];
     tones[0] = 0;
     tones[1] = 0;
+
     float largest_tone_power = 0.0;
     for(int i =0;i<4;i++)
     {
+
         float tone_power = power(goertzel(buf, buffer_size, _dtmf_frequencies[i], samp_rate));
-        if(tone_power > 90) continue; // error
+        if(tone_power > 40) continue; // error
         for(int j=-5;j<6;j++)
         {
             float tone_power1 = power(goertzel(buf, buffer_size, _dtmf_frequencies[i]+(float)j, samp_rate));
@@ -187,8 +198,9 @@ char DtmfDecoder::decode(float *buf,int buffer_size,int samp_rate, float treshho
     largest_tone_power =0.0;
     for(int i =4;i<8;i++)
     {
+
         float tone_power = power(goertzel(buf, buffer_size, _dtmf_frequencies[i], samp_rate));
-        if(tone_power > 90) continue; // error
+        if(tone_power > 40) continue; // error
         for(int j=-5;j<6;j++)
         {
             float tone_power1 = power(goertzel(buf, buffer_size, _dtmf_frequencies[i]+(float)j, samp_rate));
@@ -203,6 +215,8 @@ char DtmfDecoder::decode(float *buf,int buffer_size,int samp_rate, float treshho
         largest_tone_power = tone_power;
 
     }
+
+
 
     char letter;
     switch(tones[0])
@@ -221,6 +235,9 @@ char DtmfDecoder::decode(float *buf,int buffer_size,int samp_rate, float treshho
             break;
         case 1633:
             letter = 'A';
+            break;
+        case 0:
+            letter = ' ';
             break;
         default:
             letter = ' ';
@@ -242,6 +259,9 @@ char DtmfDecoder::decode(float *buf,int buffer_size,int samp_rate, float treshho
         case 1633:
             letter = 'B';
             break;
+        case 0:
+            letter = ' ';
+            break;
         default:
             letter = ' ';
         }
@@ -261,6 +281,8 @@ char DtmfDecoder::decode(float *buf,int buffer_size,int samp_rate, float treshho
         case 1633:
             letter = 'C';
             break;
+        case 0:
+            letter = ' ';
         default:
             letter = ' ';
         }
@@ -280,9 +302,14 @@ char DtmfDecoder::decode(float *buf,int buffer_size,int samp_rate, float treshho
         case 1633:
             letter = 'D';
             break;
+        case 0:
+            letter = ' ';
         default:
             letter = ' ';
         }
+        break;
+    case 0:
+        letter = ' ';
         break;
     default:
         letter = ' ';

@@ -24,7 +24,8 @@ SOURCES += main.cpp \
     serverwrapper.cpp \
     audioclient.cpp \
     dtmfcommand.cpp \
-    databaseapi.cpp
+    databaseapi.cpp \
+    controller.cpp
 
 HEADERS += speech.h \
     audiointerface.h \
@@ -34,11 +35,13 @@ HEADERS += speech.h \
     serverwrapper.h \
     audioclient.h \
     dtmfcommand.h \
-    databaseapi.h
+    databaseapi.h \
+    controller.h
 
 
 
-unix:!symbian: LIBS += -lespeak -lpulse-simple -L$$PWD/iaxclient/build -liaxclient_lib
+unix:!symbian: LIBS += -lestools -lFestival -lespeak -lpulse-simple -L$$PWD/iaxclient/build -liaxclient_lib
 DEPENDPATH += $$PWD/iaxclient/build
+INCLUDEPATH += /usr/include/speech_tools
 
 

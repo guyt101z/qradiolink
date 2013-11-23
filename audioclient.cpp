@@ -49,6 +49,7 @@ void AudioClient::iaxCallEvent(struct iaxc_ev_call_state state)
 {
 
         qDebug() << state.remote;
+        if(state.state==IAXC_CALL_STATE_TRANSFER) qDebug() << "transferring..";
 
 }
 
@@ -132,11 +133,12 @@ void AudioClient::init()
             int output_id = devs[i].devID;
     }
     //TODO: set volumes in a separate function
-    iaxc_input_level_set( 0.9 );
-    int volume =0.9;
+    iaxc_input_level_set( 0.96 );
+    int volume =0.96;
     iaxc_output_level_set( volume );
     iaxc_millisleep(50);
-
+    iaxc_set_filters(IAXC_FILTER_DENOISE | IAXC_FILTER_AGC | IAXC_FILTER_ECHO);
+    iaxc_debug_iax_set(2);
     const double freq = 910.0;
     int currentFreqKhz = 10 * static_cast<int>(freq * 100 + 0.25);
 
@@ -152,7 +154,7 @@ void AudioClient::makeCall(std::string number)
     int call0, call1;
     std::string num = "adrian:supersecret@localhost/";
     num.append(number);
-    qDebug() << QString(num.c_str());
+
     if( !num.empty() )
     {
         call0 = iaxc_call(num.c_str());
@@ -162,27 +164,19 @@ void AudioClient::makeCall(std::string number)
 
 }
 
+void AudioClient::disconnectCall()
+{
+
+    iaxc_dump_call();
+
+}
+
 void AudioClient::sendDTMF(char letter)
 {
     iaxc_send_dtmf(letter);
 }
 
-void AudioClient::haveCall(QVector<char> *dtmf)
-{
-    std::string number;
-    for(int i=0;i<dtmf->size();i++)
-    {
-        if((dtmf->at(i)!='*') && (dtmf->at(i)!='C'))
-        {
-            number.push_back(dtmf->at(i));
-        }
-    }
-    emit readyInput();
-    makeCall(number);
 
-
-    dtmf->clear();
-}
 
 
 std::string AudioClient::computePhoneNumber(const double& freq, const std::string& icao) const

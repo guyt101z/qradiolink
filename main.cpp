@@ -7,6 +7,7 @@
 #include "serverwrapper.h"
 #include "speech.h"
 #include "audioclient.h"
+#include "controller.h"
 
 
 int main(int argc, char *argv[])
@@ -16,16 +17,15 @@ int main(int argc, char *argv[])
     QString _start_time= QDateTime::currentDateTime().toString("d/MMM/yyyy hh:mm:ss");
 
 
-    AudioClient *client = new AudioClient;
-    client->setProperties(QString("guest"),QString("guest"),QString("fgcom.flightgear.org"));
-    client->init();
 
+    Controller *controller = new Controller;
 
     QThread *t1= new QThread;
     DtmfDecoder *decoder = new DtmfDecoder;
     decoder->moveToThread(t1);
-    QObject::connect(decoder,SIGNAL(haveCall(QVector<char>*)),client,SLOT(haveCall(QVector<char>*)));
-    QObject::connect(client,SIGNAL(readyInput()),decoder,SLOT(resetInput()));
+    QObject::connect(decoder,SIGNAL(haveCall(QVector<char>*)),controller,SLOT(haveCall(QVector<char>*)));
+    QObject::connect(decoder,SIGNAL(haveCommand(QVector<char>*)),controller,SLOT(haveCommand(QVector<char>*)));
+    QObject::connect(controller,SIGNAL(readyInput()),decoder,SLOT(resetInput()));
     QObject::connect(t1, SIGNAL(started()), decoder, SLOT(run()));
     QObject::connect(decoder, SIGNAL(finished()), t1, SLOT(quit()));
     QObject::connect(decoder, SIGNAL(finished()), decoder, SLOT(deleteLater()));
