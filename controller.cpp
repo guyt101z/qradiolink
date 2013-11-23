@@ -20,8 +20,10 @@ void Controller::haveCall(QVector<char> *dtmf)
             spp.fspeak(QString(dtmf->at(i)).toLocal8Bit().data());
         }
     }
-
-    QString voice= "Calling the station into the conference...";
+    TelnetClient telnet;
+    //telnet.connectToHost("localhost",4939);
+    //telnet.send("join",QString::fromStdString(number));
+    QString voice= "Calling the station into the conference.";
     qDebug() << QString::fromStdString(number);
     spp.fspeak(voice.toLocal8Bit().data());
     _client->init();

@@ -4,6 +4,7 @@
 #include <QObject>
 #include <unistd.h>
 #include "telnetserver.h"
+#include "speech.h"
 
 class ServerWrapper : public QObject
 {

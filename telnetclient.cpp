@@ -13,7 +13,7 @@ TelnetClient::TelnetClient(QObject *parent) :
     _connection_tries=0;
     _status=0;
     _hostname = "localhost";
-    _port= 5030;
+    _port= 4939;
 }
 
 
@@ -26,8 +26,6 @@ TelnetClient::~TelnetClient()
 
 void TelnetClient::connectionSuccess()
 {
-
-    this->dataMode();
     _status=1;
     _connection_tries=0;
     emit connectedToHost();
@@ -72,7 +70,7 @@ void TelnetClient::disconnectFromHost()
 
 void TelnetClient::send(QString prop_name, QString value)
 {
-    QString command = "set " + prop_name + " " + value + CRLF;
+    QString command = prop_name + " " + value + CRLF;
     _socket->write(command.toUtf8());
     _socket->flush();
 

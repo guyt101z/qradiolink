@@ -4,6 +4,7 @@
 #include <QObject>
 #include "audioclient.h"
 #include "speech.h"
+#include "telnetclient.h"
 
 class Controller : public QObject
 {

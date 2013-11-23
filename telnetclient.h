@@ -17,19 +17,14 @@ public:
     explicit TelnetClient(QObject *parent = 0);
     ~TelnetClient();
 
-    void setProperty(QString prop_name, QString value);
+    void send(QString prop_name, QString value);
 
-    void runCmd(QString cmd);
-    void cd(QString dir);
-    void dataMode();
-    void promptMode();
     void disconnectFromHost();
     unsigned inline status() {return _status;}
 
 public slots:
     void processData();
     void connectToHost(const QString &host, const unsigned &port);
-    void getProperty(QString prop_name);
 
 signals:
     void connectionFailure();

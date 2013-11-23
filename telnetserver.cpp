@@ -4,7 +4,7 @@ TelnetServer::TelnetServer(QObject *parent) :
     QObject(parent)
 {
     _hostname = QHostAddress::Any;
-    _listen_port = 5030;
+    _listen_port = 4939;
     _stop=false;
     _server = new QTcpServer;
     _server->listen(_hostname,_listen_port);

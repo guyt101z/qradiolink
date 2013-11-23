@@ -174,7 +174,7 @@ char DtmfDecoder::decode(float *buf,int buffer_size,int samp_rate, float treshho
     int tones[2];
     tones[0] = 0;
     tones[1] = 0;
-
+    int first=-99;
     float largest_tone_power = 0.0;
     for(int i =0;i<4;i++)
     {
@@ -193,9 +193,16 @@ char DtmfDecoder::decode(float *buf,int buffer_size,int samp_rate, float treshho
         //qDebug() << i << " " << tone_power << " "<< _dtmf_frequencies[i];
         tones[0] = (int)_dtmf_frequencies[i];
         largest_tone_power = tone_power;
-
+        first = i;
     }
+    float first_test_tone_power = power(goertzel(buf, buffer_size, _dtmf_frequencies[first]+50, samp_rate));
+    if((fabs(largest_tone_power - first_test_tone_power) < 10) || (first <0))
+        return ' ';
+    float first_tone_power=0.0;
+    if(tones[0]!=0)
+        first_tone_power=largest_tone_power;
     largest_tone_power =0.0;
+    int second=-99;
     for(int i =4;i<8;i++)
     {
 
@@ -213,9 +220,17 @@ char DtmfDecoder::decode(float *buf,int buffer_size,int samp_rate, float treshho
         //qDebug() << i << " " << tone_power << " "<< _dtmf_frequencies[i];
         tones[1] = (int)_dtmf_frequencies[i];
         largest_tone_power = tone_power;
-
+        second = i;
     }
+    float second_test_tone_power = power(goertzel(buf, buffer_size, _dtmf_frequencies[second]+50, samp_rate));
+    if((fabs(largest_tone_power - second_test_tone_power) < 10) || (second <0))
+        return ' ';
+    float second_tone_power=0.0;
+    if(tones[1]!=0)
+        second_tone_power = largest_tone_power;
 
+    if(fabs(first_tone_power - second_tone_power) > 5)
+        return ' ';
 
 
     char letter;
