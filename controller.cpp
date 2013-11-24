@@ -10,28 +10,28 @@ Controller::Controller(QObject *parent) : QObject(parent)
 
 void Controller::haveCall(QVector<char> *dtmf)
 {
-    Speech spp;
+
     std::string number;
     for(int i=0;i<dtmf->size();i++)
     {
         if((dtmf->at(i)!='*') && (dtmf->at(i)!='C'))
         {
             number.push_back(dtmf->at(i));
-            spp.fspeak(QString(dtmf->at(i)).toLocal8Bit().data());
+            emit speak(QString(dtmf->at(i)));
         }
     }
     TelnetClient telnet;
     //telnet.connectToHost("localhost",4939);
     //telnet.send("join",QString::fromStdString(number));
     QString voice= "Calling the station into the conference.";
-    qDebug() << QString::fromStdString(number);
-    spp.fspeak(voice.toLocal8Bit().data());
+
+    emit speak(voice);
     _client->init();
     emit readyInput();
+    dtmf->clear();
     _client->makeCall(number);
 
 
-    dtmf->clear();
 }
 
 

@@ -137,14 +137,14 @@ void DtmfDecoder::run()
         {
 
             _dtmf_command->append(_current_letter);
-            //_processing =false;
+            _processing =false;
 
             emit haveCall(_dtmf_command);
         }
         else if(_current_letter==command_key)
         {
             _dtmf_command->append(_current_letter);
-            //_processing =false;
+            _processing =false;
             emit haveCommand(_dtmf_command);
         }
         else
@@ -225,6 +225,7 @@ char DtmfDecoder::decode(float *buf,int buffer_size,int samp_rate, float treshho
     float second_test_tone_power = power(goertzel(buf, buffer_size, _dtmf_frequencies[second]+50, samp_rate));
     if((fabs(largest_tone_power - second_test_tone_power) < 10) || (second <0))
         return ' ';
+
     float second_tone_power=0.0;
     if(tones[1]!=0)
         second_tone_power = largest_tone_power;

@@ -2,6 +2,8 @@
 #define SERVERWRAPPER_H
 
 #include <QObject>
+#include <QVector>
+#include <QString>
 #include <unistd.h>
 #include "telnetserver.h"
 #include "speech.h"
@@ -17,8 +19,11 @@ signals:
     void finished();
 public slots:
     void run();
+    void addSpeech(QString);
 private:
     bool _stop;
+    Speech *_speech;
+    QVector<QString> *_speech_text;
 };
 
 #endif // SERVERWRAPPER_H
