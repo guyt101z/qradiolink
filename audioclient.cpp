@@ -28,8 +28,7 @@ static int iaxc_callback( iaxc_event e )
         case IAXC_EVENT_TEXT:
             static_instance->iaxTextEvent(e.ev.text);
         break;
-    case IAXC_EVENT_STATE:
-        static_instance->iaxCallEvent(e.ev.call);
+
         default:
             return 0;
     }
@@ -137,10 +136,9 @@ void AudioClient::init()
     int volume =0.96;
     iaxc_output_level_set( volume );
     iaxc_millisleep(50);
-    iaxc_set_filters(IAXC_FILTER_DENOISE | IAXC_FILTER_AGC | IAXC_FILTER_ECHO);
-    iaxc_debug_iax_set(2);
-    const double freq = 910.0;
-    int currentFreqKhz = 10 * static_cast<int>(freq * 100 + 0.25);
+    //iaxc_set_filters(IAXC_FILTER_DENOISE | IAXC_FILTER_AGC | IAXC_FILTER_ECHO);
+    //iaxc_debug_iax_set(2);
+
 
     //std::string num = computePhoneNumber(freq, "KSFO");
     //std::string num = "adrian:supersecret@localhost/0190909090910000";
@@ -178,20 +176,3 @@ void AudioClient::sendDTMF(char letter)
 
 
 
-
-std::string AudioClient::computePhoneNumber(const double& freq, const std::string& icao) const
-{
-    if( icao.empty() )
-        return std::string();
-    char phoneNumber[256];
-    char exten[32];
-    char tmp[5];
-    /*Convert ICAO to ASCII */
-    sprintf( tmp, "%4s", icao.c_str() );
-    /*Built the phone number */
-    sprintf( exten, "%02d%02d%02d%02d%02d%06d",  01, tmp[0], tmp[1], tmp[3], (int) (freq * 1000 + 0.5) );
-    exten[16] = '\0';
-    snprintf( phoneNumber, sizeof (phoneNumber), "%s:%s@%s/%s",
-              _username.toStdString().c_str(), _password.toStdString().c_str(), _server.toStdString().c_str(), exten);
-    return phoneNumber;
-}

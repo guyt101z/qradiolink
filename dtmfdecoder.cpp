@@ -73,9 +73,14 @@ void DtmfDecoder::run()
     while(true)
     {
         usleep(1000);
-        //QCoreApplication::processEvents();
+        QCoreApplication::processEvents();
         if(_stop)
             break;
+        if(!_processing)
+        {
+            sleep(1);
+            continue;
+        }
 
         float *buf = new float[buffer_size];
 
@@ -100,11 +105,7 @@ void DtmfDecoder::run()
             _receiving = false;
         }
 
-        if(!_processing)
-        {
-            sleep(1);
-            continue;
-        }
+
         //float *tone= makeTone(samp_rate,cw_tone_freq,buffer_size);
         //audio->write(tone,buffer_size);
         char letter = decode(buf,buffer_size,samp_rate, treshhold_audio_power, tone_difference);

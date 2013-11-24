@@ -23,7 +23,7 @@ public:
     void sendDTMF(char letter);
     void disconnectCall();
 signals:
-    void readyInput();
+
     
 public slots:
 
@@ -36,7 +36,6 @@ private:
     QString _username;
     QString _password;
     QString _server;
-    std::string computePhoneNumber(const double& freq, const std::string& icao) const;
     std::vector<const char*> get_available_devices();
 
 
