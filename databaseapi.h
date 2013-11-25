@@ -5,6 +5,7 @@
 #include <QVector>
 #include <QString>
 #include <math.h>
+#include "station.h"
 
 class DatabaseApi
 {
