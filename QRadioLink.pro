@@ -26,7 +26,8 @@ SOURCES += main.cpp \
     dtmfcommand.cpp \
     databaseapi.cpp \
     controller.cpp \
-    station.cpp
+    station.cpp \
+    server.cpp
 
 HEADERS += speech.h \
     audiointerface.h \
@@ -38,7 +39,8 @@ HEADERS += speech.h \
     dtmfcommand.h \
     databaseapi.h \
     controller.h \
-    station.h
+    station.h \
+    server.h
 
 
 

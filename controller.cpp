@@ -24,6 +24,13 @@ void Controller::haveCall(QVector<char> *dtmf)
     dtmf->clear();
     emit readyInput();
     Station *s  = _db->get_station_by_radio_id(QString::fromStdString(number));
+    QVector<Server*> servers = _db->get_servers();
+    if(servers.size() < 1)
+    {
+        QString voice= "There are no active servers in the list.";
+        emit speak(voice);
+        return;
+    }
     if(s->_id != 0)
     {
         TelnetClient telnet;
