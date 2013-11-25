@@ -62,7 +62,7 @@ void DtmfDecoder::run()
     float cw_tone_freq = 900.0;
     int buffer_size = 512;
     int samp_rate = 8000;
-    float treshhold_audio_power = 15.0; // dB
+    float treshhold_audio_power = 12.0; // dB
     float tone_difference = 5.0; //dB
     int analysis_buffer = 20;
     char call_key='C';
@@ -78,7 +78,7 @@ void DtmfDecoder::run()
             break;
         if(!_processing)
         {
-            sleep(1);
+            usleep(100000);
             continue;
         }
 
@@ -181,7 +181,7 @@ char DtmfDecoder::decode(float *buf,int buffer_size,int samp_rate, float treshho
     {
 
         float tone_power = power(goertzel(buf, buffer_size, _dtmf_frequencies[i], samp_rate));
-        if(tone_power > 40) continue; // error
+        if(tone_power > 60) continue; // error
         for(int j=-5;j<6;j++)
         {
             float tone_power1 = power(goertzel(buf, buffer_size, _dtmf_frequencies[i]+(float)j, samp_rate));
@@ -196,8 +196,10 @@ char DtmfDecoder::decode(float *buf,int buffer_size,int samp_rate, float treshho
         largest_tone_power = tone_power;
         first = i;
     }
-    float first_test_tone_power = power(goertzel(buf, buffer_size, _dtmf_frequencies[first]+50, samp_rate));
-    if((fabs(largest_tone_power - first_test_tone_power) < 10) || (first <0))
+    if(first<0)
+        return ' ';
+    float first_test_tone_power = power(goertzel(buf, buffer_size, _dtmf_frequencies[first]+100, samp_rate));
+    if((fabs(largest_tone_power - first_test_tone_power) < 10) )
         return ' ';
     float first_tone_power=0.0;
     if(tones[0]!=0)
@@ -208,7 +210,7 @@ char DtmfDecoder::decode(float *buf,int buffer_size,int samp_rate, float treshho
     {
 
         float tone_power = power(goertzel(buf, buffer_size, _dtmf_frequencies[i], samp_rate));
-        if(tone_power > 40) continue; // error
+        if(tone_power > 60) continue; // error
         for(int j=-5;j<6;j++)
         {
             float tone_power1 = power(goertzel(buf, buffer_size, _dtmf_frequencies[i]+(float)j, samp_rate));
@@ -223,15 +225,17 @@ char DtmfDecoder::decode(float *buf,int buffer_size,int samp_rate, float treshho
         largest_tone_power = tone_power;
         second = i;
     }
-    float second_test_tone_power = power(goertzel(buf, buffer_size, _dtmf_frequencies[second]+50, samp_rate));
-    if((fabs(largest_tone_power - second_test_tone_power) < 10) || (second <0))
+    if(second<0)
+        return ' ';
+    float second_test_tone_power = power(goertzel(buf, buffer_size, _dtmf_frequencies[second]+100, samp_rate));
+    if((fabs(largest_tone_power - second_test_tone_power) < 10))
         return ' ';
 
     float second_tone_power=0.0;
     if(tones[1]!=0)
         second_tone_power = largest_tone_power;
 
-    if(fabs(first_tone_power - second_tone_power) > 5)
+    if(fabs(first_tone_power - second_tone_power) > 7)
         return ' ';
 
 
@@ -530,7 +534,7 @@ float DtmfDecoder::goertzel(float *x, int N, float frequency, int samplerate) {
 
 float DtmfDecoder::power(float value) {
     if(fabs(value-0.0)<=0.0001) return 0;
-    return 20*log10(abs(value));
+    return 20*log10(fabs(value));
 }
 
 // this one doesn't ignore complex stuff

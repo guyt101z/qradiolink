@@ -45,12 +45,15 @@ void Controller::haveCommand(QVector<char> *dtmf)
             number.push_back(dtmf->at(i));
         }
     }
-    QString voice= "Disconnecting from the conference.";
-    emit speak(voice);
-    emit readyInput();
+
+
     if(number=="9")
+    {
+        QString voice= "Disconnecting from the conference.";
+        emit speak(voice);
         _client->disconnectCall();
-
-
+    }
     dtmf->clear();
+    emit readyInput();
+
 }
