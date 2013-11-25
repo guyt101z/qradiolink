@@ -6,6 +6,8 @@
 #include "audioclient.h"
 #include "speech.h"
 #include "telnetclient.h"
+#include "databaseapi.h"
+#include "station.h"
 
 class Controller : public QObject
 {
@@ -20,7 +22,7 @@ signals:
     void speak(QString);
 private:
     AudioClient *_client;
-
+    DatabaseApi *_db;
 };
 
 #endif // CONTROLLER_H

@@ -2,6 +2,7 @@
 
 Station::Station()
 {
+    _id = 0;
     _callsign="";
     _radio_id = "";
     _ip="127.0.0.1";
