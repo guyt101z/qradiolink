@@ -6,6 +6,7 @@ Controller::Controller(QObject *parent) : QObject(parent)
     _client = new AudioClient;
     _conference_stations = new QVector<Station*>;
     _dialing_number = "";
+    _client->init();
 }
 
 
@@ -49,7 +50,6 @@ void Controller::haveCall(QVector<char> *dtmf)
             QObject::connect(&t,SIGNAL(connectionFailure()),this,SLOT(noConnection()));
             t.connectToHost(s->_ip,4939);
             _client->setProperties(username,password,s->_ip);
-            _client->init();
             _client->makeCall("777");
             _in_conference =1;
             _conference_id = "777";
@@ -76,7 +76,6 @@ void Controller::haveCall(QVector<char> *dtmf)
             QString voice= "Joining the station in the conference.";
             emit speak(voice);
             _client->setProperties(username,password,server->_ip);
-            _client->init();
             _client->makeCall(number.toStdString());
             _in_conference =1;
             _conference_id = number;
@@ -91,7 +90,6 @@ void Controller::haveCall(QVector<char> *dtmf)
             QString voice= "Calling the station into the conference.";
             emit speak(voice);
             _client->setProperties(username,password,server->_ip);
-            _client->init();
             _client->makeCall(number);
             _in_conference =1;
             _conference_id = "number"; // TODO: FIXME:

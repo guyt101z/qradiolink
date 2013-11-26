@@ -28,6 +28,8 @@ static int iaxc_callback( iaxc_event e )
         case IAXC_EVENT_TEXT:
             static_instance->iaxTextEvent(e.ev.text);
         break;
+    case IAXC_EVENT_STATE:
+        static_instance->iaxCallEvent(e.ev.call);
 
         default:
             return 0;
@@ -47,8 +49,10 @@ void AudioClient::iaxTextEvent(struct iaxc_ev_text text)
 void AudioClient::iaxCallEvent(struct iaxc_ev_call_state state)
 {
 
-        qDebug() << state.remote;
-        if(state.state==IAXC_CALL_STATE_TRANSFER) qDebug() << "transferring..";
+    qDebug() << state.remote;
+    if(state.state & IAXC_CALL_STATE_TRANSFER) qDebug() << "transferring..";
+    if((state.state & IAXC_CALL_STATE_RINGING) && !(state.state & IAXC_CALL_STATE_OUTGOING))
+        iaxc_answer_call(state.callNo);
 
 }
 
