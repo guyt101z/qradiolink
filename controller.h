@@ -23,6 +23,9 @@ signals:
 private:
     AudioClient *_client;
     DatabaseApi *_db;
+    int _in_conference;
+    QString _conference_id;
+    QVector<Station*> *_conference_stations;
 };
 
 #endif // CONTROLLER_H
