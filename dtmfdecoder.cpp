@@ -24,6 +24,7 @@ DtmfDecoder::DtmfDecoder(QObject *parent) :
     _dtmf_frequencies[5]= 1336.0;
     _dtmf_frequencies[6]= 1477.0;
     _dtmf_frequencies[7]= 1633.0;
+    _dtmf_frequencies[8]= 1800.0;
     _dtmf_sequence = new QVector<char>;
     _dtmf_command = new QVector<char>;
     _current_letter = ' ';
@@ -66,6 +67,7 @@ void DtmfDecoder::run()
     float tone_difference = 5.0; //dB
     int analysis_buffer = 20;
     char call_key='C';
+    char call_direct_key='D';
     char command_key='#';
     char clear_key = '*';
     AudioInterface *audio= new AudioInterface(0,samp_rate,1);
@@ -134,7 +136,7 @@ void DtmfDecoder::run()
             _dtmf_command->clear();
 
         }
-        else if(_current_letter==call_key)
+        else if((_current_letter==call_key) || _current_letter==call_direct_key)
         {
 
             _dtmf_command->append(_current_letter);
@@ -206,7 +208,7 @@ char DtmfDecoder::decode(float *buf,int buffer_size,int samp_rate, float treshho
         first_tone_power=largest_tone_power;
     largest_tone_power =0.0;
     int second=-99;
-    for(int i =4;i<8;i++)
+    for(int i =4;i<9;i++)
     {
 
         float tone_power = power(goertzel(buf, buffer_size, _dtmf_frequencies[i], samp_rate));

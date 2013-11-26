@@ -150,7 +150,7 @@ void AudioClient::init()
 void AudioClient::makeCall(std::string number)
 {
     int call0, call1;
-    std::string num = "adrian:supersecret@localhost/";
+    std::string num = _username.toStdString().append(":").append(_password.toStdString()).append("@").append(_server.toStdString()).append("/");
     num.append(number);
 
     if( !num.empty() )

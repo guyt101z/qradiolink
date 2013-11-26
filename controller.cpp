@@ -5,6 +5,7 @@ Controller::Controller(QObject *parent) : QObject(parent)
     _db = new DatabaseApi;
     _client = new AudioClient;
     _conference_stations = new QVector<Station*>;
+    _dialing_number = "";
 }
 
 
@@ -16,7 +17,7 @@ void Controller::haveCall(QVector<char> *dtmf)
     std::string number;
     for(int i=0;i<dtmf->size();i++)
     {
-        if((dtmf->at(i)!='*') && (dtmf->at(i)!='C'))
+        if((dtmf->at(i)!='*') && (dtmf->at(i)!='C') && (dtmf->at(i)!='D'))
         {
             number.push_back(dtmf->at(i));
             emit speak(QString(dtmf->at(i)));
@@ -28,6 +29,7 @@ void Controller::haveCall(QVector<char> *dtmf)
     }
     dtmf->clear();
     emit readyInput();
+    _dialing_number = number;
     Station *s  = _db->get_station_by_radio_id(QString::fromStdString(number));
 
     if(s->_id != 0)
@@ -42,6 +44,10 @@ void Controller::haveCall(QVector<char> *dtmf)
         {
             QString voice= "Trying a direct call.";
             emit speak(voice);
+            TelnetClient t;
+            QObject::connect(&t,SIGNAL(connectedToHost()),this,SLOT(readyConnect()));
+            QObject::connect(&t,SIGNAL(connectionFailure()),this,SLOT(noConnection()));
+            t.connectToHost(s->_ip,4939);
             _client->setProperties(username,password,s->_ip);
             _client->init();
             _client->makeCall("777");
@@ -121,5 +127,16 @@ void Controller::haveCommand(QVector<char> *dtmf)
     }
     dtmf->clear();
     emit readyInput();
+
+}
+
+void Controller::noConnection()
+{
+    QString voice= "I cannot connect to host.";
+    emit speak(voice);
+}
+
+void Controller::readyConnect()
+{
 
 }

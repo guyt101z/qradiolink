@@ -15,8 +15,11 @@ class Controller : public QObject
 public slots:
     void haveCall(QVector<char> *dtmf);
     void haveCommand(QVector<char> *dtmf);
+    void readyConnect();
+    void noConnection();
 public:
     Controller(QObject *parent = 0);
+
 signals:
     void readyInput();
     void speak(QString);
@@ -26,6 +29,7 @@ private:
     int _in_conference;
     QString _conference_id;
     QVector<Station*> *_conference_stations;
+    std::string _dialing_number;
 };
 
 #endif // CONTROLLER_H
