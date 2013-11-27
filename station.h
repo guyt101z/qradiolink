@@ -19,6 +19,7 @@ public:
     int _repeater;
     int _local;
     int _active;
+    int _waiting;
 };
 
 #endif // STATION_H

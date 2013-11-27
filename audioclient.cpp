@@ -30,6 +30,7 @@ static int iaxc_callback( iaxc_event e )
         break;
     case IAXC_EVENT_STATE:
         static_instance->iaxCallEvent(e.ev.call);
+        break;
 
         default:
             return 0;
@@ -51,8 +52,11 @@ void AudioClient::iaxCallEvent(struct iaxc_ev_call_state state)
 
     qDebug() << state.remote;
     if(state.state & IAXC_CALL_STATE_TRANSFER) qDebug() << "transferring..";
-    if((state.state & IAXC_CALL_STATE_RINGING) && !(state.state & IAXC_CALL_STATE_OUTGOING))
+    if((state.state & IAXC_CALL_STATE_RINGING) &&
+            !(state.state & IAXC_CALL_STATE_OUTGOING) )
+    {
         iaxc_answer_call(state.callNo);
+    }
 
 }
 
@@ -144,7 +148,7 @@ void AudioClient::init()
     //iaxc_debug_iax_set(2);
 
 
-    //std::string num = computePhoneNumber(freq, "KSFO");
+
     //std::string num = "adrian:supersecret@localhost/0190909090910000";
     //std::string num = "adrian:supersecret@localhost/600";
 

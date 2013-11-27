@@ -1,19 +1,23 @@
 #include "controller.h"
 
-Controller::Controller(QObject *parent) : QObject(parent)
+Controller::Controller(DatabaseApi *db, QObject *parent) : QObject(parent)
 {
-    _db = new DatabaseApi;
+    _db = db;
     _client = new AudioClient;
     _conference_stations = new QVector<Station*>;
     _dialing_number = "";
+    _connectable = false;
+    _current_station = NULL;
+    //TODO: fetch from database
+    _username="adrian";
+    _password= "supersecret";
     _client->init();
 }
 
 
 void Controller::haveCall(QVector<char> *dtmf)
 {
-    QString username = "test";
-    QString password = "test";
+
     bool p2p = false;
     std::string number;
     for(int i=0;i<dtmf->size();i++)
@@ -41,15 +45,19 @@ void Controller::haveCall(QVector<char> *dtmf)
             emit speak(voice);
             return;
         }
+        if(!testConnection(s->_ip))
+            return;
+        getStationParameters(s);
+        while(_current_station->_waiting==1)
+        {
+
+        }
         if(p2p && (s->_in_call == 0))
         {
             QString voice= "Trying a direct call.";
             emit speak(voice);
-            TelnetClient t;
-            QObject::connect(&t,SIGNAL(connectedToHost()),this,SLOT(readyConnect()));
-            QObject::connect(&t,SIGNAL(connectionFailure()),this,SLOT(noConnection()));
-            t.connectToHost(s->_ip,4939);
-            _client->setProperties(username,password,s->_ip);
+
+            _client->setProperties(_username,_password,s->_ip);
             _client->makeCall("777");
             _in_conference =1;
             _conference_id = "777";
@@ -75,7 +83,7 @@ void Controller::haveCall(QVector<char> *dtmf)
             QString number = s->_conference_id;
             QString voice= "Joining the station in the conference.";
             emit speak(voice);
-            _client->setProperties(username,password,server->_ip);
+            _client->setProperties(_username,_password,server->_ip);
             _client->makeCall(number.toStdString());
             _in_conference =1;
             _conference_id = number;
@@ -84,15 +92,15 @@ void Controller::haveCall(QVector<char> *dtmf)
         else
         {
             // if it's not, get the number of the first free conference and make a new conference
+            _conference_id = getFreeConference();
             TelnetClient telnet;
             telnet.connectToHost(s->_ip,4939);
-            telnet.send("join",QString::fromStdString(number));
+            telnet.send("join",server->_ip.append(" ").append(_conference_id));
             QString voice= "Calling the station into the conference.";
             emit speak(voice);
-            _client->setProperties(username,password,server->_ip);
+            _client->setProperties(_username,_password,server->_ip);
             _client->makeCall(number);
             _in_conference =1;
-            _conference_id = "number"; // TODO: FIXME:
             _conference_stations->append(s);
         }
 
@@ -128,13 +136,69 @@ void Controller::haveCommand(QVector<char> *dtmf)
 
 }
 
+bool Controller::testConnection(QString host)
+{
+    TelnetClient t;
+    QObject::connect(&t,SIGNAL(connectedToHost()),this,SLOT(readyConnect()));
+    QObject::connect(&t,SIGNAL(connectionFailure()),this,SLOT(noConnection()));
+    int time = QDateTime::currentDateTime().toTime_t();
+    t.connectToHost(host,4939);
+    while ((QDateTime::currentDateTime().toTime_t() - time) < 2)
+    {
+        if(_connectable)
+        {
+            _connectable = false;
+            return true;
+        }
+    }
+    noConnection();
+    return false;
+}
+
 void Controller::noConnection()
 {
     QString voice= "I cannot connect to host.";
     emit speak(voice);
+    _connectable = false;
 }
 
 void Controller::readyConnect()
 {
+    _connectable = true;
+}
 
+void Controller::getStationParameters(Station *s)
+{
+    _current_station = s;
+    _current_station->_waiting=1;
+    TelnetClient t;
+    QObject::connect(&t,SIGNAL(haveProperty(QString)),this,SLOT(setStationParameters(QString)));
+    QObject::connect(&t,SIGNAL(connectionFailure()),this,SLOT(noConnection()));
+    t.connectToHost(s->_ip,4939);
+    t.send("parameters",QString::number(s->_id));
+}
+
+void Controller::setStationParameters(QString param)
+{
+    QStringList pre = param.split(";");
+    _current_station->_in_call=pre[0].toInt();
+    _current_station->_conference_id=pre[1];
+    _current_station->_called_by=pre[2].toInt();
+    _current_station->_waiting=0;
+}
+
+QString Controller::getFreeConference()
+{
+    return "777";
+}
+
+void Controller::joinConference(QString number, QString ip)
+{
+
+    QString voice= "Joining conference.";
+    emit speak(voice);
+    _client->setProperties(_username,_password,ip);
+    _client->makeCall(number.toStdString());
+    _in_conference =1;
+    //_conference_stations->append(_current_station);
 }

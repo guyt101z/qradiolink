@@ -17,8 +17,10 @@ public slots:
     void haveCommand(QVector<char> *dtmf);
     void readyConnect();
     void noConnection();
+    void setStationParameters(QString param);
+    void joinConference(QString number, QString ip);
 public:
-    Controller(QObject *parent = 0);
+    Controller(DatabaseApi *db, QObject *parent = 0);
 
 signals:
     void readyInput();
@@ -30,6 +32,13 @@ private:
     QString _conference_id;
     QVector<Station*> *_conference_stations;
     std::string _dialing_number;
+    bool _connectable;
+    bool testConnection(QString host);
+    void getStationParameters(Station *s);
+    QString getFreeConference();
+    Station *_current_station;
+    QString _username;
+    QString _password;
 };
 
 #endif // CONTROLLER_H

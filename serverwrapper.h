@@ -6,24 +6,28 @@
 #include <QString>
 #include <unistd.h>
 #include "telnetserver.h"
+#include "databaseapi.h"
 #include "speech.h"
 
 class ServerWrapper : public QObject
 {
     Q_OBJECT
 public:
-    explicit ServerWrapper(QObject *parent = 0);
+    explicit ServerWrapper(DatabaseApi *db, QObject *parent = 0);
     void stop();
 
 signals:
     void finished();
+    void joinConference(QString number, QString ip);
 public slots:
     void run();
     void addSpeech(QString);
+    void connectToConference(QString number, QString ip);
 private:
     bool _stop;
     Speech *_speech;
     QVector<QString> *_speech_text;
+    DatabaseApi *_db;
 };
 
 #endif // SERVERWRAPPER_H

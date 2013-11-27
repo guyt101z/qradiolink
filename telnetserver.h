@@ -5,23 +5,26 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QString>
+#include <QStringList>
 #include <QTime>
 #include <QAbstractSocket>
 #include <QVector>
 #include <QHostAddress>
 #include <QDebug>
 #include <QCoreApplication>
+#include "databaseapi.h"
 
 class TelnetServer : public QObject
 {
     Q_OBJECT
 public:
-    explicit TelnetServer(QObject *parent = 0);
+    explicit TelnetServer(DatabaseApi *db, QObject *parent = 0);
     ~TelnetServer();
     void stop();
 
 signals:
     void finished();
+    void joinConference(QString number, QString ip);
 public slots:
     void run();
 
@@ -34,12 +37,14 @@ private slots:
 private:
     QTcpServer *_server;
     QTcpSocket _socket;
+    DatabaseApi *_db;
     int _status;
     bool _stop;
     QHostAddress _hostname;
     unsigned _listen_port;
     QVector<QTcpSocket*> _unconnected_clients;
     QVector<QTcpSocket*> _connected_clients;
+    QString processCommand(QString command);
 
 };
 

@@ -1,9 +1,10 @@
 #include "serverwrapper.h"
 #include <cstdlib>
 
-ServerWrapper::ServerWrapper(QObject *parent) :
+ServerWrapper::ServerWrapper(DatabaseApi *db, QObject *parent) :
     QObject(parent)
 {
+    _db = db;
     _stop=false;
     _speech_text = new QVector<QString>;
 }
@@ -20,7 +21,8 @@ void ServerWrapper::addSpeech(QString s)
 
 void ServerWrapper::run()
 {
-    TelnetServer *server = new TelnetServer;
+    TelnetServer *server = new TelnetServer(_db);
+    QObject::connect(server,SIGNAL(joinConference(QString,QString)),this,SLOT(connectToConference(QString, QString)));
     qDebug() << "Server running";
     //server->run();
     int last_time = 0;
@@ -46,4 +48,9 @@ void ServerWrapper::run()
     server->stop();
     delete server;
     emit finished();
+}
+
+void ServerWrapper::connectToConference(QString number, QString ip)
+{
+    emit joinConference(number,ip);
 }

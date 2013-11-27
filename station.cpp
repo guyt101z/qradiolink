@@ -14,5 +14,5 @@ Station::Station()
     _repeater=0;
     _local=0;
     _active=1;
-
+    _waiting = 0;
 }
