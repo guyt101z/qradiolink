@@ -24,7 +24,7 @@ public:
 
 signals:
     void finished();
-    void joinConference(QString number, QString ip);
+    void joinConference(QString number, QString ip, int id);
 public slots:
     void run();
 

@@ -24,7 +24,7 @@ public:
 
 public slots:
     void processData();
-    void connectToHost(const QString &host, const unsigned &port);
+    void connectHost(const QString &host, const unsigned &port);
 
 signals:
     void connectionFailure();

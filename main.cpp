@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
     ServerWrapper *telnet_server_wrapper = new ServerWrapper(db);
     telnet_server_wrapper->moveToThread(t2);
     QObject::connect(controller,SIGNAL(speak(QString)),telnet_server_wrapper,SLOT(addSpeech(QString)));
-    QObject::connect(telnet_server_wrapper,SIGNAL(joinConference(QString,QString)),controller,SLOT(joinConference(QString,QString)));
+    QObject::connect(telnet_server_wrapper,SIGNAL(joinConference(QString,QString,int)),controller,SLOT(joinConference(QString,QString,int)));
     QObject::connect(t2, SIGNAL(started()), telnet_server_wrapper, SLOT(run()));
     QObject::connect(telnet_server_wrapper, SIGNAL(finished()), t2, SLOT(quit()));
     QObject::connect(telnet_server_wrapper, SIGNAL(finished()), telnet_server_wrapper, SLOT(deleteLater()));

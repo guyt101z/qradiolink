@@ -6,14 +6,15 @@ static QString CRLF ="\r\n";
 TelnetClient::TelnetClient(QObject *parent) :
     QObject(parent)
 {
-    _socket = new QTcpSocket;
-    QObject::connect(_socket,SIGNAL(error(QAbstractSocket::SocketError )),this,SLOT(connectionFailed(QAbstractSocket::SocketError)));
-    QObject::connect(_socket,SIGNAL(connected()),this,SLOT(connectionSuccess()));
-    QObject::connect(_socket,SIGNAL(readyRead()),this,SLOT(processData()));
     _connection_tries=0;
     _status=0;
     _hostname = "localhost";
     _port= 4939;
+    _socket = new QTcpSocket;
+    QObject::connect(_socket,SIGNAL(error(QAbstractSocket::SocketError )),this,SLOT(connectionFailed(QAbstractSocket::SocketError)));
+    QObject::connect(_socket,SIGNAL(connected()),this,SLOT(connectionSuccess()));
+    QObject::connect(_socket,SIGNAL(readyRead()),this,SLOT(processData()));
+
 }
 
 
@@ -26,6 +27,7 @@ TelnetClient::~TelnetClient()
 
 void TelnetClient::connectionSuccess()
 {
+    qDebug() << "Successfull outgoing connection";
     _status=1;
     _connection_tries=0;
     emit connectedToHost();
@@ -35,11 +37,11 @@ void TelnetClient::connectionSuccess()
 void TelnetClient::connectionFailed(QAbstractSocket::SocketError error)
 {
     _status=0;
-
+    qDebug() << "Outgoing connection failed" << _socket->errorString();
     _connection_tries++;
     if(_connection_tries < 10)
     {
-        this->connectToHost(_hostname,_port);
+        this->connectHost(_hostname,_port);
     }
     else
     {
@@ -50,8 +52,9 @@ void TelnetClient::connectionFailed(QAbstractSocket::SocketError error)
 }
 
 
-void TelnetClient::connectToHost(const QString &host, const unsigned &port)
+void TelnetClient::connectHost(const QString &host, const unsigned &port)
 {
+    qDebug() << "trying " << host;
     if(_status==1) return;
     _socket->connectToHost(host, port);
     _hostname = host;
@@ -70,7 +73,7 @@ void TelnetClient::disconnectFromHost()
 
 void TelnetClient::send(QString prop_name, QString value)
 {
-    QString command = prop_name + " " + value + CRLF;
+    QString command = prop_name + ";" + value + CRLF;
     _socket->write(command.toUtf8());
     _socket->flush();
 

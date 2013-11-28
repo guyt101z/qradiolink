@@ -18,11 +18,11 @@ public:
 
 signals:
     void finished();
-    void joinConference(QString number, QString ip);
+    void joinConference(QString number, QString ip, int id);
 public slots:
     void run();
     void addSpeech(QString);
-    void connectToConference(QString number, QString ip);
+    void connectToConference(QString number, QString ip, int id);
 private:
     bool _stop;
     Speech *_speech;

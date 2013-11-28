@@ -7,10 +7,14 @@ Controller::Controller(DatabaseApi *db, QObject *parent) : QObject(parent)
     _conference_stations = new QVector<Station*>;
     _dialing_number = "";
     _connectable = false;
+    _telnet = NULL;
     _current_station = NULL;
     //TODO: fetch from database
     _username="adrian";
     _password= "supersecret";
+    Station *s = _db->get_local_station();
+    _id = s->_id;
+    _telnet = new TelnetClient;
     _client->init();
 }
 
@@ -93,9 +97,8 @@ void Controller::haveCall(QVector<char> *dtmf)
         {
             // if it's not, get the number of the first free conference and make a new conference
             _conference_id = getFreeConference();
-            TelnetClient telnet;
-            telnet.connectToHost(s->_ip,4939);
-            telnet.send("join",server->_ip.append(" ").append(_conference_id));
+
+            _telnet->send("join",server->_ip.append(";").append(_conference_id).append(";").append(_id));
             QString voice= "Calling the station into the conference.";
             emit speak(voice);
             _client->setProperties(_username,_password,server->_ip);
@@ -131,6 +134,12 @@ void Controller::haveCommand(QVector<char> *dtmf)
         emit speak(voice);
         _client->disconnectCall();
     }
+    if(number=="99")
+    {
+        QString voice= "Disconnecting from the conference.";
+        emit speak(voice);
+        _client->disconnectCall();
+    }
     dtmf->clear();
     emit readyInput();
 
@@ -138,28 +147,38 @@ void Controller::haveCommand(QVector<char> *dtmf)
 
 bool Controller::testConnection(QString host)
 {
-    TelnetClient t;
-    QObject::connect(&t,SIGNAL(connectedToHost()),this,SLOT(readyConnect()));
-    QObject::connect(&t,SIGNAL(connectionFailure()),this,SLOT(noConnection()));
+
+    QObject::connect(_telnet,SIGNAL(connectedToHost()),this,SLOT(readyConnect()));
+    QObject::connect(_telnet,SIGNAL(connectionFailure()),this,SLOT(noConnection()));
+
+    _telnet->connectHost(host,4939);
     int time = QDateTime::currentDateTime().toTime_t();
-    t.connectToHost(host,4939);
-    while ((QDateTime::currentDateTime().toTime_t() - time) < 2)
+    while ((QDateTime::currentDateTime().toTime_t() - time) < 6)
     {
+        QCoreApplication::processEvents();
         if(_connectable)
         {
+
             _connectable = false;
             return true;
         }
     }
-    noConnection();
+
+    QString voice= "I cannot connect to host.";
+    emit speak(voice);
+    _connectable = false;
+
+
     return false;
 }
 
 void Controller::noConnection()
 {
-    QString voice= "I cannot connect to host.";
+    QString voice= "Network error.";
     emit speak(voice);
     _connectable = false;
+    delete _telnet;
+    _telnet = NULL;
 }
 
 void Controller::readyConnect()
@@ -171,11 +190,10 @@ void Controller::getStationParameters(Station *s)
 {
     _current_station = s;
     _current_station->_waiting=1;
-    TelnetClient t;
-    QObject::connect(&t,SIGNAL(haveProperty(QString)),this,SLOT(setStationParameters(QString)));
-    QObject::connect(&t,SIGNAL(connectionFailure()),this,SLOT(noConnection()));
-    t.connectToHost(s->_ip,4939);
-    t.send("parameters",QString::number(s->_id));
+
+    QObject::connect(_telnet,SIGNAL(haveProperty(QString)),this,SLOT(setStationParameters(QString)));
+    _telnet->send("parameters",QString::number(s->_id));
+
 }
 
 void Controller::setStationParameters(QString param)
@@ -192,7 +210,7 @@ QString Controller::getFreeConference()
     return "777";
 }
 
-void Controller::joinConference(QString number, QString ip)
+void Controller::joinConference(QString number, QString ip, int id)
 {
 
     QString voice= "Joining conference.";
@@ -200,5 +218,6 @@ void Controller::joinConference(QString number, QString ip)
     _client->setProperties(_username,_password,ip);
     _client->makeCall(number.toStdString());
     _in_conference =1;
+
     //_conference_stations->append(_current_station);
 }

@@ -18,7 +18,7 @@ public slots:
     void readyConnect();
     void noConnection();
     void setStationParameters(QString param);
-    void joinConference(QString number, QString ip);
+    void joinConference(QString number, QString ip, int id);
 public:
     Controller(DatabaseApi *db, QObject *parent = 0);
 
@@ -29,6 +29,7 @@ private:
     AudioClient *_client;
     DatabaseApi *_db;
     int _in_conference;
+    int _id;
     QString _conference_id;
     QVector<Station*> *_conference_stations;
     std::string _dialing_number;
@@ -39,6 +40,7 @@ private:
     Station *_current_station;
     QString _username;
     QString _password;
+    TelnetClient *_telnet;
 };
 
 #endif // CONTROLLER_H

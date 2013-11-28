@@ -237,7 +237,7 @@ char DtmfDecoder::decode(float *buf,int buffer_size,int samp_rate, float treshho
     if(tones[1]!=0)
         second_tone_power = largest_tone_power;
 
-    if(fabs(first_tone_power - second_tone_power) > 7)
+    if(fabs(first_tone_power - second_tone_power) > 8)
         return ' ';
 
 
