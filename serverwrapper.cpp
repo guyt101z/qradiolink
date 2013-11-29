@@ -50,7 +50,7 @@ void ServerWrapper::run()
     emit finished();
 }
 
-void ServerWrapper::connectToConference(QString number, QString ip, int id)
+void ServerWrapper::connectToConference(QString ip, QString number, int id)
 {
-    emit joinConference(number,ip, id);
+    emit joinConference(ip,number, id);
 }

@@ -54,7 +54,7 @@ void Controller::haveCall(QVector<char> *dtmf)
         getStationParameters(s);
         while(_current_station->_waiting==1)
         {
-
+            QCoreApplication::processEvents();
         }
         if(p2p && (s->_in_call == 0))
         {
@@ -98,7 +98,7 @@ void Controller::haveCall(QVector<char> *dtmf)
             // if it's not, get the number of the first free conference and make a new conference
             _conference_id = getFreeConference();
 
-            _telnet->send("join",server->_ip.append(";").append(_conference_id).append(";").append(_id));
+            _telnet->send("join",server->_ip.append(";").append(_conference_id).append(";").append(s->_id));
             QString voice= "Calling the station into the conference.";
             emit speak(voice);
             _client->setProperties(_username,_password,server->_ip);
@@ -199,9 +199,13 @@ void Controller::getStationParameters(Station *s)
 void Controller::setStationParameters(QString param)
 {
     QStringList pre = param.split(";");
-    _current_station->_in_call=pre[0].toInt();
-    _current_station->_conference_id=pre[1];
-    _current_station->_called_by=pre[2].toInt();
+    if(pre.size()<2)
+    {
+        qDebug() << "invalid message";
+    }
+    _current_station->_in_call=pre[1].toInt();
+    _current_station->_conference_id=pre[2];
+    _current_station->_called_by=pre[3].toInt();
     _current_station->_waiting=0;
 }
 
@@ -210,9 +214,9 @@ QString Controller::getFreeConference()
     return "777";
 }
 
-void Controller::joinConference(QString number, QString ip, int id)
+void Controller::joinConference(QString ip, QString number, int id)
 {
-
+    QObject::disconnect(_telnet,SIGNAL(haveProperty(QString)),this,SLOT(setStationParameters(QString)));
     QString voice= "Joining conference.";
     emit speak(voice);
     _client->setProperties(_username,_password,ip);

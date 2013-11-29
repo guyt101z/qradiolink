@@ -1,5 +1,7 @@
 #include "telnetserver.h"
 
+static QString CRLF ="\r\n";
+
 TelnetServer::TelnetServer(DatabaseApi *db, QObject *parent) :
     QObject(parent)
 {
@@ -39,7 +41,7 @@ void TelnetServer::getConnection()
     qDebug() << "Incoming connection" << socket->peerAddress().toString();
     if(socket->state() == QTcpSocket::ConnectedState)
         qDebug() << "Connection established";
-    socket->write("OK");
+
     QObject::connect(socket,SIGNAL(error(QAbstractSocket::SocketError )),this,SLOT(connectionFailed(QAbstractSocket::SocketError)));
     QObject::connect(socket,SIGNAL(connected()),this,SLOT(connectionSuccess()));
     QObject::connect(socket,SIGNAL(readyRead()),this,SLOT(processData()));
@@ -110,7 +112,7 @@ void TelnetServer::processData()
                 if ((ch == '\r'))
                 {
                     endOfLine = true;
-
+                    socket->read(&ch, sizeof(ch)); // for newline
 
                 }
                 else
@@ -126,33 +128,37 @@ void TelnetServer::processData()
 
 
     }
+    qDebug() << line;
     QString response = processCommand(line);
     socket->write(response.toUtf8());
 
-
-    //emit haveProperty(line);
 }
 
 QString TelnetServer::processCommand(QString command)
 {
-    QStringList pre = command.split(" ");
+    QStringList pre = command.split(";");
     if(pre.size()<2)
     {
-        qDebug() << "Invalid command";
+        qDebug() << "Invalid command " << command;
         return "";
     }
     if(pre[0]=="parameters")
     {
         Station* s=_db->get_station_by_id(pre[1].toInt());
-        QString response = QString::number(s->_in_call).append(";").
-                append(s->_conference_id).
-                append(";").append(QString::number(s->_called_by));
+        QString response ="parameters;" +
+                QString::number(s->_in_call) +";"+
+                s->_conference_id +
+                ";" + QString::number(s->_called_by) + CRLF;
         return response;
     }
     else if(pre[0]=="join")
     {
-        QString response = "OK";
+        QString response = "join;1" + CRLF;
         emit joinConference(pre[1],pre[2],pre[3].toInt());
         return response;
+    }
+    else
+    {
+        return "command;-1" + CRLF;
     }
 }

@@ -102,7 +102,7 @@ void TelnetClient::processData()
                     if ((ch == '\r'))
                     {
                         endOfLine = true;
-
+                        _socket->read(&ch, sizeof(ch)); // for newline
 
                     }
                     else
@@ -119,7 +119,7 @@ void TelnetClient::processData()
 
     }
 
-
+    qDebug() << "Received message from " << _socket->peerAddress().toString() << " :" << line;
     emit haveProperty(line);
 }
 

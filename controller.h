@@ -18,7 +18,7 @@ public slots:
     void readyConnect();
     void noConnection();
     void setStationParameters(QString param);
-    void joinConference(QString number, QString ip, int id);
+    void joinConference(QString ip, QString number, int id);
 public:
     Controller(DatabaseApi *db, QObject *parent = 0);
 
