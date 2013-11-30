@@ -128,7 +128,7 @@ void TelnetServer::processData()
 
 
     }
-    qDebug() << line;
+    qDebug() << "Received message from: " << socket->peerAddress().toString() << line;
     QString response = processCommand(line);
     socket->write(response.toUtf8());
 
@@ -142,7 +142,7 @@ QString TelnetServer::processCommand(QString command)
         qDebug() << "Invalid command " << command;
         return "";
     }
-    if(pre[0]=="parameters")
+    if(pre[0]=="PARAMETERS")
     {
         Station* s=_db->get_station_by_id(pre[1].toInt());
         QString response ="parameters;" +
@@ -151,14 +151,14 @@ QString TelnetServer::processCommand(QString command)
                 ";" + QString::number(s->_called_by) + CRLF;
         return response;
     }
-    else if(pre[0]=="join")
+    else if(pre[0]=="JOIN")
     {
-        QString response = "join;1" + CRLF;
+        QString response = "JOIN;1" + CRLF;
         emit joinConference(pre[1],pre[2],pre[3].toInt());
         return response;
     }
     else
     {
-        return "command;-1" + CRLF;
+        return "COMMAND;-1" + CRLF;
     }
 }

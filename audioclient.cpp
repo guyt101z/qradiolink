@@ -32,6 +32,7 @@ static int iaxc_callback( iaxc_event e )
         static_instance->iaxCallEvent(e.ev.call);
         break;
 
+
         default:
             return 0;
     }
@@ -57,6 +58,15 @@ void AudioClient::iaxCallEvent(struct iaxc_ev_call_state state)
     {
         iaxc_answer_call(state.callNo);
     }
+    if(state.state & IAXC_CALL_STATE_COMPLETE)
+    {
+        emit callAnswered();
+    }
+
+    if(state.state == IAXC_CALL_STATE_FREE)
+    {
+        emit callEnded();
+    }
 
 }
 
@@ -65,6 +75,11 @@ void AudioClient::setProperties(QString username, QString password, QString serv
     _username = username;
     _password = password;
     _server = server;
+}
+
+void AudioClient::end()
+{
+    iaxc_shutdown();
 }
 
 
@@ -173,7 +188,7 @@ void AudioClient::makeCall(std::string number)
 void AudioClient::disconnectCall()
 {
 
-    iaxc_dump_call();
+    iaxc_dump_all_calls();
 
 }
 

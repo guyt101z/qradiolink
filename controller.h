@@ -19,9 +19,10 @@ public slots:
     void noConnection();
     void setStationParameters(QString param);
     void joinConference(QString ip, QString number, int id);
+    void disconnectedFromCall();
 public:
     Controller(DatabaseApi *db, QObject *parent = 0);
-
+    ~Controller();
 signals:
     void readyInput();
     void speak(QString);

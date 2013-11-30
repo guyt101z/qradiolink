@@ -22,7 +22,10 @@ public:
     void makeCall(std::string number);
     void sendDTMF(char letter);
     void disconnectCall();
+    void end();
 signals:
+    void callAnswered();
+    void callEnded();
 
     
 public slots:

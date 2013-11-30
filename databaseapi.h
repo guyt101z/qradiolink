@@ -16,6 +16,7 @@ public:
     Station* get_station_by_radio_id(QString radio_id);
     Station* get_station_by_id(int id);
     Station* get_local_station();
+    void update_station_parameters(Station *s);
     QVector<Server*> get_servers(int active = 1);
 
 private:

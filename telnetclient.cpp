@@ -120,7 +120,7 @@ void TelnetClient::processData()
     }
 
     qDebug() << "Received message from " << _socket->peerAddress().toString() << " :" << line;
-    emit haveProperty(line);
+    emit haveMessage(line);
 }
 
 

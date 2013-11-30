@@ -30,7 +30,7 @@ public slots:
 signals:
     void connectionFailure();
     void connectedToHost();
-    void haveProperty(QString prop);
+    void haveMessage(QString prop);
 
 private:
     QTcpSocket *_socket;

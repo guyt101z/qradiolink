@@ -132,6 +132,23 @@ Station* DatabaseApi::get_local_station()
     return station;
 }
 
+
+
+void DatabaseApi::update_station_parameters(Station *s)
+{
+    QSqlQuery query(_db);
+    query.prepare("UPDATE stations SET "
+                  "in_call =:in_call, conference_id=:conference_id, "
+                  "called_by = :called_by, call_time=:call_time "
+                  " WHERE id=:id");
+    query.bindValue(":in_call", s->_in_call);
+    query.bindValue(":conference_id", s->_conference_id);
+    query.bindValue(":called_by", s->_called_by);
+    query.bindValue(":call_time", s->_call_time);
+    query.bindValue(":id", s->_id);
+    query.exec();
+}
+
 QVector<Server*> DatabaseApi::get_servers(int active)
 {
     QVector<Server *> servers;
