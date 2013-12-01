@@ -495,7 +495,7 @@ void DtmfDecoder::analyse(int analysis_buffer)
 /**
   Written by: Espen Riskedal, espenr@ii.uib.no, july-2002
   */
-#define PI 3.14159265358979323844
+
 
 /** Generates a tone of the specified frequency
 *  Gotten from: http://groups.google.com/groups?hl=en&lr=&ie=UTF-8&oe=UTF-8&safe=off&selm=3c641e%243jn%40uicsl.csl.uiuc.edu

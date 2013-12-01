@@ -6,7 +6,7 @@ TelnetServer::TelnetServer(DatabaseApi *db, QObject *parent) :
     QObject(parent)
 {
     _hostname = QHostAddress::Any;
-    _listen_port = 4939;
+    _listen_port = CONTROL_PORT;
     _stop=false;
     _server = new QTcpServer;
     _db = db;
@@ -145,7 +145,7 @@ QString TelnetServer::processCommand(QString command)
     if(pre[0]=="PARAMETERS")
     {
         Station* s=_db->get_station_by_id(pre[1].toInt());
-        QString response ="parameters;" +
+        QString response ="PARAMETERS;" +
                 QString::number(s->_in_call) +";"+
                 s->_conference_id +
                 ";" + QString::number(s->_called_by) + CRLF;
@@ -155,6 +155,12 @@ QString TelnetServer::processCommand(QString command)
     {
         QString response = "JOIN;1" + CRLF;
         emit joinConference(pre[1],pre[2],pre[3].toInt());
+        return response;
+    }
+    else if(pre[0]=="LEAVE")
+    {
+        QString response = "LEAVE;1" + CRLF;
+        emit leaveConference(pre[1],pre[2],pre[3].toInt());
         return response;
     }
     else

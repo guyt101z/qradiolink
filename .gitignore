@@ -9,4 +9,4 @@ build/*
 iaxclient/build/*
 .directory
 iaxclient/*
-
+unused/*

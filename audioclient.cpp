@@ -1,9 +1,6 @@
 #include "audioclient.h"
 
-#define NUM_CALLS 4
-#define DEFAULT_SERVER "fgcom.flightgear.org"
-#define IAX_DELAY 300 // delay between calls in milliseconds
-#define TEST_FREQ 910.00
+
 
 
 

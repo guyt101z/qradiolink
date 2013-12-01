@@ -10,6 +10,7 @@
 #include <QTime>
 #include <QCoreApplication>
 #include <QLatin1String>
+#include "config_defines.h"
 
 class TelnetClient : public QObject
 {
@@ -20,7 +21,7 @@ public:
 
     void send(QString prop_name, QString value);
 
-    void disconnectFromHost();
+    void disconnectHost();
     unsigned inline status() {return _status;}
 
 public slots:
@@ -31,6 +32,7 @@ signals:
     void connectionFailure();
     void connectedToHost();
     void haveMessage(QString prop);
+    void disconnectedFromHost();
 
 private:
     QTcpSocket *_socket;

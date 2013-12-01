@@ -157,11 +157,11 @@ void Controller::haveCommand(QVector<char> *dtmf)
 
 bool Controller::testConnection(QString host)
 {
-
+    _telnet->disconnectHost();
     QObject::connect(_telnet,SIGNAL(connectedToHost()),this,SLOT(readyConnect()));
     QObject::connect(_telnet,SIGNAL(connectionFailure()),this,SLOT(noConnection()));
-
-    _telnet->connectHost(host,4939);
+    QObject::connect(_telnet,SIGNAL(disconnectedFromHost()),this,SLOT(disconnectedLink()));
+    _telnet->connectHost(host,CONTROL_PORT);
     int time = QDateTime::currentDateTime().toTime_t();
     while ((QDateTime::currentDateTime().toTime_t() - time) < 5)
     {
@@ -218,7 +218,7 @@ void Controller::setStationParameters(QString param)
     _current_station->_called_by=pre[3].toInt();
     _current_station->_waiting=0;
     _db->update_station_parameters(_current_station);
-    QObject::disconnect(_telnet,SIGNAL(haveMessage(QString)),this,SLOT(setStationParameters(QString)));
+    //QObject::disconnect(_telnet,SIGNAL(haveMessage(QString)),this,SLOT(setStationParameters(QString)));
 }
 
 QString Controller::getFreeConference()
@@ -241,8 +241,33 @@ void Controller::joinConference(QString ip, QString number, int id)
 
 void Controller::disconnectedFromCall()
 {
+
     QObject::disconnect(_client,SIGNAL(callEnded()),this,SLOT(disconnectedFromCall()));
-    _telnet->send("LEAVE","1");
+    if(_in_conference==1)
+    {
+        for(int i =0;i<_conference_stations->size();i++)
+        {
+            Station *s=_conference_stations->at(i);
+            if(s->_called_by==_id)
+            {
+                //FIXME:
+                _telnet->disconnectHost();
+                _telnet->connectHost(s->_ip,CONTROL_PORT);
+                _telnet->send("LEAVE","1");
+            }
+            s->_in_call=0;
+            s->_called_by=0;
+            s->_conference_id="";
+            _db->update_station_parameters(s);
+            delete s;
+        }
+        _conference_stations->clear();
+    }
     _in_conference=0;
-    //FIXME: _db->update_station_parameters(s);
+
+}
+
+void Controller::disconnectedLink()
+{
+
 }

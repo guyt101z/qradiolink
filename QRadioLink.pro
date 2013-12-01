@@ -40,7 +40,8 @@ HEADERS += speech.h \
     databaseapi.h \
     controller.h \
     station.h \
-    server.h
+    server.h \
+    config_defines.h
 
 
 

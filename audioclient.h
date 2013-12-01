@@ -6,6 +6,7 @@
 #include <QString>
 #include <QVector>
 #include "speech.h"
+#include "config_defines.h"
 #include "iaxclient/lib/iaxclient.h"
 
 

@@ -8,6 +8,7 @@
 #include "telnetclient.h"
 #include "databaseapi.h"
 #include "station.h"
+#include "config_defines.h"
 
 class Controller : public QObject
 {
@@ -20,6 +21,7 @@ public slots:
     void setStationParameters(QString param);
     void joinConference(QString ip, QString number, int id);
     void disconnectedFromCall();
+    void disconnectedLink();
 public:
     Controller(DatabaseApi *db, QObject *parent = 0);
     ~Controller();

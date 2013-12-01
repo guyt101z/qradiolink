@@ -1,20 +1,15 @@
 #ifndef DTMFDECODER_H
 #define DTMFDECODER_H
 
-#define INT16_MAX 0x7FFF
-#define INT16_MIN (-INT16_MAX - 1)
-#define INT32_MAX (2147483647)
-#define INT32_MIN (-2147483647 - 1)
-#define UINT16_MAX 65535
-#define UINT8_MAX 255
+
 
 
 #include <QObject>
 #include <QtDebug>
 #include <QCoreApplication>
 #include "audiointerface.h"
-#include "dtmf.h"
 #include "speech.h"
+#include "config_defines.h"
 
 class DtmfDecoder : public QObject
 {

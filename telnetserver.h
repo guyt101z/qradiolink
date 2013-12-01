@@ -13,6 +13,7 @@
 #include <QDebug>
 #include <QCoreApplication>
 #include "databaseapi.h"
+#include "config_defines.h"
 
 class TelnetServer : public QObject
 {
@@ -25,6 +26,7 @@ public:
 signals:
     void finished();
     void joinConference(QString ip, QString number, int id);
+    void leaveConference(QString ip, QString number, int id);
 public slots:
     void run();
 

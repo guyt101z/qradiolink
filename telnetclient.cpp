@@ -9,7 +9,7 @@ TelnetClient::TelnetClient(QObject *parent) :
     _connection_tries=0;
     _status=0;
     _hostname = "localhost";
-    _port= 4939;
+    _port= CONTROL_PORT;
     _socket = new QTcpSocket;
     QObject::connect(_socket,SIGNAL(error(QAbstractSocket::SocketError )),this,SLOT(connectionFailed(QAbstractSocket::SocketError)));
     QObject::connect(_socket,SIGNAL(connected()),this,SLOT(connectionSuccess()));
@@ -62,12 +62,14 @@ void TelnetClient::connectHost(const QString &host, const unsigned &port)
 
 }
 
-void TelnetClient::disconnectFromHost()
+void TelnetClient::disconnectHost()
 {
+    if(_status==0)
+        return;
     _socket->disconnectFromHost();
     _status=0;
     _connection_tries=0;
-    emit connectionFailure();
+    emit disconnectedFromHost();
 }
 
 
