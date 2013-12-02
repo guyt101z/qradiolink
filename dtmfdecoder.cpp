@@ -1,3 +1,19 @@
+// Written by Adrian Musceac YO8RZZ at gmail dot com, started October 2013.
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License as
+// published by the Free Software Foundation; either version 2 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
 #include "dtmfdecoder.h"
 
 #include <cmath>
@@ -495,7 +511,7 @@ void DtmfDecoder::analyse(int analysis_buffer)
 /**
   Written by: Espen Riskedal, espenr@ii.uib.no, july-2002
   */
-
+#define PI 3.14159265358979323844
 
 /** Generates a tone of the specified frequency
 *  Gotten from: http://groups.google.com/groups?hl=en&lr=&ie=UTF-8&oe=UTF-8&safe=off&selm=3c641e%243jn%40uicsl.csl.uiuc.edu

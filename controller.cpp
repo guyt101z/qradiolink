@@ -1,3 +1,19 @@
+// Written by Adrian Musceac YO8RZZ at gmail dot com, started October 2013.
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License as
+// published by the Free Software Foundation; either version 2 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
 #include "controller.h"
 
 Controller::Controller(DatabaseApi *db, QObject *parent) : QObject(parent)
@@ -136,13 +152,15 @@ void Controller::haveCommand(QVector<char> *dtmf)
             number.push_back(dtmf->at(i));
         }
     }
-
+    dtmf->clear();
+    emit readyInput();
 
     if(number=="9")
     {
         QString voice= "Disconnecting from the conference.";
         emit speak(voice);
         _client->disconnectCall();
+        disconnectedFromCall();
     }
     if(number=="99")
     {
@@ -150,8 +168,6 @@ void Controller::haveCommand(QVector<char> *dtmf)
         emit speak(voice);
         _client->disconnectCall();
     }
-    dtmf->clear();
-    emit readyInput();
 
 }
 
@@ -231,6 +247,17 @@ void Controller::joinConference(QString ip, QString number, int id)
 
     QString voice= "Joining conference.";
     emit speak(voice);
+    Station *s = _db->get_local_station();
+    s->_called_by=id;
+    s->_conference_id=number;
+    s->_in_call=1;
+    _db->update_station_parameters(s);
+    delete s;
+    s = _db->get_station_by_id(id);
+    QString caller = s->_callsign;
+    delete s;
+    voice = "Called by " + caller;
+    emit speak(voice);
     QObject::connect(_client,SIGNAL(callEnded()),this,SLOT(disconnectedFromCall()));
     _client->setProperties(_username,_password,ip);
     _client->makeCall(number.toStdString());
@@ -241,7 +268,8 @@ void Controller::joinConference(QString ip, QString number, int id)
 
 void Controller::disconnectedFromCall()
 {
-
+    QString voice= "Conference has ended.";
+    emit speak(voice);
     QObject::disconnect(_client,SIGNAL(callEnded()),this,SLOT(disconnectedFromCall()));
     if(_in_conference==1)
     {

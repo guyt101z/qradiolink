@@ -1,7 +1,20 @@
+// Written by Adrian Musceac YO8RZZ at gmail dot com, started October 2013.
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License as
+// published by the Free Software Foundation; either version 2 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
 #include "audioclient.h"
-
-
-
 
 
 AudioClient::AudioClient(QObject *parent) :
@@ -169,8 +182,10 @@ void AudioClient::init()
 
 void AudioClient::makeCall(std::string number)
 {
-    int call0, call1;
-    std::string num = _username.toStdString().append(":").append(_password.toStdString()).append("@").append(_server.toStdString()).append("/");
+    int call0;
+    std::string num = _username.toStdString().append(":").
+            append(_password.toStdString()).append("@").
+            append(_server.toStdString()).append("/");
     num.append(number);
 
     if( !num.empty() )
@@ -179,6 +194,7 @@ void AudioClient::makeCall(std::string number)
     }
     if( call0 == -1 )
         qDebug() << "Audio: cannot call " << num.c_str();
+    _call = call0;
 
 }
 
