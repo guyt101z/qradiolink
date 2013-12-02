@@ -23,4 +23,6 @@ Server::Server()
     _hostname = "localhost";
     _connected = 0;
     _active = 1;
+    _username = "";
+    _password = "";
 }

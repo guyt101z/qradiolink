@@ -25,6 +25,16 @@ Speech::Speech(QObject *parent) :
     festival_initialize(load_init_files,heap_size);
 }
 
+void Speech::fspeak(char* text)
+{
+
+    festival_say_text(text);
+    festival_wait_for_spooler();
+}
+
+/*
+
+
 static Speech* static_instance = NULL;
 
 int SynthCallback(short *wav, int numsamples, espeak_EVENT *events)
@@ -37,12 +47,7 @@ int SynthCallback(short *wav, int numsamples, espeak_EVENT *events)
 }
 
 
-void Speech::fspeak(char* text)
-{
 
-    festival_say_text(text);
-    festival_wait_for_spooler();
-}
 
 void Speech::speak(char* text)
 {
@@ -89,3 +94,5 @@ void Speech::speakChar(char c)
     espeak_Char(c);
     espeak_Terminate();
 }
+
+*/

@@ -38,7 +38,7 @@ void ServerWrapper::addSpeech(QString s)
 void ServerWrapper::run()
 {
     TelnetServer *server = new TelnetServer(_db);
-    QObject::connect(server,SIGNAL(joinConference(QString,QString, int)),this,SLOT(connectToConference(QString, QString, int)));
+    QObject::connect(server,SIGNAL(joinConference(QString, int,int)),this,SLOT(connectToConference(QString, int, int)));
     qDebug() << "Server running";
     //server->run();
     int last_time = 0;
@@ -66,7 +66,7 @@ void ServerWrapper::run()
     emit finished();
 }
 
-void ServerWrapper::connectToConference(QString ip, QString number, int id)
+void ServerWrapper::connectToConference(QString number, int id, int server_id)
 {
-    emit joinConference(ip,number, id);
+    emit joinConference(number, id, server_id);
 }

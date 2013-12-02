@@ -170,13 +170,13 @@ QString TelnetServer::processCommand(QString command)
     else if(pre[0]=="JOIN")
     {
         QString response = "JOIN;1" + CRLF;
-        emit joinConference(pre[1],pre[2],pre[3].toInt());
+        emit joinConference(pre[1],pre[2].toInt(),pre[3].toInt());
         return response;
     }
     else if(pre[0]=="LEAVE")
     {
         QString response = "LEAVE;1" + CRLF;
-        emit leaveConference(pre[1],pre[2],pre[3].toInt());
+        emit leaveConference(pre[1],pre[2].toInt(),pre[3].toInt());
         return response;
     }
     else

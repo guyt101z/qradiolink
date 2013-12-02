@@ -45,7 +45,7 @@ HEADERS += speech.h \
 
 
 
-unix:!symbian: LIBS += -lestools -lFestival -lespeak -lpulse-simple -L$$PWD/iaxclient/build -liaxclient_lib
+unix:!symbian: LIBS += -lestools -lFestival -lpulse-simple -L$$PWD/iaxclient/build -liaxclient_lib
 DEPENDPATH += $$PWD/iaxclient/build
 INCLUDEPATH += /usr/include/speech_tools
 

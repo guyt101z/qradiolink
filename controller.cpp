@@ -112,7 +112,7 @@ void Controller::haveCall(QVector<char> *dtmf)
 
             QString voice= "Joining the station in the conference.";
             emit speak(voice);
-            _client->setProperties(_username,_password,server->_ip);
+            _client->setProperties(server->_username,server->_password,server->_ip);
             _client->makeCall(s->_conference_id.toStdString());
             _in_conference =1;
             _conference_id = s->_conference_id;
@@ -127,7 +127,7 @@ void Controller::haveCall(QVector<char> *dtmf)
             QString voice= "Calling the station into the conference.";
             emit speak(voice);
             QObject::connect(_client,SIGNAL(callEnded()),this,SLOT(disconnectedFromCall()));
-            _client->setProperties(_username,_password,server->_ip);
+            _client->setProperties(server->_username,server->_password,server->_ip);
             _client->makeCall(_conference_id.toStdString());
             _in_conference =1;
             _conference_stations->append(s);
@@ -242,9 +242,16 @@ QString Controller::getFreeConference()
     return "777"; //TODO:
 }
 
-void Controller::joinConference(QString ip, QString number, int id)
+void Controller::joinConference(QString number, int id, int server_id)
 {
-
+    QVector<Server*> servers = _db->get_servers();
+    if(servers.size() < 1)
+    {
+        QString voice= "There are no active servers in the list.";
+        emit speak(voice);
+        return;
+    }
+    Server *server = servers[0];
     QString voice= "Joining conference.";
     emit speak(voice);
     Station *s = _db->get_local_station();
@@ -259,7 +266,7 @@ void Controller::joinConference(QString ip, QString number, int id)
     voice = "Called by " + caller;
     emit speak(voice);
     QObject::connect(_client,SIGNAL(callEnded()),this,SLOT(disconnectedFromCall()));
-    _client->setProperties(_username,_password,ip);
+    _client->setProperties(server->_username,server->_password,server->_ip);
     _client->makeCall(number.toStdString());
     _in_conference =1;
 

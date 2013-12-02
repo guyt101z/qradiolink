@@ -19,7 +19,7 @@
 
 #include <QObject>
 #include "audiointerface.h"
-#include <espeak/speak_lib.h>
+//#include <espeak/speak_lib.h>
 #include <festival/festival.h>
 
 class Speech : public QObject
@@ -27,9 +27,11 @@ class Speech : public QObject
     Q_OBJECT
 public:
     explicit Speech(QObject *parent = 0);
-    void speak(char* text);
     void fspeak(char* text);
+    /*
+    void speak(char* text);
     void speakChar(char c);
+    */
     AudioInterface *_audio;
     
 signals:
@@ -40,6 +42,6 @@ private:
 
     
 };
-int SynthCallback(short *wav, int numsamples, espeak_EVENT *events);
+//int SynthCallback(short *wav, int numsamples, espeak_EVENT *events);
 
 #endif // SPEECH_H

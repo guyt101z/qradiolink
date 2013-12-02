@@ -28,6 +28,8 @@ public:
     QString _hostname;
     int _connected;
     int _active;
+    QString _username;
+    QString _password;
 
 };
 
