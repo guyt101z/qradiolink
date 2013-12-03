@@ -16,6 +16,7 @@
 
 #include <QCoreApplication>
 #include <QThread>
+#include <QDebug>
 #include <QObject>
 #include <QDateTime>
 #include <QString>
@@ -32,7 +33,8 @@ int main(int argc, char *argv[])
 {
 
     QCoreApplication a(argc, argv);
-    QString _start_time= QDateTime::currentDateTime().toString("d/MMM/yyyy hh:mm:ss");
+    QString start_time= QDateTime::currentDateTime().toString("d/MMM/yyyy hh:mm:ss");
+    qDebug() << start_time;
     DatabaseApi db;
 
     Controller *controller = new Controller(&db);

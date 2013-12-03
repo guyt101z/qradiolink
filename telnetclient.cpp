@@ -55,7 +55,7 @@ void TelnetClient::connectionFailed(QAbstractSocket::SocketError error)
     _status=0;
     qDebug() << "Outgoing connection failed" << _socket->errorString();
     _connection_tries++;
-    if(_connection_tries < 10)
+    if(_connection_tries < 2)
     {
         this->connectHost(_hostname,_port);
     }

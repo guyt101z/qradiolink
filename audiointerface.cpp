@@ -37,7 +37,7 @@ AudioInterface::AudioInterface(QObject *parent, unsigned sample_rate, unsigned c
     _s_short_play = NULL;
     _error=0;
 
-    if (!(_s_rec = pa_simple_new(NULL, "qradiolink", PA_STREAM_RECORD, NULL, "record", &ss, NULL, NULL, &_error)))
+    if (!(_s_rec = pa_simple_new(NULL, "qradiolink_dtmf", PA_STREAM_RECORD, NULL, "record", &ss, NULL, NULL, &_error)))
     {
         fprintf(stderr, __FILE__": pa_simple_new() failed: %s\n", pa_strerror(_error));
     }

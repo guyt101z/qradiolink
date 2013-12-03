@@ -51,13 +51,12 @@ DtmfDecoder::DtmfDecoder(QObject *parent) :
 
 DtmfDecoder::~DtmfDecoder()
 {
-
+    _dtmf_command->clear();
+    _dtmf_sequence->clear();
+    delete _dtmf_command;
+    delete _dtmf_sequence;
 }
 
-void tone_detected(void *user_data, int code, int level, int delay)
-{
-    qDebug() << "tone_detected code:" << (char)code << " level:"<<level<<" delay:"<<delay;
-}
 
 void DtmfDecoder::stop()
 {
@@ -90,6 +89,8 @@ void DtmfDecoder::run()
 
     while(true)
     {
+        int last_time = 0;
+        int time = QDateTime::currentDateTime().toTime_t();
         usleep(1000);
         QCoreApplication::processEvents();
         if(_stop)
@@ -123,9 +124,6 @@ void DtmfDecoder::run()
             _receiving = false;
         }
 
-
-        //float *tone= makeTone(samp_rate,cw_tone_freq,buffer_size);
-        //audio->write(tone,buffer_size);
         char letter = decode(buf,buffer_size,samp_rate, treshhold_audio_power, tone_difference);
         // fill a buffer of decoded letters
 
@@ -168,11 +166,17 @@ void DtmfDecoder::run()
         }
         else
         {
+            last_time = QDateTime::currentDateTime().toTime_t();
             _dtmf_command->append(_current_letter);
         }
 
+        if(((time - last_time) > 30) && (_dtmf_command->size() > 0))
+        {
+            //_dtmf_command->clear();
+            last_time = time;
+        }
         _previous_letter=_current_letter;
-        //_current_letter=' ';
+
 
 
         //float *cw_sound = makeTone(samp_rate,cw_tone_freq,buffer_size,1);
@@ -183,7 +187,6 @@ void DtmfDecoder::run()
 
     finish:
     delete audio;
-    //delete dtmf;
     emit finished();
 }
 
@@ -208,8 +211,6 @@ char DtmfDecoder::decode(float *buf,int buffer_size,int samp_rate, float treshho
         if(tone_power < largest_tone_power) continue;
         if(tone_power < treshhold_audio_power) continue;
 
-
-        //qDebug() << i << " " << tone_power << " "<< _dtmf_frequencies[i];
         tones[0] = (int)_dtmf_frequencies[i];
         largest_tone_power = tone_power;
         first = i;
@@ -237,8 +238,6 @@ char DtmfDecoder::decode(float *buf,int buffer_size,int samp_rate, float treshho
         if(tone_power < largest_tone_power) continue;
         if(tone_power < treshhold_audio_power) continue;
 
-
-        //qDebug() << i << " " << tone_power << " "<< _dtmf_frequencies[i];
         tones[1] = (int)_dtmf_frequencies[i];
         largest_tone_power = tone_power;
         second = i;
@@ -411,8 +410,6 @@ void DtmfDecoder::analyse(int analysis_buffer)
             if(_dtmf_sequence->at(i)!=' ')
                 //wait for another iteration
                 return;
-
-
         }
         _current_letter = ' ';
         return;
@@ -511,7 +508,7 @@ void DtmfDecoder::analyse(int analysis_buffer)
 /**
   Written by: Espen Riskedal, espenr@ii.uib.no, july-2002
   */
-#define PI 3.14159265358979323844
+
 
 /** Generates a tone of the specified frequency
 *  Gotten from: http://groups.google.com/groups?hl=en&lr=&ie=UTF-8&oe=UTF-8&safe=off&selm=3c641e%243jn%40uicsl.csl.uiuc.edu
@@ -583,7 +580,7 @@ float DtmfDecoder::goertzel_magnitude(float* data, int numSamples,int TARGET_FRE
 
     // calculate the real and imaginary results
     // scaling appropriately
-    real = (q1 - q2 * cosine);
+    real = (q1 - q2 * cosine) / scalingFactor;
     imag = (q2 * sine);
 
     magnitude = sqrtf(real*real + imag*imag);

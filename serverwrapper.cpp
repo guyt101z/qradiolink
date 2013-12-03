@@ -47,16 +47,17 @@ void ServerWrapper::run()
     {
         usleep(10000);
         int time = QDateTime::currentDateTime().toTime_t();
-        if((time - last_time) > 60)
+        if((time - last_time) > 300)
         {
             spp.fspeak("This is Q radio link, test U H F.");
+            last_time = time;
         }
         for(int o =0;o<_speech_text->size();o++)
         {
             spp.fspeak(_speech_text->at(o).toLocal8Bit().data());
         }
         _speech_text->clear();
-        last_time = time;
+
         QCoreApplication::processEvents();
         if(_stop)
             break;

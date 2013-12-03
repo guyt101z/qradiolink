@@ -57,8 +57,6 @@ private:
     void getStationParameters(Station *s);
     QString getFreeConference();
     Station *_current_station;
-    QString _username;
-    QString _password;
     TelnetClient *_telnet;
 };
 

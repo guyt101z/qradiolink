@@ -191,3 +191,30 @@ QVector<Server*> DatabaseApi::get_servers(int active)
     }
     return servers;
 }
+
+Server* DatabaseApi::get_server_by_id(int id)
+{
+    Server *server = new Server;
+
+    QSqlQuery query(_db);
+    query.prepare("SELECT * FROM servers WHERE id=:id");
+    query.bindValue(":id", id);
+    query.exec();
+
+    int id_idx = query.record().indexOf("id");
+    int ip_idx = query.record().indexOf("ip");
+    int hostname_idx = query.record().indexOf("hostname");
+    int connected_idx = query.record().indexOf("connected");
+    int active_idx = query.record().indexOf("active");
+    if(query.next())
+    {
+
+        server->_id = query.value(id_idx).toInt();
+        server->_ip = query.value(ip_idx).toString();
+        server->_hostname = query.value(hostname_idx).toString();
+        server->_connected = query.value(connected_idx).toInt();
+        server->_active = query.value(active_idx).toInt();
+
+    }
+    return server;
+}

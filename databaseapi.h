@@ -34,6 +34,7 @@ public:
     Station* get_local_station();
     void update_station_parameters(Station *s);
     QVector<Server*> get_servers(int active = 1);
+    Server* get_server_by_id(int id);
 
 private:
     QSqlDatabase _db;

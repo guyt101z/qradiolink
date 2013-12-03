@@ -25,9 +25,6 @@ Controller::Controller(DatabaseApi *db, QObject *parent) : QObject(parent)
     _connectable = false;
     _telnet = NULL;
     _current_station = NULL;
-    //TODO: fetch from database
-    _username="adrian";
-    _password= "supersecret";
     Station *s = _db->get_local_station();
     _id = s->_id;
     delete s;
@@ -86,7 +83,7 @@ void Controller::haveCall(QVector<char> *dtmf)
             QString voice= "Trying a direct call.";
             emit speak(voice);
 
-            _client->setProperties(_username,_password,s->_ip);
+            _client->setProperties("test","test",s->_ip);
             _client->makeCall("777");
             _in_conference =1;
             _conference_id = "777";
@@ -123,7 +120,7 @@ void Controller::haveCall(QVector<char> *dtmf)
             // if it's not, get the number of the first free conference and make a new conference
             _conference_id = getFreeConference();
 
-            _telnet->send("JOIN",server->_ip.append(";").append(_conference_id).append(";").append(_id));
+            _telnet->send("JOIN",_conference_id+";"+QString::number(_id)+";"+QString::number(server->_id));
             QString voice= "Calling the station into the conference.";
             emit speak(voice);
             QObject::connect(_client,SIGNAL(callEnded()),this,SLOT(disconnectedFromCall()));
@@ -138,6 +135,7 @@ void Controller::haveCall(QVector<char> *dtmf)
     {
         QString voice= "I can't find the station with this number.";
         emit speak(voice);
+        delete s;
     }
 }
 
@@ -159,8 +157,9 @@ void Controller::haveCommand(QVector<char> *dtmf)
     {
         QString voice= "Disconnecting from the conference.";
         emit speak(voice);
-        _client->disconnectCall();
         disconnectedFromCall();
+        _client->disconnectCall();
+
     }
     if(number=="99")
     {
@@ -244,14 +243,14 @@ QString Controller::getFreeConference()
 
 void Controller::joinConference(QString number, int id, int server_id)
 {
-    QVector<Server*> servers = _db->get_servers();
-    if(servers.size() < 1)
+    Server *server = _db->get_server_by_id(server_id);
+    if(server->_id < 1)
     {
         QString voice= "There are no active servers in the list.";
         emit speak(voice);
         return;
     }
-    Server *server = servers[0];
+
     QString voice= "Joining conference.";
     emit speak(voice);
     Station *s = _db->get_local_station();

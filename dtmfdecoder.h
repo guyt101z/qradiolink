@@ -21,6 +21,7 @@
 #include <QObject>
 #include <QtDebug>
 #include <QCoreApplication>
+#include <QDateTime>
 #include "audiointerface.h"
 #include "speech.h"
 #include "config_defines.h"
@@ -45,6 +46,14 @@ public slots:
 
 private:
     bool _stop;
+    /**
+     * @brief makeTone
+     * @param samplerate
+     * @param frequency
+     * @param length
+     * @param gain
+     * @return
+     */
     float *makeTone(int samplerate, float frequency, int length, float gain=1.0);
     /**
      * @brief goertzel
@@ -55,7 +64,20 @@ private:
      * @return
      */
     float goertzel(float *x, int N, float frequency, int samplerate);
+    /**
+     * @brief goertzel_magnitude
+     * @param data
+     * @param numSamples
+     * @param TARGET_FREQUENCY
+     * @param SAMPLING_RATE
+     * @return
+     */
     float goertzel_magnitude(float* data, int numSamples,int TARGET_FREQUENCY,int SAMPLING_RATE );
+    /**
+     * @brief power
+     * @param value
+     * @return
+     */
     float power(float value);
 
     /**
@@ -72,7 +94,7 @@ private:
      * @brief Statistical analysis of char buffer
      */
     void analyse(int analysis_buffer);
-    float _dtmf_frequencies[8];
+    float _dtmf_frequencies[9];
     QVector<char> *_dtmf_sequence;
     QVector<char> *_dtmf_command;
     char _current_letter;

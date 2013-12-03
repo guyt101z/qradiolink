@@ -11,7 +11,9 @@
 #define IAX_DELAY 300 // delay between calls in milliseconds
 #define TEST_FREQ 910.00
 
-
+#ifndef PI
+    #define PI 3.14159265358979323844
+#endif
 
 #define INT16_MAX 0x7FFF
 #define INT16_MIN (-INT16_MAX - 1)
