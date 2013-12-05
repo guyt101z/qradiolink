@@ -73,7 +73,7 @@ void AudioClient::iaxCallEvent(struct iaxc_ev_call_state state)
         emit callAnswered();
     }
 
-    if(state.state == IAXC_CALL_STATE_FREE)
+    if((state.state == IAXC_CALL_STATE_FREE) && (state.callNo == _call))
     {
         emit callEnded();
     }
@@ -97,7 +97,7 @@ void AudioClient::init()
 {
 
 
-
+    iaxc_set_preferred_source_udp_port(-1);
     if( iaxc_initialize(NUM_CALLS))
     {
         qDebug() << "Audio: cannot initialize iaxclient";
@@ -182,6 +182,7 @@ void AudioClient::init()
 
 void AudioClient::makeCall(std::string number)
 {
+
     int call0;
     std::string num = _username.toStdString().append(":").
             append(_password.toStdString()).append("@").

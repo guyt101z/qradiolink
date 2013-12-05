@@ -39,6 +39,7 @@ void ServerWrapper::run()
 {
     TelnetServer *server = new TelnetServer(_db);
     QObject::connect(server,SIGNAL(joinConference(QString, int,int)),this,SLOT(connectToConference(QString, int, int)));
+    QObject::connect(server,SIGNAL(leaveConference(QString, int,int)),this,SLOT(disconnectFromConference(QString, int, int)));
     qDebug() << "Server running";
     //server->run();
     int last_time = 0;
@@ -70,4 +71,9 @@ void ServerWrapper::run()
 void ServerWrapper::connectToConference(QString number, int id, int server_id)
 {
     emit joinConference(number, id, server_id);
+}
+
+void ServerWrapper::disconnectFromConference(QString number, int id, int server_id)
+{
+    emit leaveConference(number, id, server_id);
 }

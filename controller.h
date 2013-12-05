@@ -36,6 +36,7 @@ public slots:
     void noConnection();
     void setStationParameters(QString param);
     void joinConference(QString number, int id, int server_id);
+    void leaveConference(QString number, int id, int server_id);
     void disconnectedFromCall();
     void disconnectedLink();
 public:

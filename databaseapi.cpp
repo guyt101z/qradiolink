@@ -179,6 +179,8 @@ QVector<Server*> DatabaseApi::get_servers(int active)
     int hostname_idx = query.record().indexOf("hostname");
     int connected_idx = query.record().indexOf("connected");
     int active_idx = query.record().indexOf("active");
+    int username_idx = query.record().indexOf("username");
+    int password_idx = query.record().indexOf("password");
     while(query.next())
     {
         Server *server = new Server;
@@ -187,6 +189,8 @@ QVector<Server*> DatabaseApi::get_servers(int active)
         server->_hostname = query.value(hostname_idx).toString();
         server->_connected = query.value(connected_idx).toInt();
         server->_active = query.value(active_idx).toInt();
+        server->_username = query.value(username_idx).toString();
+        server->_password = query.value(password_idx).toString();
         servers.push_back(server);
     }
     return servers;
@@ -206,6 +210,8 @@ Server* DatabaseApi::get_server_by_id(int id)
     int hostname_idx = query.record().indexOf("hostname");
     int connected_idx = query.record().indexOf("connected");
     int active_idx = query.record().indexOf("active");
+    int username_idx = query.record().indexOf("username");
+    int password_idx = query.record().indexOf("password");
     if(query.next())
     {
 
@@ -214,7 +220,9 @@ Server* DatabaseApi::get_server_by_id(int id)
         server->_hostname = query.value(hostname_idx).toString();
         server->_connected = query.value(connected_idx).toInt();
         server->_active = query.value(active_idx).toInt();
-
+        server->_username = query.value(username_idx).toString();
+        server->_password = query.value(password_idx).toString();
     }
+
     return server;
 }

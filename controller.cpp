@@ -29,7 +29,7 @@ Controller::Controller(DatabaseApi *db, QObject *parent) : QObject(parent)
     _id = s->_id;
     delete s;
     _telnet = new TelnetClient;
-    _client->init();
+    //_client->init();
 }
 
 Controller::~Controller()
@@ -84,6 +84,7 @@ void Controller::haveCall(QVector<char> *dtmf)
             emit speak(voice);
 
             _client->setProperties("test","test",s->_ip);
+            _client->init();
             _client->makeCall("777");
             _in_conference =1;
             _conference_id = "777";
@@ -110,10 +111,17 @@ void Controller::haveCall(QVector<char> *dtmf)
             QString voice= "Joining the station in the conference.";
             emit speak(voice);
             _client->setProperties(server->_username,server->_password,server->_ip);
+            _client->init();
             _client->makeCall(s->_conference_id.toStdString());
             _in_conference =1;
             _conference_id = s->_conference_id;
             _conference_stations->append(s);
+            Station *st = _db->get_local_station();
+            st->_called_by=0;
+            st->_conference_id=_conference_id;
+            st->_in_call=1;
+            _db->update_station_parameters(st);
+            delete st;
         }
         else
         {
@@ -125,9 +133,16 @@ void Controller::haveCall(QVector<char> *dtmf)
             emit speak(voice);
             QObject::connect(_client,SIGNAL(callEnded()),this,SLOT(disconnectedFromCall()));
             _client->setProperties(server->_username,server->_password,server->_ip);
+            _client->init();
             _client->makeCall(_conference_id.toStdString());
             _in_conference =1;
             _conference_stations->append(s);
+            Station *st = _db->get_local_station();
+            st->_called_by=0;
+            st->_conference_id=_conference_id;
+            st->_in_call=1;
+            _db->update_station_parameters(st);
+            delete st;
         }
 
     }
@@ -233,7 +248,7 @@ void Controller::setStationParameters(QString param)
     _current_station->_called_by=pre[3].toInt();
     _current_station->_waiting=0;
     _db->update_station_parameters(_current_station);
-    //QObject::disconnect(_telnet,SIGNAL(haveMessage(QString)),this,SLOT(setStationParameters(QString)));
+    QObject::disconnect(_telnet,SIGNAL(haveMessage(QString)),this,SLOT(setStationParameters(QString)));
 }
 
 QString Controller::getFreeConference()
@@ -243,6 +258,7 @@ QString Controller::getFreeConference()
 
 void Controller::joinConference(QString number, int id, int server_id)
 {
+    /*
     Server *server = _db->get_server_by_id(server_id);
     if(server->_id < 1)
     {
@@ -250,7 +266,7 @@ void Controller::joinConference(QString number, int id, int server_id)
         emit speak(voice);
         return;
     }
-
+    */
     QString voice= "Joining conference.";
     emit speak(voice);
     Station *s = _db->get_local_station();
@@ -265,7 +281,9 @@ void Controller::joinConference(QString number, int id, int server_id)
     voice = "Called by " + caller;
     emit speak(voice);
     QObject::connect(_client,SIGNAL(callEnded()),this,SLOT(disconnectedFromCall()));
-    _client->setProperties(server->_username,server->_password,server->_ip);
+    //_client->setProperties(server->_username,server->_password,server->_ip);
+    _client->setProperties("adrian","supersecret","192.168.1.2");
+    _client->init();
     _client->makeCall(number.toStdString());
     _in_conference =1;
 
@@ -298,10 +316,21 @@ void Controller::disconnectedFromCall()
         _conference_stations->clear();
     }
     _in_conference=0;
-
+    Station *s = _db->get_local_station();
+    s->_called_by=0;
+    s->_conference_id="";
+    s->_in_call=0;
+    _db->update_station_parameters(s);
+    delete s;
 }
 
 void Controller::disconnectedLink()
 {
 
+}
+
+void Controller::leaveConference(QString number, int id, int server_id)
+{
+    disconnectedFromCall();
+    _client->disconnectCall();
 }

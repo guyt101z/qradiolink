@@ -106,9 +106,8 @@ void TelnetServer::run()
 
 void TelnetServer::processData()
 {
-    //ok
+
     QTcpSocket *socket = dynamic_cast<QTcpSocket*>(QObject::sender());
-    qDebug() << "Received message from: " << socket->peerAddress().toString();
 
     QString line;
 

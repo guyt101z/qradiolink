@@ -35,10 +35,12 @@ public:
 signals:
     void finished();
     void joinConference(QString number, int id, int server_id);
+    void leaveConference(QString number, int id, int server_id);
 public slots:
     void run();
     void addSpeech(QString);
     void connectToConference(QString ip, int id, int server_id);
+    void disconnectFromConference(QString number, int id, int server_id);
 private:
     bool _stop;
     Speech *_speech;
