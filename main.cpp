@@ -24,8 +24,9 @@
 #include "databaseapi.h"
 #include "serverwrapper.h"
 #include "speech.h"
-#include "audioclient.h"
+
 #include "controller.h"
+#include "mumbleclient.h"
 #include "festival/festival.h"
 
 
@@ -36,11 +37,14 @@ int main(int argc, char *argv[])
     QString start_time= QDateTime::currentDateTime().toString("d/MMM/yyyy hh:mm:ss");
     qDebug() << start_time;
     DatabaseApi db;
+    AudioInterface audio;
 
     Controller *controller = new Controller(&db);
+    MumbleClient client;
+    client.connectToServer("localhost",64738);
 
     QThread *t1= new QThread;
-    DtmfDecoder *decoder = new DtmfDecoder;
+    DtmfDecoder *decoder = new DtmfDecoder(&audio);
     decoder->moveToThread(t1);
     QObject::connect(decoder,SIGNAL(haveCall(QVector<char>*)),controller,SLOT(haveCall(QVector<char>*)));
     QObject::connect(decoder,SIGNAL(haveCommand(QVector<char>*)),controller,SLOT(haveCommand(QVector<char>*)));
@@ -49,20 +53,23 @@ int main(int argc, char *argv[])
     QObject::connect(decoder, SIGNAL(finished()), t1, SLOT(quit()));
     QObject::connect(decoder, SIGNAL(finished()), decoder, SLOT(deleteLater()));
     QObject::connect(t1, SIGNAL(finished()), t1, SLOT(deleteLater()));
-    t1->start();
+    t1->start(QThread::HighPriority);
 
 
     QThread *t2= new QThread;
-    ServerWrapper *telnet_server_wrapper = new ServerWrapper(&db);
+    ServerWrapper *telnet_server_wrapper = new ServerWrapper(&audio, &db);
     telnet_server_wrapper->moveToThread(t2);
     QObject::connect(controller,SIGNAL(speak(QString)),telnet_server_wrapper,SLOT(addSpeech(QString)));
+    QObject::connect(telnet_server_wrapper,SIGNAL(pingServer()),&client,SLOT(pingServer()));
+    QObject::connect(telnet_server_wrapper,SIGNAL(audioData(short*,short)),&client,SLOT(processAudio(short*,short)));
+    QObject::connect(&client,SIGNAL(pcmAudio(short*,short)),telnet_server_wrapper,SLOT(pcmAudio(short*,short)));
     QObject::connect(telnet_server_wrapper,SIGNAL(joinConference(QString,int,int)),controller,SLOT(joinConference(QString,int,int)));
     QObject::connect(telnet_server_wrapper,SIGNAL(leaveConference(QString,int,int)),controller,SLOT(leaveConference(QString,int,int)));
     QObject::connect(t2, SIGNAL(started()), telnet_server_wrapper, SLOT(run()));
     QObject::connect(telnet_server_wrapper, SIGNAL(finished()), t2, SLOT(quit()));
     QObject::connect(telnet_server_wrapper, SIGNAL(finished()), telnet_server_wrapper, SLOT(deleteLater()));
     QObject::connect(t2, SIGNAL(finished()), t2, SLOT(deleteLater()));
-    t2->start();
+    t2->start(QThread::HighPriority);
 
 
     return a.exec();

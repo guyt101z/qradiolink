@@ -19,7 +19,7 @@
 
 #include <QObject>
 #include <QString>
-#include "audioclient.h"
+#include "iaxclient.h"
 #include "speech.h"
 #include "telnetclient.h"
 #include "databaseapi.h"
@@ -46,7 +46,7 @@ signals:
     void readyInput();
     void speak(QString);
 private:
-    AudioClient *_client;
+    IaxClient *_client;
     DatabaseApi *_db;
     int _in_conference;
     int _id;

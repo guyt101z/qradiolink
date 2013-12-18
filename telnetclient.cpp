@@ -40,6 +40,11 @@ TelnetClient::~TelnetClient()
     delete _socket;
 }
 
+int TelnetClient::connectionStatus()
+{
+    return _status;
+}
+
 
 void TelnetClient::connectionSuccess()
 {
@@ -95,6 +100,12 @@ void TelnetClient::send(QString prop_name, QString value)
     _socket->write(command.toUtf8());
     _socket->flush();
 
+}
+
+void TelnetClient::sendBin(const char *payload)
+{
+    _socket->write(payload);
+    _socket->flush();
 }
 
 void TelnetClient::processData()

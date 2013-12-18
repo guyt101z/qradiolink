@@ -17,18 +17,20 @@
 #include "serverwrapper.h"
 #include <cstdlib>
 
-ServerWrapper::ServerWrapper(DatabaseApi *db, QObject *parent) :
+ServerWrapper::ServerWrapper(AudioInterface *audio, DatabaseApi *db, QObject *parent) :
     QObject(parent)
 {
     _db = db;
     _stop=false;
     _speech_text = new QVector<QString>;
+    _audio = audio;
 }
 
 void ServerWrapper::stop()
 {
     _stop=true;
 }
+
 
 void ServerWrapper::addSpeech(QString s)
 {
@@ -41,8 +43,9 @@ void ServerWrapper::run()
     QObject::connect(server,SIGNAL(joinConference(QString, int,int)),this,SLOT(connectToConference(QString, int, int)));
     QObject::connect(server,SIGNAL(leaveConference(QString, int,int)),this,SLOT(disconnectFromConference(QString, int, int)));
     qDebug() << "Server running";
-    //server->run();
+
     int last_time = 0;
+    int last_ping_time = 0 ;
     Speech spp;
     while(true)
     {
@@ -50,9 +53,17 @@ void ServerWrapper::run()
         int time = QDateTime::currentDateTime().toTime_t();
         if((time - last_time) > 300)
         {
-            spp.fspeak("This is Q radio link, test U H F.");
+            //spp.fspeak("This is Q radio link, test U H F.");
             last_time = time;
         }
+        if(((time - last_ping_time) > 5) )
+        {
+            emit pingServer();
+            last_ping_time = time;
+        }
+        short audiobuffer[640];
+        _audio->read_short(audiobuffer,640);
+        emit audioData(audiobuffer,640);
         for(int o =0;o<_speech_text->size();o++)
         {
             spp.fspeak(_speech_text->at(o).toLocal8Bit().data());
@@ -66,6 +77,11 @@ void ServerWrapper::run()
     server->stop();
     delete server;
     emit finished();
+}
+
+void ServerWrapper::pcmAudio(short *pcm, short samples)
+{
+    _audio->write_short(pcm,samples*sizeof(short));
 }
 
 void ServerWrapper::connectToConference(QString number, int id, int server_id)

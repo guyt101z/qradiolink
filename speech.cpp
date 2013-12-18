@@ -19,7 +19,7 @@
 Speech::Speech(QObject *parent) :
     QObject(parent)
 {
-    _audio = new AudioInterface;
+    //_audio = new AudioInterface;
     int heap_size = 210000;
     int load_init_files = 1;
     festival_initialize(load_init_files,heap_size);

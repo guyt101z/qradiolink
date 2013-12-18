@@ -14,35 +14,23 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-#ifndef AUDIOINTERFACE_H
-#define AUDIOINTERFACE_H
+#ifndef AUDIOENCODER_H
+#define AUDIOENCODER_H
 
-#include <QObject>
-#include <stdio.h>
-#include <pulse/simple.h>
-#include <pulse/error.h>
+#include <QDebug>
+#include <opus/opus.h>
 
-class AudioInterface : public QObject
+class AudioEncoder
 {
-    Q_OBJECT
 public:
-    explicit AudioInterface(QObject *parent = 0, unsigned sample_rate = 8000, unsigned channels = 1);
-    ~AudioInterface();
-    int read(float *buf, short bufsize);
-    int write(float *buf, short bufsize);
-    int write_short(short *buf, short bufsize);
-    int read_short(short *buf, short bufsize);
-signals:
-    
-public slots:
+    AudioEncoder();
+    ~AudioEncoder();
+    void encode(short *audio, int samples, unsigned char *encoded, int length=4000);
+    void decode(unsigned char *data, int data_length, short *audio, int samples);
 
 private:
-    pa_simple *_s_rec;
-    pa_simple *_s_play;
-    pa_simple *_s_short_play;
-    pa_simple *_s_short_rec;
-    int _error;
-    
+    OpusEncoder *_enc;
+    OpusDecoder *_dec;
 };
 
-#endif // AUDIOINTERFACE_H
+#endif // AUDIOENCODER_H

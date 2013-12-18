@@ -26,12 +26,12 @@
 #include "iaxclient/lib/iaxclient.h"
 
 
-class AudioClient : public QObject
+class IaxClient : public QObject
 {
     Q_OBJECT
 public:
-    explicit AudioClient(QObject *parent = 0);
-    ~AudioClient();
+    explicit IaxClient(QObject *parent = 0);
+    ~IaxClient();
     void init();
     void iaxTextEvent(struct iaxc_ev_text text);
     void iaxCallEvent(struct iaxc_ev_call_state state);

@@ -19,7 +19,7 @@
 Controller::Controller(DatabaseApi *db, QObject *parent) : QObject(parent)
 {
     _db = db;
-    _client = new AudioClient;
+    _client = new IaxClient;
     _conference_stations = new QVector<Station*>;
     _dialing_number = "";
     _connectable = false;
@@ -82,9 +82,8 @@ void Controller::haveCall(QVector<char> *dtmf)
         {
             QString voice= "Trying a direct call.";
             emit speak(voice);
-
-            _client->setProperties("test","test",s->_ip);
             _client->init();
+            _client->setProperties("test","test",s->_ip);
             _client->makeCall("777");
             _in_conference =1;
             _conference_id = "777";
@@ -110,8 +109,8 @@ void Controller::haveCall(QVector<char> *dtmf)
 
             QString voice= "Joining the station in the conference.";
             emit speak(voice);
-            _client->setProperties(server->_username,server->_password,server->_ip);
             _client->init();
+            _client->setProperties(server->_username,server->_password,server->_ip);
             _client->makeCall(s->_conference_id.toStdString());
             _in_conference =1;
             _conference_id = s->_conference_id;
@@ -132,8 +131,8 @@ void Controller::haveCall(QVector<char> *dtmf)
             QString voice= "Calling the station into the conference.";
             emit speak(voice);
             QObject::connect(_client,SIGNAL(callEnded()),this,SLOT(disconnectedFromCall()));
-            _client->setProperties(server->_username,server->_password,server->_ip);
             _client->init();
+            _client->setProperties(server->_username,server->_password,server->_ip);
             _client->makeCall(_conference_id.toStdString());
             _in_conference =1;
             _conference_stations->append(s);
@@ -281,9 +280,9 @@ void Controller::joinConference(QString number, int id, int server_id)
     voice = "Called by " + caller;
     emit speak(voice);
     QObject::connect(_client,SIGNAL(callEnded()),this,SLOT(disconnectedFromCall()));
+    _client->init();
     //_client->setProperties(server->_username,server->_password,server->_ip);
     _client->setProperties("adrian","supersecret","192.168.1.2");
-    _client->init();
     _client->makeCall(number.toStdString());
     _in_conference =1;
 
@@ -305,7 +304,16 @@ void Controller::disconnectedFromCall()
                 //FIXME:
                 _telnet->disconnectHost();
                 _telnet->connectHost(s->_ip,CONTROL_PORT);
-                _telnet->send("LEAVE","1");
+                int retries = 0;
+                while((_telnet->connectionStatus()!=1) && (retries<3))
+                {
+                    QCoreApplication::processEvents();
+                    retries++;
+                }
+                if(_telnet->connectionStatus()==1)
+                {
+                    _telnet->send("LEAVE","1");
+                }
             }
             s->_in_call=0;
             s->_called_by=0;

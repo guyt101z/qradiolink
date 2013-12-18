@@ -30,7 +30,7 @@ class DtmfDecoder : public QObject
 {
     Q_OBJECT
 public:
-    explicit DtmfDecoder(QObject *parent = 0);
+    explicit DtmfDecoder(AudioInterface *audio, QObject *parent = 0);
     ~DtmfDecoder();
     void stop();
     void process(bool p);
@@ -101,13 +101,8 @@ private:
     char _previous_letter;
     bool _processing;
     bool _receiving;
-    const char _digit_map[4][4]=
-        {
-        { '1', '2', '3', 'A' },
-        { '4', '5', '6', 'B' },
-        { '7', '8', '9', 'C' },
-        { '*', '0', '#', 'D' },
-        };
+    AudioInterface *_audio;
+
 };
 
 #endif // DTMFDECODER_H

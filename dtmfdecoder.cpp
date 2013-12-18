@@ -28,7 +28,7 @@ using std::log10;
 
 
 
-DtmfDecoder::DtmfDecoder(QObject *parent) :
+DtmfDecoder::DtmfDecoder(AudioInterface *audio, QObject *parent) :
     QObject(parent)
 {
     _stop=false;
@@ -47,6 +47,7 @@ DtmfDecoder::DtmfDecoder(QObject *parent) :
     _previous_letter= ' ';
     _processing = true;
     _receiving = false;
+    _audio = audio;
 }
 
 DtmfDecoder::~DtmfDecoder()
@@ -85,7 +86,7 @@ void DtmfDecoder::run()
     char call_direct_key='D';
     char command_key='#';
     char clear_key = '*';
-    AudioInterface *audio= new AudioInterface(0,samp_rate,1);
+    //AudioInterface *audio= new AudioInterface(0,samp_rate,1);
 
     while(true)
     {
@@ -103,7 +104,7 @@ void DtmfDecoder::run()
 
         float *buf = new float[buffer_size];
 
-        audio->read(buf, buffer_size);
+        _audio->read(buf, buffer_size);
         /*
         float sum=0;
         for(int x=0;x<buffer_size;x++)
@@ -186,7 +187,7 @@ void DtmfDecoder::run()
     }
 
     finish:
-    delete audio;
+    //delete audio;
     emit finished();
 }
 

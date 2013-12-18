@@ -14,11 +14,15 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-#ifndef TELNETCLIENT_H
-#define TELNETCLIENT_H
+#ifndef SSLCLIENT_H
+#define SSLCLIENT_H
 
-#include <QTcpSocket>
+#include <QSslSocket>
+#include <QByteArray>
+#include <QSslCipher>
+#include <QSslCertificate>
 #include <QAbstractSocket>
+#include <QUdpSocket>
 #include <QHostAddress>
 #include <QObject>
 #include <QString>
@@ -28,31 +32,35 @@
 #include <QLatin1String>
 #include "config_defines.h"
 
-class TelnetClient : public QObject
+class SSLClient : public QObject
 {
     Q_OBJECT
 public:
-    explicit TelnetClient(QObject *parent = 0);
-    ~TelnetClient();
+    explicit SSLClient(QObject *parent = 0);
+    ~SSLClient();
 
     void send(QString prop_name, QString value);
-    void sendBin(const char *payload);
+    void sendBin(quint8 *payload, quint64 size);
+    void sendUDP(quint8 *payload, quint64 size);
     int connectionStatus();
     void disconnectHost();
+    QSslCipher getCipher();
     unsigned inline status() {return _status;}
 
 public slots:
     void processData();
     void connectHost(const QString &host, const unsigned &port);
+    void readPendingDatagrams();
 
 signals:
     void connectionFailure();
     void connectedToHost();
-    void haveMessage(QString prop);
+    void haveMessage(QByteArray buf);
     void disconnectedFromHost();
 
 private:
-    QTcpSocket *_socket;
+    QSslSocket *_socket;
+    QUdpSocket *_udp_socket;
     unsigned _connection_tries;
     unsigned _status;
     QString _hostname;
@@ -61,8 +69,9 @@ private:
 
 private slots:
     void connectionSuccess();
-    void connectionFailed(QAbstractSocket::SocketError error);
+    void connectionFailed(QAbstractSocket::SocketError);
+    void sslError(QList<QSslError> errors);
 
 };
 
-#endif // TELNETCLIENT_H
+#endif // SSLCLIENT_H

@@ -22,12 +22,18 @@ SOURCES += main.cpp \
     telnetclient.cpp \
     telnetserver.cpp \
     serverwrapper.cpp \
-    audioclient.cpp \
     dtmfcommand.cpp \
     databaseapi.cpp \
     controller.cpp \
     station.cpp \
-    server.cpp
+    server.cpp \
+    ext/CryptState.cpp \
+    ext/Timer.cpp \
+    ext/Mumble.pb.cc \
+    audioencoder.cpp \
+    mumbleclient.cpp \
+    sslclient.cpp \
+    iaxclient.cpp
 
 HEADERS += speech.h \
     audiointerface.h \
@@ -35,17 +41,26 @@ HEADERS += speech.h \
     telnetclient.h \
     telnetserver.h \
     serverwrapper.h \
-    audioclient.h \
     dtmfcommand.h \
     databaseapi.h \
     controller.h \
     station.h \
     server.h \
-    config_defines.h
+    config_defines.h \
+    ext/CryptState.h \
+    ext/Timer.h \
+    ext/Mumble.pb.h \
+    ext/murmur_pch.h \
+    ext/PacketDataStream.h \
+    audioencoder.h \
+    mumbleclient.h \
+    sslclient.h \
+    iaxclient.h
 
 
 
-unix:!symbian: LIBS += -lestools -lFestival -lpulse-simple -L$$PWD/iaxclient/build -liaxclient_lib
+
+unix:!symbian: LIBS += -lprotobuf -lopus -lestools -lFestival -lpulse-simple -L$$PWD/iaxclient/build -liaxclient_lib
 DEPENDPATH += $$PWD/iaxclient/build
 INCLUDEPATH += /usr/include/speech_tools
 

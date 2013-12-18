@@ -14,10 +14,10 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-#include "audioclient.h"
+#include "iaxclient.h"
 
 
-AudioClient::AudioClient(QObject *parent) :
+IaxClient::IaxClient(QObject *parent) :
     QObject(parent)
 {
     _initialized = false;
@@ -25,11 +25,11 @@ AudioClient::AudioClient(QObject *parent) :
     _register =true;
 }
 
-AudioClient::~AudioClient()
+IaxClient::~IaxClient()
 {
 }
 
-static AudioClient* static_instance = NULL;
+static IaxClient* static_instance = NULL;
 
 static int iaxc_callback( iaxc_event e )
 {
@@ -49,7 +49,7 @@ static int iaxc_callback( iaxc_event e )
     return 1;
 }
 
-void AudioClient::iaxTextEvent(struct iaxc_ev_text text)
+void IaxClient::iaxTextEvent(struct iaxc_ev_text text)
 {
     if( (text.type == IAXC_TEXT_TYPE_STATUS ||
         text.type == IAXC_TEXT_TYPE_IAX) )
@@ -58,7 +58,7 @@ void AudioClient::iaxTextEvent(struct iaxc_ev_text text)
     }
 }
 
-void AudioClient::iaxCallEvent(struct iaxc_ev_call_state state)
+void IaxClient::iaxCallEvent(struct iaxc_ev_call_state state)
 {
 
     qDebug() << state.remote;
@@ -80,24 +80,24 @@ void AudioClient::iaxCallEvent(struct iaxc_ev_call_state state)
 
 }
 
-void AudioClient::setProperties(QString username, QString password, QString server)
+void IaxClient::setProperties(QString username, QString password, QString server)
 {
     _username = username;
     _password = password;
     _server = server;
 }
 
-void AudioClient::end()
+void IaxClient::end()
 {
     iaxc_shutdown();
 }
 
 
-void AudioClient::init()
+void IaxClient::init()
 {
 
 
-    iaxc_set_preferred_source_udp_port(-1);
+    //iaxc_set_preferred_source_udp_port(-1);
     if( iaxc_initialize(NUM_CALLS))
     {
         qDebug() << "Audio: cannot initialize iaxclient";
@@ -106,7 +106,7 @@ void AudioClient::init()
     }
 
     static_instance = this;
-    iaxc_set_event_callback( iaxc_callback );
+
     // FIXME: To be implemented in IAX audio driver
     //iaxc_mic_boost_set( _micBoost_node->getIntValue() );
     QString app = "QRadioLink";
@@ -114,8 +114,9 @@ void AudioClient::init()
     iaxc_set_callerid( callsign.toUtf8(), app.toUtf8() );
     iaxc_set_formats (IAXC_FORMAT_SPEEX, IAXC_FORMAT_SPEEX);
     iaxc_set_speex_settings(1, 5, 0, 1, 0, 3);
-    iaxc_set_filters(IAXC_FILTER_AGC | IAXC_FILTER_DENOISE);
+    //iaxc_set_filters(IAXC_FILTER_AGC | IAXC_FILTER_DENOISE);
     iaxc_set_silence_threshold(-20.0);
+    iaxc_set_event_callback( iaxc_callback );
     iaxc_set_audio_output(0);
     iaxc_start_processing_thread ();
     iaxc_millisleep (5);
@@ -165,10 +166,10 @@ void AudioClient::init()
             int output_id = devs[i].devID;
     }
     //TODO: set volumes in a separate function
-    iaxc_input_level_set( 0.96 );
-    int volume =0.96;
+    iaxc_input_level_set( 1.0 );
+    int volume =1.0;
     iaxc_output_level_set( volume );
-    iaxc_millisleep(50);
+    iaxc_millisleep(5);
     //iaxc_set_filters(IAXC_FILTER_DENOISE | IAXC_FILTER_AGC | IAXC_FILTER_ECHO);
     //iaxc_debug_iax_set(2);
 
@@ -180,7 +181,7 @@ void AudioClient::init()
 
 }
 
-void AudioClient::makeCall(std::string number)
+void IaxClient::makeCall(std::string number)
 {
 
     int call0;
@@ -196,17 +197,17 @@ void AudioClient::makeCall(std::string number)
     if( call0 == -1 )
         qDebug() << "Audio: cannot call " << num.c_str();
     _call = call0;
-
+    iaxc_millisleep (100);
 }
 
-void AudioClient::disconnectCall()
+void IaxClient::disconnectCall()
 {
 
     iaxc_dump_all_calls();
 
 }
 
-void AudioClient::sendDTMF(char letter)
+void IaxClient::sendDTMF(char letter)
 {
     iaxc_send_dtmf(letter);
 }

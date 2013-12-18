@@ -32,7 +32,7 @@ public:
     void speak(char* text);
     void speakChar(char c);
     */
-    AudioInterface *_audio;
+    //AudioInterface *_audio;
     
 signals:
     
