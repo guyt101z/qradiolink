@@ -218,9 +218,9 @@ char DtmfDecoder::decode(float *buf,int buffer_size,int samp_rate, float treshho
     }
     if(first<0)
         return ' ';
-    float first_test_tone_power = power(goertzel(buf, buffer_size, _dtmf_frequencies[first]+100, samp_rate));
-    if((fabs(largest_tone_power - first_test_tone_power) < 10) )
-        return ' ';
+    //float first_test_tone_power = power(goertzel(buf, buffer_size, _dtmf_frequencies[first]+100, samp_rate));
+    //if((fabs(largest_tone_power - first_test_tone_power) < 10) )
+     //   return ' ';
     float first_tone_power=0.0;
     if(tones[0]!=0)
         first_tone_power=largest_tone_power;
@@ -245,9 +245,9 @@ char DtmfDecoder::decode(float *buf,int buffer_size,int samp_rate, float treshho
     }
     if(second<0)
         return ' ';
-    float second_test_tone_power = power(goertzel(buf, buffer_size, _dtmf_frequencies[second]+100, samp_rate));
-    if((fabs(largest_tone_power - second_test_tone_power) < 10))
-        return ' ';
+    //float second_test_tone_power = power(goertzel(buf, buffer_size, _dtmf_frequencies[second]+100, samp_rate));
+    //if((fabs(largest_tone_power - second_test_tone_power) < 10))
+     //   return ' ';
 
     float second_tone_power=0.0;
     if(tones[1]!=0)
@@ -514,7 +514,7 @@ void DtmfDecoder::analyse(int analysis_buffer)
 /** Generates a tone of the specified frequency
 *  Gotten from: http://groups.google.com/groups?hl=en&lr=&ie=UTF-8&oe=UTF-8&safe=off&selm=3c641e%243jn%40uicsl.csl.uiuc.edu
 */
-float *DtmfDecoder::makeTone(int samplerate, float frequency, int length, float gain) {
+float *makeTone(int samplerate, float frequency, int length, float gain) {
     //y(n) = 2 * cos(A) * y(n-1) - y(n-2)
     //A= (frequency of interest) * 2 * PI / (sampling frequency)
     //A is in radians.
@@ -533,7 +533,7 @@ float *DtmfDecoder::makeTone(int samplerate, float frequency, int length, float 
     return tone;
 }
 
-float DtmfDecoder::goertzel(float *x, int N, float frequency, int samplerate) {
+float goertzel(float *x, int N, float frequency, int samplerate) {
     float Skn, Skn1, Skn2;
     Skn = Skn1 = Skn2 = 0;
 
@@ -548,13 +548,13 @@ float DtmfDecoder::goertzel(float *x, int N, float frequency, int samplerate) {
     return (Skn - WNk*Skn1);
 }
 
-float DtmfDecoder::power(float value) {
+float power(float value) {
     if(fabs(value-0.0)<=0.0001) return 0;
     return 20*log10(fabs(value));
 }
 
 // this one doesn't ignore complex stuff
-float DtmfDecoder::goertzel_magnitude(float* data, int numSamples,int TARGET_FREQUENCY,int SAMPLING_RATE )
+float goertzel_magnitude(float* data, int numSamples,int TARGET_FREQUENCY,int SAMPLING_RATE )
 {
     int     k,i;
     float   floatnumSamples;

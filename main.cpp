@@ -24,7 +24,7 @@
 #include "databaseapi.h"
 #include "serverwrapper.h"
 #include "speech.h"
-
+#include "config_defines.h"
 #include "controller.h"
 #include "mumbleclient.h"
 #include "festival/festival.h"
@@ -38,10 +38,11 @@ int main(int argc, char *argv[])
     qDebug() << start_time;
     DatabaseApi db;
     AudioInterface audio;
-
-    Controller *controller = new Controller(&db);
     MumbleClient client;
-    client.connectToServer("localhost",64738);
+    client.connectToServer("127.0.0.1",MUMBLE_PORT);
+    Controller *controller = new Controller(&db,&client);
+
+
 
     QThread *t1= new QThread;
     DtmfDecoder *decoder = new DtmfDecoder(&audio);
@@ -63,8 +64,8 @@ int main(int argc, char *argv[])
     QObject::connect(telnet_server_wrapper,SIGNAL(pingServer()),&client,SLOT(pingServer()));
     QObject::connect(telnet_server_wrapper,SIGNAL(audioData(short*,short)),&client,SLOT(processAudio(short*,short)));
     QObject::connect(&client,SIGNAL(pcmAudio(short*,short)),telnet_server_wrapper,SLOT(pcmAudio(short*,short)));
-    QObject::connect(telnet_server_wrapper,SIGNAL(joinConference(QString,int,int)),controller,SLOT(joinConference(QString,int,int)));
-    QObject::connect(telnet_server_wrapper,SIGNAL(leaveConference(QString,int,int)),controller,SLOT(leaveConference(QString,int,int)));
+    QObject::connect(telnet_server_wrapper,SIGNAL(joinConference(int,int,int)),controller,SLOT(joinConference(int,int,int)));
+    QObject::connect(telnet_server_wrapper,SIGNAL(leaveConference(int,int,int)),controller,SLOT(leaveConference(int,int,int)));
     QObject::connect(t2, SIGNAL(started()), telnet_server_wrapper, SLOT(run()));
     QObject::connect(telnet_server_wrapper, SIGNAL(finished()), t2, SLOT(quit()));
     QObject::connect(telnet_server_wrapper, SIGNAL(finished()), telnet_server_wrapper, SLOT(deleteLater()));

@@ -30,6 +30,8 @@
 #include <QCoreApplication>
 #include "databaseapi.h"
 #include "config_defines.h"
+#include "ext/dec.h"
+#include "ext/QRadioLink.pb.h"
 
 class TelnetServer : public QObject
 {
@@ -41,10 +43,10 @@ public:
 
 signals:
     void finished();
-    void joinConference( QString number, int id, int server_id);
-    void leaveConference( QString number, int id, int server_id);
+    void joinConference( int number, int id, int server_id);
+    void leaveConference( int number, int id, int server_id);
 public slots:
-    void run();
+
 
 private slots:
     void getConnection();
@@ -62,7 +64,7 @@ private:
     unsigned _listen_port;
     QVector<QTcpSocket*> _unconnected_clients;
     QVector<QTcpSocket*> _connected_clients;
-    QString processCommand(QString command);
+    QByteArray processCommand(QByteArray data);
 
 };
 

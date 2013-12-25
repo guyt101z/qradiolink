@@ -60,7 +60,7 @@ Station* DatabaseApi::get_station_by_radio_id(QString radio_id)
         station->_ip = query.value(ip_idx).toString();
         station->_hostname = query.value(hostname_idx).toString();
         station->_in_call = query.value(in_call_idx).toInt();
-        station->_conference_id = query.value(conference_id_idx).toString();
+        station->_conference_id = query.value(conference_id_idx).toInt();
         station->_called_by = query.value(called_by_idx).toInt();
         station->_call_time = query.value(call_time_idx).toInt();
         station->_repeater = query.value(repeater_idx).toInt();
@@ -99,7 +99,7 @@ Station* DatabaseApi::get_station_by_id(int id)
         station->_ip = query.value(ip_idx).toString();
         station->_hostname = query.value(hostname_idx).toString();
         station->_in_call = query.value(in_call_idx).toInt();
-        station->_conference_id = query.value(conference_id_idx).toString();
+        station->_conference_id = query.value(conference_id_idx).toInt();
         station->_called_by = query.value(called_by_idx).toInt();
         station->_call_time = query.value(call_time_idx).toInt();
         station->_repeater = query.value(repeater_idx).toInt();
@@ -137,7 +137,7 @@ Station* DatabaseApi::get_local_station()
         station->_ip = query.value(ip_idx).toString();
         station->_hostname = query.value(hostname_idx).toString();
         station->_in_call = query.value(in_call_idx).toInt();
-        station->_conference_id = query.value(conference_id_idx).toString();
+        station->_conference_id = query.value(conference_id_idx).toInt();
         station->_called_by = query.value(called_by_idx).toInt();
         station->_call_time = query.value(call_time_idx).toInt();
         station->_repeater = query.value(repeater_idx).toInt();

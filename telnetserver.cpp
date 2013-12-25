@@ -84,32 +84,14 @@ void TelnetServer::connectionSuccess()
 }
 
 
-void TelnetServer::run()
-{
-    /*
 
-    while(true)
-    {
-        if(_stop)
-            break;
-        QCoreApplication::processEvents();
-        for(int i=0;i<_connected_clients.size();i++)
-        {
-            QTcpSocket *socket = _connected_clients.at(i);
-
-
-        }
-    }
-
-    */
-}
 
 void TelnetServer::processData()
 {
 
     QTcpSocket *socket = dynamic_cast<QTcpSocket*>(QObject::sender());
 
-    QString line;
+    QByteArray data;
 
     bool endOfLine = false;
 
@@ -123,63 +105,71 @@ void TelnetServer::processData()
             if (bytesRead == sizeof(ch))
             {
                 //cnt++;
-
-                if ((ch == '\r'))
+                data.append(ch);
+                if (socket->bytesAvailable()==0)
                 {
                     endOfLine = true;
-                    socket->read(&ch, sizeof(ch)); // for newline
 
                 }
-                else
-                {
-                    line.append( ch );
-                }
+
             }
         }
         else
         {
-            continue;
+            break;
         }
 
 
     }
-    qDebug() << "Received message from: " << socket->peerAddress().toString() << line;
-    QString response = processCommand(line);
-    socket->write(response.toUtf8());
+    //qDebug() << "Received message from: " << socket->peerAddress().toString() << line;
+    QByteArray response = processCommand(data);
+    socket->write(response.data(),response.size());
 
 }
 
-QString TelnetServer::processCommand(QString command)
+QByteArray TelnetServer::processCommand(QByteArray data)
 {
-    QStringList pre = command.split(";");
-    if(pre.size()<2)
+    quint8 *type = reinterpret_cast<quint8*>(data.at(0));
+    quint8 *size = reinterpret_cast<quint8*>(data.at(1));
+    QByteArray command = data.remove(0,2);
+    if(*size < 2)
     {
-        qDebug() << "Invalid command " << command;
-        return "";
+        qDebug() << "Invalid command " << *type;
+        return NULL;
     }
-    if(pre[0]=="PARAMETERS")
+    if(*type == Parameters)
     {
-        Station* s=_db->get_station_by_id(pre[1].toInt());
-        QString response ="PARAMETERS;" +
-                QString::number(s->_in_call) +";"+
-                s->_conference_id +
-                ";" + QString::number(s->_called_by) + CRLF;
-        return response;
+        QRadioLink::Parameters param;
+        param.ParseFromArray(command.data(),command.size());
+        Station* s=_db->get_station_by_id(param.station_id());
+        param.set_caller_id(s->_called_by);
+        param.set_in_call(s->_in_call);
+        param.set_channel_id(s->_conference_id);
+        quint8 size = param.ByteSize();
+        char bin_data[size+2];
+        param.SerializeToArray(bin_data+2, size);
+        bin_data[0] = data.at(0);
+        bin_data[1] = size;
+
+        return QByteArray(bin_data);
     }
-    else if(pre[0]=="JOIN")
+    else if(*type == JoinConference)
     {
-        QString response = "JOIN;1" + CRLF;
-        emit joinConference(pre[1],pre[2].toInt(),pre[3].toInt());
-        return response;
+        QRadioLink::JoinConference join;
+        join.ParseFromArray(command.data(),command.size());
+        emit joinConference(join.channel_id(),join.caller_id(),join.server_id());
+        return QByteArray(0);
     }
-    else if(pre[0]=="LEAVE")
+    else if(*type == LeaveConference)
     {
-        QString response = "LEAVE;1" + CRLF;
-        emit leaveConference(pre[1],pre[2].toInt(),pre[3].toInt());
-        return response;
+        QRadioLink::LeaveConference leave;
+        leave.ParseFromArray(command.data(),command.size());
+        if(leave.leave())
+            emit leaveConference(0,0,0);
+        return QByteArray(0);
     }
     else
     {
-        return "COMMAND;-1" + CRLF;
+        return QByteArray(0);
     }
 }

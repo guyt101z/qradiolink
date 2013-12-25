@@ -16,10 +16,14 @@
 
 #include "controller.h"
 
-Controller::Controller(DatabaseApi *db, QObject *parent) : QObject(parent)
+Controller::Controller(DatabaseApi *db, MumbleClient *mumble, QObject *parent) : QObject(parent)
 {
     _db = db;
+#ifndef MUMBLE
     _client = new IaxClient;
+#else
+
+#endif
     _conference_stations = new QVector<Station*>;
     _dialing_number = "";
     _connectable = false;
@@ -29,16 +33,21 @@ Controller::Controller(DatabaseApi *db, QObject *parent) : QObject(parent)
     _id = s->_id;
     delete s;
     _telnet = new TelnetClient;
-    //_client->init();
+    _mumble = mumble;
+    _conference_id = -1;
 }
 
 Controller::~Controller()
 {
+#ifndef MUMBLE
     _client->end();
+#endif
+    _mumble->disconnectFromServer();
     delete _telnet;
     delete _conference_stations;
-
+#ifndef MUMBLE
     delete _client;
+#endif
 }
 
 void Controller::haveCall(QVector<char> *dtmf)
@@ -78,6 +87,7 @@ void Controller::haveCall(QVector<char> *dtmf)
         {
             QCoreApplication::processEvents();
         }
+#ifndef MUMBLE
         if(p2p && (s->_in_call == 0))
         {
             QString voice= "Trying a direct call.";
@@ -90,6 +100,7 @@ void Controller::haveCall(QVector<char> *dtmf)
             _conference_stations->append(s);
             return;
         }
+#endif
 
         QVector<Server*> servers = _db->get_servers();
         if(servers.size() < 1)
@@ -109,9 +120,14 @@ void Controller::haveCall(QVector<char> *dtmf)
 
             QString voice= "Joining the station in the conference.";
             emit speak(voice);
+#ifdef MUMBLE
+            _mumble->connectToServer(server->_ip,MUMBLE_PORT);
+            _mumble->joinChannel(s->_conference_id);
+#else
             _client->init();
             _client->setProperties(server->_username,server->_password,server->_ip);
             _client->makeCall(s->_conference_id.toStdString());
+#endif
             _in_conference =1;
             _conference_id = s->_conference_id;
             _conference_stations->append(s);
@@ -125,15 +141,34 @@ void Controller::haveCall(QVector<char> *dtmf)
         else
         {
             // if it's not, get the number of the first free conference and make a new conference
-            _conference_id = getFreeConference();
-
-            _telnet->send("JOIN",_conference_id+";"+QString::number(_id)+";"+QString::number(server->_id));
-            QString voice= "Calling the station into the conference.";
-            emit speak(voice);
-            QObject::connect(_client,SIGNAL(callEnded()),this,SLOT(disconnectedFromCall()));
+#ifdef MUMBLE
+            _mumble->connectToServer(server->_ip,MUMBLE_PORT);
+            QString channel = _mumble->createChannel();
+            if(channel.length() > 1)
+            {
+                _conference_id = _mumble->getChannelId();
+            }
+#else
             _client->init();
             _client->setProperties(server->_username,server->_password,server->_ip);
             _client->makeCall(_conference_id.toStdString());
+             QObject::connect(_client,SIGNAL(callEnded()),this,SLOT(disconnectedFromCall()));
+#endif
+             QRadioLink::JoinConference join;
+             join.set_caller_id(_id);
+             join.set_channel_id(_conference_id);
+             join.set_server_id(server->_id);
+             int size = join.ByteSize();
+             char data[size+2];
+             join.SerializeToArray(data+2, size);
+             data[0]= JoinConference;
+             data[1] = size;
+             QByteArray bin_data(data);
+            _telnet->sendBin(bin_data.constData(), bin_data.size());
+            QString voice= "Calling the station into the conference.";
+            emit speak(voice);
+
+
             _in_conference =1;
             _conference_stations->append(s);
             Station *st = _db->get_local_station();
@@ -172,14 +207,20 @@ void Controller::haveCommand(QVector<char> *dtmf)
         QString voice= "Disconnecting from the conference.";
         emit speak(voice);
         disconnectedFromCall();
+#ifndef MUMBLE
         _client->disconnectCall();
+#endif
+        _mumble->disconnectFromServer();
 
     }
     if(number=="99")
     {
         QString voice= "Disconnecting from the conference.";
         emit speak(voice);
+#ifndef MUMBLE
         _client->disconnectCall();
+#endif
+        _mumble->disconnectFromServer();
     }
 
 }
@@ -230,34 +271,45 @@ void Controller::getStationParameters(Station *s)
     _current_station = s;
     _current_station->_waiting=1;
 
-    QObject::connect(_telnet,SIGNAL(haveMessage(QString)),this,SLOT(setStationParameters(QString)));
-    _telnet->send("PARAMETERS",QString::number(s->_id));
+    QObject::connect(_telnet,SIGNAL(haveMessage(QByteArray)),this,SLOT(setStationParameters(QByteArray)));
+    QRadioLink::Parameters params;
+    params.set_station_id(s->_id);
+    int size = params.ByteSize();
+    char data[size+2];
+    params.SerializeToArray(data+2, size);\
+    data[0] = Parameters;
+    data[1] = size;
+    QByteArray bin_data( data);
+    _telnet->sendBin(bin_data.constData(), bin_data.size());
 
 }
 
-void Controller::setStationParameters(QString param)
+void Controller::setStationParameters(QByteArray data)
 {
-    QStringList pre = param.split(";");
-    if(pre.size()<2)
+    if(data[0]!=Parameters)
     {
         qDebug() << "invalid message";
+        return;
     }
-    _current_station->_in_call=pre[1].toInt();
-    _current_station->_conference_id=pre[2];
-    _current_station->_called_by=pre[3].toInt();
+    data.remove(0,2);
+    QRadioLink::Parameters param;
+    param.ParseFromArray(data.constData(),data.size());
+    _current_station->_in_call=param.in_call();
+    _current_station->_conference_id=param.channel_id();
+    _current_station->_called_by = param.caller_id();
     _current_station->_waiting=0;
     _db->update_station_parameters(_current_station);
-    QObject::disconnect(_telnet,SIGNAL(haveMessage(QString)),this,SLOT(setStationParameters(QString)));
+    QObject::disconnect(_telnet,SIGNAL(haveMessage(QByteArray)),this,SLOT(setStationParameters(QByteArray)));
 }
 
-QString Controller::getFreeConference()
+int Controller::getChannel()
 {
-    return "777"; //TODO:
+    return _conference_id; //TODO:
 }
 
-void Controller::joinConference(QString number, int id, int server_id)
+void Controller::joinConference(int number, int id, int server_id)
 {
-    /*
+
     Server *server = _db->get_server_by_id(server_id);
     if(server->_id < 1)
     {
@@ -265,7 +317,7 @@ void Controller::joinConference(QString number, int id, int server_id)
         emit speak(voice);
         return;
     }
-    */
+
     QString voice= "Joining conference.";
     emit speak(voice);
     Station *s = _db->get_local_station();
@@ -279,11 +331,18 @@ void Controller::joinConference(QString number, int id, int server_id)
     delete s;
     voice = "Called by " + caller;
     emit speak(voice);
+
+
+#ifdef MUMBLE
+    _mumble->connectToServer(server->_ip,MUMBLE_PORT);
+    _mumble->joinChannel(number);
+#else
     QObject::connect(_client,SIGNAL(callEnded()),this,SLOT(disconnectedFromCall()));
     _client->init();
     //_client->setProperties(server->_username,server->_password,server->_ip);
     _client->setProperties("adrian","supersecret","192.168.1.2");
     _client->makeCall(number.toStdString());
+#endif
     _in_conference =1;
 
     //_conference_stations->append(_current_station);
@@ -293,7 +352,9 @@ void Controller::disconnectedFromCall()
 {
     QString voice= "Conference has ended.";
     emit speak(voice);
+#ifndef MUMBLE
     QObject::disconnect(_client,SIGNAL(callEnded()),this,SLOT(disconnectedFromCall()));
+#endif
     if(_in_conference==1)
     {
         for(int i =0;i<_conference_stations->size();i++)
@@ -312,12 +373,20 @@ void Controller::disconnectedFromCall()
                 }
                 if(_telnet->connectionStatus()==1)
                 {
-                    _telnet->send("LEAVE","1");
+                    QRadioLink::LeaveConference msg_leave;
+                    msg_leave.set_leave(true);
+                    int size = msg_leave.ByteSize();
+                    char data[size+2];
+                    msg_leave.SerializeToArray(data+2, size);
+                    data[0] = LeaveConference;
+                    data[1] = size;
+                    QByteArray bin_msg(data);
+                    _telnet->sendBin(bin_msg.constData(), bin_msg.size());
                 }
             }
             s->_in_call=0;
             s->_called_by=0;
-            s->_conference_id="";
+            s->_conference_id=-1;
             _db->update_station_parameters(s);
             delete s;
         }
@@ -326,7 +395,7 @@ void Controller::disconnectedFromCall()
     _in_conference=0;
     Station *s = _db->get_local_station();
     s->_called_by=0;
-    s->_conference_id="";
+    s->_conference_id=-1;
     s->_in_call=0;
     _db->update_station_parameters(s);
     delete s;
@@ -337,8 +406,11 @@ void Controller::disconnectedLink()
 
 }
 
-void Controller::leaveConference(QString number, int id, int server_id)
+void Controller::leaveConference(int number, int id, int server_id)
 {
     disconnectedFromCall();
+#ifndef MUMBLE
     _client->disconnectCall();
+#endif
+    _mumble->disconnectFromServer();
 }

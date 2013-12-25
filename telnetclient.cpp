@@ -102,9 +102,9 @@ void TelnetClient::send(QString prop_name, QString value)
 
 }
 
-void TelnetClient::sendBin(const char *payload)
+void TelnetClient::sendBin(const char *payload, int size)
 {
-    _socket->write(payload);
+    _socket->write(payload, size);
     _socket->flush();
 }
 
@@ -112,7 +112,7 @@ void TelnetClient::processData()
 {
     if (_status !=1) return;
 
-    QString line;
+    QByteArray data;
 
     bool endOfLine = false;
 
@@ -128,28 +128,27 @@ void TelnetClient::processData()
                 {
                     //cnt++;
 
-                    if ((ch == '\r'))
+                    if (_socket->bytesAvailable()==0)
                     {
                         endOfLine = true;
-                        _socket->read(&ch, sizeof(ch)); // for newline
 
                     }
-                    else
-                    {
-                        line.append( ch );
-                    }
+
+
+                    data.append( ch );
+
                 }
             }
             else
             {
-                continue;
+                break;
             }
         }
 
     }
 
-    qDebug() << "Received message from " << _socket->peerAddress().toString() << " :" << line;
-    emit haveMessage(line);
+    //qDebug() << "Received message from " << _socket->peerAddress().toString() << " :" << line;
+    emit haveMessage(data);
 }
 
 

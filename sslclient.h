@@ -39,7 +39,6 @@ public:
     explicit SSLClient(QObject *parent = 0);
     ~SSLClient();
 
-    void send(QString prop_name, QString value);
     void sendBin(quint8 *payload, quint64 size);
     void sendUDP(quint8 *payload, quint64 size);
     int connectionStatus();
@@ -56,6 +55,7 @@ signals:
     void connectionFailure();
     void connectedToHost();
     void haveMessage(QByteArray buf);
+    void haveUDPData(QByteArray buf);
     void disconnectedFromHost();
 
 private:

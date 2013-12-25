@@ -29,6 +29,7 @@
 #include "sslclient.h"
 #include "audiointerface.h"
 #include "opus/opus.h"
+#include "config_defines.h"
 
 
 class MumbleClient : public QObject
@@ -38,7 +39,8 @@ public:
     explicit MumbleClient(QObject *parent = 0);
     ~MumbleClient();
     void connectToServer(QString address, unsigned port);
-    void sendUDPMessage(quint8 *message, quint16 type, int size);
+    void disconnectFromServer();
+    void sendUDPMessage(quint8 *message, int size);
     void sendMessage(quint8 *message, quint16 type, int size);
     void setupEncryption(quint8 *message, quint64 size);
 
@@ -51,6 +53,7 @@ public:
     QString getChannelName();
     int getChannelId();
     QString createChannel();
+    void joinChannel(int id);
 signals:
     void channelName(QString name);
     void pcmAudio(short *pcm, short size);
@@ -60,6 +63,7 @@ public slots:
     void authenticate();
     void pingServer();
     void processProtoMessage(QByteArray data);
+    void processUDPData(QByteArray data);
     void sendUDPPing();
     void processAudio(short *audiobuffer, short audiobuffersize);
 
@@ -82,7 +86,7 @@ private:
 
     
 };
-void gen_random_str(char *str, const int len);
+void genRandomStr(char *str, const int len);
 void addPreamble(quint8 *buffer, quint16 type, quint32 len);
 void getPreamble(quint8 *buffer, int *type, int *len);
 

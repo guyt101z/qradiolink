@@ -28,6 +28,8 @@
 #include "speech.h"
 #include "mumbleclient.h"
 
+
+
 class ServerWrapper : public QObject
 {
     Q_OBJECT
@@ -37,15 +39,15 @@ public:
 
 signals:
     void finished();
-    void joinConference(QString number, int id, int server_id);
-    void leaveConference(QString number, int id, int server_id);
+    void joinConference(int number, int id, int server_id);
+    void leaveConference(int number, int id, int server_id);
     void pingServer();
     void audioData(short *data, short size);
 public slots:
     void run();
     void addSpeech(QString);
-    void connectToConference(QString ip, int id, int server_id);
-    void disconnectFromConference(QString number, int id, int server_id);
+    void connectToConference(int ip, int id, int server_id);
+    void disconnectFromConference(int number, int id, int server_id);
     void pcmAudio(short *pcm, short samples);
 
 private:

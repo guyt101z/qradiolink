@@ -17,10 +17,7 @@
 #include "mumbleclient.h"
 
 
-#define PROTVER_MAJOR 1
-#define PROTVER_MINOR 2
-#define PROTVER_PATCH 4
-#define PROTOCOL_VERSION ((PROTVER_MAJOR << 16) | (PROTVER_MINOR << 8) | (PROTVER_PATCH))
+
 
 MumbleClient::MumbleClient(QObject *parent) :
     QObject(parent)
@@ -53,6 +50,15 @@ void MumbleClient::connectToServer(QString address, unsigned port)
     _telnet->connectHost(address,port);
     QObject::connect(_telnet,SIGNAL(connectedToHost()),this,SLOT(sendVersion()));
     QObject::connect(_telnet,SIGNAL(haveMessage(QByteArray)),this,SLOT(processProtoMessage(QByteArray)));
+    QObject::connect(_telnet,SIGNAL(haveUDPData(QByteArray)),this,SLOT(processUDPData(QByteArray)));
+}
+
+void MumbleClient::disconnectFromServer()
+{
+    if(_authenticated)
+    {
+        _telnet->disconnectHost();
+    }
 }
 
 void MumbleClient::sendVersion()
@@ -127,7 +133,7 @@ void MumbleClient::processProtoMessage(QByteArray data)
         processServerSync(message,message_size);
         break;
     case 3: // ping
-        qDebug() << "pong";
+        //qDebug() << "pong";
         break;
     case 7: // ChannelState
         processChannelState(message, message_size);
@@ -149,9 +155,88 @@ void MumbleClient::setupEncryption(quint8 *message, quint64 size)
     _key = crypt.key();
     _client_nonce = crypt.client_nonce();
     _server_nonce = crypt.server_nonce();
+    _crypt_state->setKey(reinterpret_cast<const unsigned char*>(_key.c_str()),
+                         reinterpret_cast<const unsigned char*>(_client_nonce.c_str()),
+                         reinterpret_cast<const unsigned char*>(_server_nonce.c_str()));
     _encryption_set = true;
     qDebug() << "Encryption setup ok ";
     pingServer();
+}
+
+void MumbleClient::processServerSync(quint8 *message, quint64 size)
+{
+    MumbleProto::ServerSync sync;
+    sync.ParseFromArray(message,size);
+    _session_id = sync.session();
+    _max_bandwidth = sync.max_bandwidth();
+    std::string welcome = sync.welcome_text();
+    _synchronized = true;
+    qDebug() << QString::fromStdString(welcome) << " max bandwidth: " << _max_bandwidth;
+    createChannel();
+}
+
+void MumbleClient::processChannelState(quint8 *message, quint64 size)
+{
+
+    MumbleProto::ChannelState ch;
+    ch.ParseFromArray(message,size);
+
+    qDebug() << " Channel id: " << ch.channel_id() << QString::fromStdString(ch.name());
+}
+
+void MumbleClient::processUserState(quint8 *message, quint64 size)
+{
+
+    MumbleProto::UserState us;
+    us.ParseFromArray(message,size);
+    if(us.session() == _session_id)
+    {
+        _channel_id = us.channel_id();
+        qDebug() << " Joined channel: " << _channel_id;
+    }
+
+}
+
+void MumbleClient::joinChannel(int id)
+{
+    MumbleProto::UserState us;
+    us.set_channel_id(id);
+    int size = us.ByteSize();
+    quint8 data[size];
+    us.SerializeToArray(data,size);
+    this->sendMessage(data,9,size);
+
+}
+
+
+QString MumbleClient::getChannelName()
+{
+    return _temp_channel_name;
+}
+
+int MumbleClient::getChannelId()
+{
+    return _channel_id;
+}
+
+QString MumbleClient::createChannel()
+{
+    int rand_len = 8;
+    char rand[8];
+    genRandomStr(rand,rand_len);
+    QString name = QString::fromLocal8Bit(rand);
+    _temp_channel_name = name;
+    MumbleProto::ChannelState channel;
+    channel.set_parent(0);
+    channel.set_name(name.toStdString());
+    channel.set_temporary(true);
+    int size = channel.ByteSize();
+    quint8 data[size];
+    channel.SerializeToArray(data,size);
+    quint16 type = 7;
+    this->sendMessage(data,type,size);
+    emit channelName(_temp_channel_name);
+    return name;
 }
 
 void MumbleClient::processAudio(short *audiobuffer, short audiobuffersize)
@@ -194,10 +279,16 @@ void MumbleClient::createVoicePacket(unsigned char *encoded_audio, int packet_si
     char *audio_packet = reinterpret_cast<char*>(encoded_audio);
 
     pds.append(audio_packet,real_packet_size);
-    //unsigned char *stream = pds.getData();
-    //memcpy(data+1,stream,pds.size());
+
     unsigned char *bin_data = reinterpret_cast<unsigned char*>(data);
-    this->sendMessage(bin_data,1,pds.size()+1);
+    if(MUMBLE_TCP_AUDIO) // TCP tunnel
+    {
+        this->sendMessage(bin_data,1,pds.size()+1);
+    }
+    else // Use UDP
+    {
+        this->sendUDPMessage(bin_data,pds.size()+1);
+    }
 }
 
 void MumbleClient::processIncomingAudioPacket(quint8 *data, quint64 size)
@@ -218,6 +309,17 @@ void MumbleClient::processIncomingAudioPacket(quint8 *data, quint64 size)
 
 }
 
+void MumbleClient::processUDPData(QByteArray data)
+{
+    if(!_encryption_set)
+        return;
+    unsigned char decrypted[1024];
+    unsigned char *encrypted = reinterpret_cast<unsigned char*>(data.data());
+    _crypt_state->decrypt(encrypted, decrypted, data.size());
+    int decrypted_length = data.size() - 4;
+    processIncomingAudioPacket(decrypted, decrypted_length);
+}
+
 void MumbleClient::decodeAudio(unsigned char *audiobuffer, short audiobuffersize)
 {
     int nr_of_frames = opus_packet_get_nb_frames(audiobuffer,audiobuffersize);
@@ -231,69 +333,7 @@ void MumbleClient::decodeAudio(unsigned char *audiobuffer, short audiobuffersize
     emit pcmAudio(pcm, samples);
 }
 
-void MumbleClient::processServerSync(quint8 *message, quint64 size)
-{
-    MumbleProto::ServerSync sync;
-    sync.ParseFromArray(message,size);
-    _session_id = sync.session();
-    _max_bandwidth = sync.max_bandwidth();
-    std::string welcome = sync.welcome_text();
-    _synchronized = true;
-    qDebug() << QString::fromStdString(welcome) << " max bandwidth: " << _max_bandwidth;
-    createChannel();
-}
 
-void MumbleClient::processChannelState(quint8 *message, quint64 size)
-{
-
-    MumbleProto::ChannelState ch;
-    ch.ParseFromArray(message,size);
-    _channel_id = ch.channel_id();
-    qDebug() << " Channel id: " << _channel_id << QString::fromStdString(ch.name());
-}
-
-void MumbleClient::processUserState(quint8 *message, quint64 size)
-{
-
-    MumbleProto::UserState us;
-    us.ParseFromArray(message,size);
-    if(us.session() == _session_id)
-    {
-        _channel_id = us.channel_id();
-        qDebug() << " Channel id: " << _channel_id;
-    }
-}
-
-
-QString MumbleClient::getChannelName()
-{
-    return _temp_channel_name;
-}
-
-int MumbleClient::getChannelId()
-{
-    return _channel_id;
-}
-
-QString MumbleClient::createChannel()
-{
-    int rand_len = 8;
-    char rand[8];
-    gen_random_str(rand,rand_len);
-    QString name = QString::fromLocal8Bit(rand);
-    _temp_channel_name = name;
-    MumbleProto::ChannelState channel;
-    channel.set_parent(0);
-    channel.set_name(name.toStdString());
-    channel.set_temporary(true);
-    int size = channel.ByteSize();
-    quint8 data[size];
-    channel.SerializeToArray(data,size);
-    quint16 type = 7;
-    this->sendMessage(data,type,size);
-    emit channelName(_temp_channel_name);
-    return name;
-}
 
 void MumbleClient::sendMessage(quint8 *message, quint16 type, int size)
 {
@@ -309,39 +349,42 @@ void MumbleClient::sendMessage(quint8 *message, quint16 type, int size)
     _telnet->sendBin(bin_data,new_size);
 }
 
-void MumbleClient::sendUDPMessage(quint8 *message, quint16 type, int size)
+void MumbleClient::sendUDPMessage(quint8 *message, int size)
 {
 
-    int new_size = size+6;
+    int new_size = size+4;
 
     quint8 bin_data[new_size];
     //qToBigEndian<quint16>(type, & bin_data[0]);
     //qToBigEndian<quint32>(len, & bin_data[2]);
 
-    memcpy(bin_data+6,message,size);
+    //memcpy(bin_data+6,message,size);
 
-    addPreamble(bin_data,type,size);
-    for(int i=0;i<new_size;i++)
+    //addPreamble(bin_data,type,size);
+
+    if(_encryption_set)
     {
-        qDebug() << bin_data[i];
+        _crypt_state->encrypt(message,bin_data,size);
+        _telnet->sendUDP(bin_data,new_size);
     }
-    _telnet->sendUDP(bin_data,new_size);
 }
 
 void MumbleClient::sendUDPPing()
 {
-    if(!_synchronized)
+    if((!_synchronized) || (!_encryption_set))
         return;
-    quint32 head = 2;
+    quint8 head = 32;
     struct timeval now;
 
     gettimeofday(&now, NULL);
     quint64 ts=now.tv_sec*1000000+now.tv_usec;
-    quint8 message[sizeof(quint32) + sizeof(quint64)];
+    quint8 message[sizeof(quint8) + sizeof(quint64)];
     memcpy(message,&head,sizeof(quint8));
-    memcpy(message+sizeof(quint32),&ts,sizeof(quint64));
+    memcpy(message+sizeof(quint8),&ts,sizeof(quint64));
+    quint8 encrypted[sizeof(quint8) + sizeof(quint64)+4];
+    _crypt_state->encrypt(message,encrypted,sizeof(quint8) + sizeof(quint64));
 
-    _telnet->sendUDP(message,sizeof(quint32) + sizeof(quint64));
+    _telnet->sendUDP(message,sizeof(quint8) + sizeof(quint64)+4);
 }
 
 void addPreamble(quint8 *buffer, quint16 type, quint32 len)
@@ -366,7 +409,7 @@ void getPreamble(quint8 *buffer, int *type, int *len)
     *len = (int)msgLen;
 }
 
-void gen_random_str(char *str, const int len)
+void genRandomStr(char *str, const int len)
 {
     static const char letters[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     srand(time(0));

@@ -30,6 +30,7 @@ SOURCES += main.cpp \
     ext/CryptState.cpp \
     ext/Timer.cpp \
     ext/Mumble.pb.cc \
+    ext/QRadioLink.pb.cc \
     audioencoder.cpp \
     mumbleclient.cpp \
     sslclient.cpp \
@@ -52,6 +53,7 @@ HEADERS += speech.h \
     ext/Mumble.pb.h \
     ext/murmur_pch.h \
     ext/PacketDataStream.h \
+    ext/QRadioLink.pb.h \
     audioencoder.h \
     mumbleclient.h \
     sslclient.h \
@@ -60,7 +62,7 @@ HEADERS += speech.h \
 
 
 
-unix:!symbian: LIBS += -lprotobuf -lopus -lestools -lFestival -lpulse-simple -L$$PWD/iaxclient/build -liaxclient_lib
+unix:!symbian: LIBS += -lssl -lprotobuf -lopus -lestools -lFestival -lpulse-simple -L$$PWD/iaxclient/build -liaxclient_lib
 DEPENDPATH += $$PWD/iaxclient/build
 INCLUDEPATH += /usr/include/speech_tools
 

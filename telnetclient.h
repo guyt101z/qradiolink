@@ -36,7 +36,7 @@ public:
     ~TelnetClient();
 
     void send(QString prop_name, QString value);
-    void sendBin(const char *payload);
+    void sendBin(const char *payload, int size);
     int connectionStatus();
     void disconnectHost();
     unsigned inline status() {return _status;}

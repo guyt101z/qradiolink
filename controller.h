@@ -25,23 +25,29 @@
 #include "databaseapi.h"
 #include "station.h"
 #include "config_defines.h"
+#include "mumbleclient.h"
+#include "ext/dec.h"
+#include "ext/QRadioLink.pb.h"
 
 class Controller : public QObject
 {
     Q_OBJECT
+
+public:
+    Controller(DatabaseApi *db, MumbleClient *mumble, QObject *parent = 0);
+    ~Controller();
+    int getChannel();
+
 public slots:
     void haveCall(QVector<char> *dtmf);
     void haveCommand(QVector<char> *dtmf);
     void readyConnect();
     void noConnection();
-    void setStationParameters(QString param);
-    void joinConference(QString number, int id, int server_id);
-    void leaveConference(QString number, int id, int server_id);
+    void setStationParameters(QByteArray data);
+    void joinConference(int number, int id, int server_id);
+    void leaveConference(int number, int id, int server_id);
     void disconnectedFromCall();
     void disconnectedLink();
-public:
-    Controller(DatabaseApi *db, QObject *parent = 0);
-    ~Controller();
 signals:
     void readyInput();
     void speak(QString);
@@ -50,15 +56,16 @@ private:
     DatabaseApi *_db;
     int _in_conference;
     int _id;
-    QString _conference_id;
+    int _conference_id;
     QVector<Station*> *_conference_stations;
     std::string _dialing_number;
     bool _connectable;
     bool testConnection(QString host);
     void getStationParameters(Station *s);
-    QString getFreeConference();
+
     Station *_current_station;
     TelnetClient *_telnet;
+    MumbleClient *_mumble;
 };
 
 #endif // CONTROLLER_H

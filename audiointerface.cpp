@@ -22,11 +22,11 @@ AudioInterface::AudioInterface(QObject *parent, unsigned sample_rate, unsigned c
     int dd;
     //pa_usec_to_bytes(20000, &dd);
     pa_buffer_attr attr;
-    attr.fragsize = 960;
+    attr.fragsize = 1280;
     attr.maxlength = -1;
     attr.minreq = -1;
     attr.prebuf = -1;
-    attr.tlength = 960;
+    attr.tlength = 1280;
     pa_sample_spec ss;
     //ss.format = PA_SAMPLE_S16LE;
     ss.format = PA_SAMPLE_FLOAT32LE;

@@ -52,8 +52,14 @@ SSLClient::SSLClient(QObject *parent) :
     QObject::connect(_socket,SIGNAL(readyRead()),this,SLOT(processData()));
 
     _udp_socket = new QUdpSocket;
-    _udp_socket->bind(4937);
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+    _udp_socket->bind(QHostAddress(QHostAddress::AnyIPv4),UDP_PORT);
+#else
+    _udp_socket->bind(QHostAddress(QHostAddress::Any),UDP_PORT);
+#endif
     QObject::connect(_udp_socket, SIGNAL(readyRead()), this, SLOT(readPendingDatagrams()));
+
 }
 
 
@@ -111,7 +117,6 @@ void SSLClient::sslError(QList<QSslError> errors)
     const QSslCertificate cert = _socket->peerCertificate();
     _socket->peerCertificateChain() << cert;
 
-    //emit connectionFailure();
 }
 
 
@@ -137,16 +142,10 @@ void SSLClient::disconnectHost()
 }
 
 
-void SSLClient::send(QString prop_name, QString value)
-{
-    QString command = prop_name + ";" + value + CRLF;
-    _socket->write(command.toUtf8());
-    _socket->flush();
-
-}
 
 void SSLClient::sendBin(quint8 *payload, quint64 size)
 {
+
     char *message = reinterpret_cast<char*>(payload);
     _socket->write(message,size);
     _socket->flush();
@@ -211,18 +210,20 @@ void SSLClient::readPendingDatagrams()
 
         _udp_socket->readDatagram(datagram.data(), datagram.size(),
                              &sender, &senderPort);
-        qDebug() << datagram.size();
-        //processTheDatagram(datagram);
+        qDebug() << sender.toString();
+        emit haveUDPData(datagram);
     }
 }
 
 void SSLClient::sendUDP(quint8 *payload, quint64 size)
 {
     char *message = reinterpret_cast<char*>(payload);
+
     quint64 sent = _udp_socket->writeDatagram(message,size,QHostAddress(_hostname),_port);
     _udp_socket->flush();
     if(sent <= 0)
         qDebug() << "UDP transmit error";
+
 }
 
 

@@ -29,7 +29,7 @@ public:
     QString _ip;
     QString _hostname;
     int _in_call;
-    QString _conference_id;
+    int _conference_id;
     int _called_by;     // calling station id
     int _call_time;     // time of call
     int _repeater;
