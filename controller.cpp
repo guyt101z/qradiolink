@@ -109,6 +109,7 @@ void Controller::haveCall(QVector<char> *dtmf)
             emit speak(voice);
             return;
         }
+        // TODO: how do we pick a server?
         Server *server = servers[0];
         if(s->_in_call == 1)
         {
@@ -116,7 +117,7 @@ void Controller::haveCall(QVector<char> *dtmf)
             // if it is, just join it
             // if we're calling a third party, notify our peers and join it's conference,
             // or notify the third party of our conference number
-            // what to do if we have two peers in separate conferences
+            // FIXME: what to do if we have two peers in separate conferences
 
             QString voice= "Joining the station in the conference.";
             emit speak(voice);
@@ -286,7 +287,8 @@ void Controller::getStationParameters(Station *s)
 
 void Controller::setStationParameters(QByteArray data)
 {
-    if(data[0]!=Parameters)
+    quint8 *type = reinterpret_cast<quint8*>(data.at(0));
+    if(*type!=Parameters)
     {
         qDebug() << "invalid message";
         return;

@@ -172,16 +172,13 @@ void SSLClient::processData()
                 if (bytesRead == sizeof(ch))
                 {
                     //cnt++;
-
+                    buf.append( ch );
                     if(_socket->bytesAvailable()==0)
                     {
                         endOfLine = true;
 
                     }
-                    else
-                    {
-                        buf.append( ch );
-                    }
+
                 }
             }
             else
@@ -210,7 +207,7 @@ void SSLClient::readPendingDatagrams()
 
         _udp_socket->readDatagram(datagram.data(), datagram.size(),
                              &sender, &senderPort);
-        qDebug() << sender.toString();
+
         emit haveUDPData(datagram);
     }
 }

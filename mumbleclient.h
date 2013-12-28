@@ -40,16 +40,7 @@ public:
     ~MumbleClient();
     void connectToServer(QString address, unsigned port);
     void disconnectFromServer();
-    void sendUDPMessage(quint8 *message, int size);
-    void sendMessage(quint8 *message, quint16 type, int size);
-    void setupEncryption(quint8 *message, quint64 size);
 
-    void processServerSync(quint8 *message, quint64 size);
-    void processChannelState(quint8 *message, quint64 size);
-    void processUserState(quint8 *message, quint64 size);
-    void createVoicePacket(unsigned char *encoded_audio, int packet_size);
-    void processIncomingAudioPacket(quint8 *data, quint64 size);
-    void decodeAudio(unsigned char *audiobuffer, short audiobuffersize);
     QString getChannelName();
     int getChannelId();
     QString createChannel();
@@ -68,6 +59,17 @@ public slots:
     void processAudio(short *audiobuffer, short audiobuffersize);
 
 private:
+    void sendUDPMessage(quint8 *message, int size);
+    void sendMessage(quint8 *message, quint16 type, int size);
+    void setupEncryption(quint8 *message, quint64 size);
+
+    void processServerSync(quint8 *message, quint64 size);
+    void processChannelState(quint8 *message, quint64 size);
+    void processUserState(quint8 *message, quint64 size);
+    void createVoicePacket(unsigned char *encoded_audio, int packet_size);
+    void processIncomingAudioPacket(quint8 *data, quint64 size);
+    void decodeAudio(unsigned char *audiobuffer, short audiobuffersize);
+
     SSLClient *_telnet;
     CryptState *_crypt_state;
     std::string _key;

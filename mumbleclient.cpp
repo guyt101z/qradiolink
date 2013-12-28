@@ -355,12 +355,6 @@ void MumbleClient::sendUDPMessage(quint8 *message, int size)
     int new_size = size+4;
 
     quint8 bin_data[new_size];
-    //qToBigEndian<quint16>(type, & bin_data[0]);
-    //qToBigEndian<quint32>(len, & bin_data[2]);
-
-    //memcpy(bin_data+6,message,size);
-
-    //addPreamble(bin_data,type,size);
 
     if(_encryption_set)
     {

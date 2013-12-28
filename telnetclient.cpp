@@ -24,7 +24,7 @@ TelnetClient::TelnetClient(QObject *parent) :
 {
     _connection_tries=0;
     _status=0;
-    _hostname = "localhost";
+    _hostname = "127.0.0.1";
     _port= CONTROL_PORT;
     _socket = new QTcpSocket;
     QObject::connect(_socket,SIGNAL(error(QAbstractSocket::SocketError )),this,SLOT(connectionFailed(QAbstractSocket::SocketError)));
