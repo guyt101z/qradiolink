@@ -81,7 +81,7 @@ void DtmfDecoder::run()
     int samp_rate = 8000;
     float treshhold_audio_power = 12.0; // dB
     float tone_difference = 6.0; //dB
-    int analysis_buffer = 50;
+    int analysis_buffer = 25;
     char call_key='C';
     char call_direct_key='D';
     char command_key='#';
@@ -551,9 +551,9 @@ float goertzel(float *x, int N, float frequency, int samplerate) {
     for (int i=0; i<N; i++)
     {
         if(x[i] > 1.0)
-            x[i] = 1.0;
+            continue;
         if(x[i] < -1.0)
-            x[i] = -1.0;
+            continue;
         Skn2 = Skn1;
         Skn1 = Skn;
         Skn = 2*cos(2*PI*frequency/(float)samplerate)*Skn1 - Skn2 + x[i];
