@@ -16,9 +16,16 @@
 
 #include "audiointerface.h"
 
-AudioInterface::AudioInterface(QObject *parent, unsigned sample_rate, unsigned channels) :
+AudioInterface::AudioInterface(QObject *parent, unsigned sample_rate, unsigned channels, int normal) :
     QObject(parent)
 {
+    _s_rec = NULL;
+    _s_play = NULL;
+    _s_short_play = NULL;
+    _s_short_rec = NULL;
+    _error=0;
+
+
     int dd;
     //pa_usec_to_bytes(20000, &dd);
     pa_buffer_attr attr;
@@ -27,40 +34,40 @@ AudioInterface::AudioInterface(QObject *parent, unsigned sample_rate, unsigned c
     attr.minreq = -1;
     attr.prebuf = -1;
     attr.tlength = 1280;
-    pa_sample_spec ss;
-    //ss.format = PA_SAMPLE_S16LE;
-    ss.format = PA_SAMPLE_FLOAT32LE;
-    ss.rate = sample_rate;
-    ss.channels = channels;
 
-    pa_sample_spec ss_short;
-    //ss.format = PA_SAMPLE_S16LE;
-    ss_short.format = PA_SAMPLE_S16LE;
-    ss_short.rate = sample_rate;
-    ss_short.channels = channels;
+    if(!normal)
+    {
+        pa_sample_spec ss;
+        //ss.format = PA_SAMPLE_S16LE;
+        ss.format = PA_SAMPLE_FLOAT32LE;
+        ss.rate = sample_rate;
+        ss.channels = channels;
 
-    ///
-    _s_rec = NULL;
-    _s_play = NULL;
-    _s_short_play = NULL;
-    _s_short_rec = NULL;
-    _error=0;
+        if (!(_s_rec = pa_simple_new(NULL, "qradiolink_dtmf", PA_STREAM_RECORD, NULL, "record", &ss, NULL, &attr, &_error)))
+        {
+            fprintf(stderr, __FILE__": pa_simple_new() failed: %s\n", pa_strerror(_error));
+        }
+        if (!(_s_play = pa_simple_new(NULL, "qradiolink", PA_STREAM_PLAYBACK, NULL, "play", &ss, NULL, &attr, &_error)))
+        {
+            fprintf(stderr, __FILE__": pa_simple_new() failed: %s\n", pa_strerror(_error));
+        }
+    }
+    else
+    {
+        pa_sample_spec ss_short;
+        //ss.format = PA_SAMPLE_S16LE;
+        ss_short.format = PA_SAMPLE_S16LE;
+        ss_short.rate = sample_rate;
+        ss_short.channels = channels;
 
-    if (!(_s_rec = pa_simple_new(NULL, "qradiolink_dtmf", PA_STREAM_RECORD, NULL, "record", &ss, NULL, &attr, &_error)))
-    {
-        fprintf(stderr, __FILE__": pa_simple_new() failed: %s\n", pa_strerror(_error));
-    }
-    if (!(_s_play = pa_simple_new(NULL, "qradiolink", PA_STREAM_PLAYBACK, NULL, "play", &ss, NULL, &attr, &_error)))
-    {
-        fprintf(stderr, __FILE__": pa_simple_new() failed: %s\n", pa_strerror(_error));
-    }
-    if (!(_s_short_play = pa_simple_new(NULL, "qradiolink", PA_STREAM_PLAYBACK, NULL, "play", &ss_short, NULL, &attr, &_error)))
-    {
-        fprintf(stderr, __FILE__": pa_simple_new() failed: %s\n", pa_strerror(_error));
-    }
-    if (!(_s_short_rec = pa_simple_new(NULL, "qradiolink_audio", PA_STREAM_RECORD, NULL, "record", &ss_short, NULL, &attr, &_error)))
-    {
-        fprintf(stderr, __FILE__": pa_simple_new() failed: %s\n", pa_strerror(_error));
+        if (!(_s_short_play = pa_simple_new(NULL, "qradiolink", PA_STREAM_PLAYBACK, NULL, "play", &ss_short, NULL, &attr, &_error)))
+        {
+            fprintf(stderr, __FILE__": pa_simple_new() failed: %s\n", pa_strerror(_error));
+        }
+        if (!(_s_short_rec = pa_simple_new(NULL, "qradiolink_audio", PA_STREAM_RECORD, NULL, "record", &ss_short, NULL, &attr, &_error)))
+        {
+            fprintf(stderr, __FILE__": pa_simple_new() failed: %s\n", pa_strerror(_error));
+        }
     }
 }
 

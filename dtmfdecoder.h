@@ -30,7 +30,7 @@ class DtmfDecoder : public QObject
 {
     Q_OBJECT
 public:
-    explicit DtmfDecoder(AudioInterface *audio, QObject *parent = 0);
+    explicit DtmfDecoder(QObject *parent = 0);
     ~DtmfDecoder();
     void stop();
     void process(bool p);
@@ -62,14 +62,14 @@ private:
      * @brief Statistical analysis of char buffer
      */
     void analyse(int analysis_buffer);
-    float _dtmf_frequencies[9];
+    int _dtmf_frequencies[9];
     QVector<char> *_dtmf_sequence;
     QVector<char> *_dtmf_command;
     char _current_letter;
     char _previous_letter;
     bool _processing;
     bool _receiving;
-    AudioInterface *_audio;
+
 
 };
 

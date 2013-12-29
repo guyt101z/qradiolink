@@ -28,26 +28,26 @@ using std::log10;
 
 
 
-DtmfDecoder::DtmfDecoder(AudioInterface *audio, QObject *parent) :
+DtmfDecoder::DtmfDecoder(QObject *parent) :
     QObject(parent)
 {
     _stop=false;
-    _dtmf_frequencies[0]= 697.0;
-    _dtmf_frequencies[1]= 770.0;
-    _dtmf_frequencies[2]= 852.0;
-    _dtmf_frequencies[3]= 941.0;
-    _dtmf_frequencies[4]= 1209.0;
-    _dtmf_frequencies[5]= 1336.0;
-    _dtmf_frequencies[6]= 1477.0;
-    _dtmf_frequencies[7]= 1633.0;
-    _dtmf_frequencies[8]= 1800.0;
+    _dtmf_frequencies[0]= 697;
+    _dtmf_frequencies[1]= 770;
+    _dtmf_frequencies[2]= 852;
+    _dtmf_frequencies[3]= 941;
+    _dtmf_frequencies[4]= 1209;
+    _dtmf_frequencies[5]= 1336;
+    _dtmf_frequencies[6]= 1477;
+    _dtmf_frequencies[7]= 1633;
+    _dtmf_frequencies[8]= 2500;
     _dtmf_sequence = new QVector<char>;
     _dtmf_command = new QVector<char>;
     _current_letter = ' ';
     _previous_letter= ' ';
     _processing = true;
     _receiving = false;
-    _audio = audio;
+
 }
 
 DtmfDecoder::~DtmfDecoder()
@@ -80,13 +80,13 @@ void DtmfDecoder::run()
     int buffer_size = 512;
     int samp_rate = 8000;
     float treshhold_audio_power = 12.0; // dB
-    float tone_difference = 5.0; //dB
-    int analysis_buffer = 20;
+    float tone_difference = 6.0; //dB
+    int analysis_buffer = 50;
     char call_key='C';
     char call_direct_key='D';
     char command_key='#';
     char clear_key = '*';
-    //AudioInterface *audio= new AudioInterface(0,samp_rate,1);
+    AudioInterface *audio= new AudioInterface(0,samp_rate,1,0);
 
     while(true)
     {
@@ -96,15 +96,17 @@ void DtmfDecoder::run()
         QCoreApplication::processEvents();
         if(_stop)
             break;
+
         if(!_processing)
         {
             usleep(100000);
             continue;
         }
 
+
         float *buf = new float[buffer_size];
 
-        _audio->read(buf, buffer_size);
+        audio->read(buf, buffer_size);
         /*
         float sum=0;
         for(int x=0;x<buffer_size;x++)
@@ -187,7 +189,7 @@ void DtmfDecoder::run()
     }
 
     finish:
-    //delete audio;
+    delete audio;
     emit finished();
 }
 
@@ -201,18 +203,22 @@ char DtmfDecoder::decode(float *buf,int buffer_size,int samp_rate, float treshho
     float largest_tone_power = 0.0;
     for(int i =0;i<4;i++)
     {
-
-        float tone_power = power(goertzel(buf, buffer_size, _dtmf_frequencies[i], samp_rate));
-        if(tone_power > 60) continue; // error
+        float t = (float)_dtmf_frequencies[i];
+        float tone_power = power(goertzel(buf, buffer_size, t, samp_rate));
+        if(tone_power > 50)
+        {
+            qDebug() << "overflow " << tone_power;
+            continue; // error
+        }
         for(int j=-5;j<6;j++)
         {
-            float tone_power1 = power(goertzel(buf, buffer_size, _dtmf_frequencies[i]+(float)j, samp_rate));
+            float tone_power1 = power(goertzel(buf, buffer_size, t+(float)j, samp_rate));
             if(tone_power1>tone_power) tone_power = tone_power1;
         }
         if(tone_power < largest_tone_power) continue;
         if(tone_power < treshhold_audio_power) continue;
 
-        tones[0] = (int)_dtmf_frequencies[i];
+        tones[0] = _dtmf_frequencies[i];
         largest_tone_power = tone_power;
         first = i;
     }
@@ -228,18 +234,22 @@ char DtmfDecoder::decode(float *buf,int buffer_size,int samp_rate, float treshho
     int second=-99;
     for(int i =4;i<9;i++)
     {
-
-        float tone_power = power(goertzel(buf, buffer_size, _dtmf_frequencies[i], samp_rate));
-        if(tone_power > 60) continue; // error
+        float t = (float)_dtmf_frequencies[i];
+        float tone_power = power(goertzel(buf, buffer_size, t, samp_rate));
+        if(tone_power > 50)
+        {
+            qDebug() << "overflow " << tone_power;
+            continue; // error
+        }
         for(int j=-5;j<6;j++)
         {
-            float tone_power1 = power(goertzel(buf, buffer_size, _dtmf_frequencies[i]+(float)j, samp_rate));
+            float tone_power1 = power(goertzel(buf, buffer_size, t+(float)j, samp_rate));
             if(tone_power1>tone_power) tone_power = tone_power1;
         }
         if(tone_power < largest_tone_power) continue;
         if(tone_power < treshhold_audio_power) continue;
 
-        tones[1] = (int)_dtmf_frequencies[i];
+        tones[1] = _dtmf_frequencies[i];
         largest_tone_power = tone_power;
         second = i;
     }
@@ -253,7 +263,7 @@ char DtmfDecoder::decode(float *buf,int buffer_size,int samp_rate, float treshho
     if(tones[1]!=0)
         second_tone_power = largest_tone_power;
 
-    if(fabs(first_tone_power - second_tone_power) > 8)
+    if(fabs(first_tone_power - second_tone_power) > tone_difference)
         return ' ';
 
 
@@ -522,10 +532,11 @@ float *makeTone(int samplerate, float frequency, int length, float gain) {
     float *tone = new float[length];
     float A = frequency*2*PI/samplerate;
 
-    for (int i=0; i<length; i++) {
-    if (i > 1) tone[i]= 2*cos(A)*tone[i-1] - tone[i-2];
-    else if (i > 0) tone[i] = 2*cos(A)*tone[i-1] - (cos(A));
-    else tone[i] = 2*cos(A)*cos(A) - cos(2*A);
+    for (int i=0; i<length; i++)
+    {
+        if (i > 1) tone[i]= 2*cos(A)*tone[i-1] - tone[i-2];
+        else if (i > 0) tone[i] = 2*cos(A)*tone[i-1] - (cos(A));
+        else tone[i] = 2*cos(A)*cos(A) - cos(2*A);
     }
 
     for (int i=0; i<length; i++) tone[i] = tone[i]*gain;
@@ -537,10 +548,15 @@ float goertzel(float *x, int N, float frequency, int samplerate) {
     float Skn, Skn1, Skn2;
     Skn = Skn1 = Skn2 = 0;
 
-    for (int i=0; i<N; i++) {
-    Skn2 = Skn1;
-    Skn1 = Skn;
-    Skn = 2*cos(2*PI*frequency/(float)samplerate)*Skn1 - Skn2 + x[i];
+    for (int i=0; i<N; i++)
+    {
+        if(x[i] > 1.0)
+            x[i] = 1.0;
+        if(x[i] < -1.0)
+            x[i] = -1.0;
+        Skn2 = Skn1;
+        Skn1 = Skn;
+        Skn = 2*cos(2*PI*frequency/(float)samplerate)*Skn1 - Skn2 + x[i];
     }
 
     float WNk = exp(-2*PI*frequency/(float)samplerate); // this one ignores complex stuff

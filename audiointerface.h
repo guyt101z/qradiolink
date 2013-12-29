@@ -26,7 +26,7 @@ class AudioInterface : public QObject
 {
     Q_OBJECT
 public:
-    explicit AudioInterface(QObject *parent = 0, unsigned sample_rate = 8000, unsigned channels = 1);
+    explicit AudioInterface(QObject *parent = 0, unsigned sample_rate = 8000, unsigned channels = 1, int normal = 1);
     ~AudioInterface();
     int read(float *buf, short bufsize);
     int write(float *buf, short bufsize);

@@ -245,9 +245,10 @@ void MumbleClient::processAudio(short *audiobuffer, short audiobuffersize)
     if(!_synchronized)
         return;
     int opus_bandwidth;
-    opus_encoder_ctl(_opus_encoder, OPUS_SET_BITRATE(8000));
+    opus_encoder_ctl(_opus_encoder, OPUS_SET_BITRATE(4000));
     opus_encoder_ctl(_opus_encoder, OPUS_SET_SIGNAL(OPUS_SIGNAL_VOICE));
     opus_encoder_ctl(_opus_encoder, OPUS_SET_COMPLEXITY(5));
+    opus_encoder_ctl(_opus_encoder, OPUS_SET_DTX(1));
     opus_encoder_ctl(_opus_encoder, OPUS_GET_BANDWIDTH(&opus_bandwidth));
     opus_encoder_ctl(_opus_encoder, OPUS_SET_INBAND_FEC(1));
 

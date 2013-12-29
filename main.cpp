@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 
 
     QThread *t1= new QThread;
-    DtmfDecoder *decoder = new DtmfDecoder(&audio);
+    DtmfDecoder *decoder = new DtmfDecoder;
     decoder->moveToThread(t1);
     QObject::connect(decoder,SIGNAL(haveCall(QVector<char>*)),controller,SLOT(haveCall(QVector<char>*)));
     QObject::connect(decoder,SIGNAL(haveCommand(QVector<char>*)),controller,SLOT(haveCommand(QVector<char>*)));
