@@ -318,7 +318,11 @@ void MumbleClient::processUDPData(QByteArray data)
     unsigned char *encrypted = reinterpret_cast<unsigned char*>(data.data());
     _crypt_state->decrypt(encrypted, decrypted, data.size());
     int decrypted_length = data.size() - 4;
+#ifndef NO_CRYPT
     processIncomingAudioPacket(decrypted, decrypted_length);
+#else
+    processIncomingAudioPacket(encrypted, data.size());
+#endif
 }
 
 void MumbleClient::decodeAudio(unsigned char *audiobuffer, short audiobuffersize)
@@ -359,8 +363,12 @@ void MumbleClient::sendUDPMessage(quint8 *message, int size)
 
     if(_encryption_set)
     {
+#ifndef NO_CRYPT
         _crypt_state->encrypt(message,bin_data,size);
         _telnet->sendUDP(bin_data,new_size);
+#else
+        _telnet->sendUDP(message,size);
+#endif
     }
 }
 

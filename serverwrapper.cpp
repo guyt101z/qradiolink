@@ -45,7 +45,13 @@ void ServerWrapper::run()
     qDebug() << "Server running";
 
     int last_time = 0;
-    int last_ping_time = 0 ;
+    int last_ping_time = 0;
+    int audiobuffer_size = 640; //40 ms
+    double treshhold = -15;
+    double hyst = 1.0;
+    bool treshhold_set = false;
+    bool hyst_active = false;
+    int hyst_counter = 0;
     Speech spp;
     while(true)
     {
@@ -61,9 +67,42 @@ void ServerWrapper::run()
             emit pingServer();
             last_ping_time = time;
         }
-        short audiobuffer[640];
-        _audio->read_short(audiobuffer,640);
-        emit audioData(audiobuffer,640);
+        short audiobuffer[audiobuffer_size];
+        _audio->read_short(audiobuffer,audiobuffer_size);
+        float sum=1.0;
+        for(int j=0;j< audiobuffer_size;j++)
+        {
+            sum += static_cast<float>(audiobuffer[j]*audiobuffer[j]);
+        }
+
+        float rms = sqrt(sum/(static_cast<float>(audiobuffer_size)));
+        double power = 20*log10(rms/32768.0f);
+        if(!treshhold_set)
+        {
+            treshhold = power;
+            treshhold_set = true;
+        }
+
+        if(power > treshhold+hyst)
+        {
+            if(!hyst_active)
+            {
+                hyst -= 5.0;
+                hyst_active = true;
+            }
+            else
+            {
+                hyst_counter++;
+            }
+            emit audioData(audiobuffer,audiobuffer_size);
+        }
+        if((hyst_active) && (hyst_counter>50))
+        {
+            hyst +=5.0;
+            hyst_active = false;
+            hyst_counter = 0;
+        }
+
         for(int o =0;o<_speech_text->size();o++)
         {
             spp.fspeak(_speech_text->at(o).toLocal8Bit().data());
