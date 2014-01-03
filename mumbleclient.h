@@ -26,6 +26,7 @@
 #include "ext/Mumble.pb.h"
 #include "ext/CryptState.h"
 #include "ext/PacketDataStream.h"
+#include "ext/utils.h"
 #include "sslclient.h"
 #include "audiointerface.h"
 #include "opus/opus.h"
@@ -88,8 +89,6 @@ private:
 
     
 };
-void genRandomStr(char *str, const int len);
-void addPreamble(quint8 *buffer, quint16 type, quint32 len);
-void getPreamble(quint8 *buffer, int *type, int *len);
+
 
 #endif // MUMBLECLIENT_H

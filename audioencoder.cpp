@@ -29,21 +29,55 @@ AudioEncoder::AudioEncoder()
     {
         qDebug() << "audio decoder creation failed";
     }
+    _codec2 = codec2_create(CODEC2_MODE_1200);
 }
 
 AudioEncoder::~AudioEncoder()
 {
     opus_encoder_destroy(_enc);
     opus_decoder_destroy(_dec);
+    codec2_destroy(_codec2);
 }
 
-void AudioEncoder::encode(short *audio, int samples, unsigned char *encoded, int length)
+unsigned char* AudioEncoder::encode_opus(short *audiobuffer, int audiobuffersize, int &encoded_size)
 {
+    int opus_bandwidth;
+    opus_encoder_ctl(_enc, OPUS_SET_BITRATE(4000));
+    opus_encoder_ctl(_enc, OPUS_SET_SIGNAL(OPUS_SIGNAL_VOICE));
+    opus_encoder_ctl(_enc, OPUS_SET_COMPLEXITY(5));
+    opus_encoder_ctl(_enc, OPUS_SET_DTX(1));
+    opus_encoder_ctl(_enc, OPUS_GET_BANDWIDTH(&opus_bandwidth));
+    opus_encoder_ctl(_enc, OPUS_SET_INBAND_FEC(1));
 
-    int res = opus_encode(_enc, audio,samples, encoded, 4000);
+    unsigned char *encoded_audio = new unsigned char[opus_bandwidth];
+    encoded_size = opus_encode(_enc, audiobuffer, audiobuffersize/sizeof(short), encoded_audio, opus_bandwidth);
+    return encoded_audio;
+
 }
 
-void AudioEncoder::decode(unsigned char *data, int data_length, short *audio, int samples)
+short* AudioEncoder::decode_opus(unsigned char *audiobuffer, int audiobuffersize, int &samples)
 {
-    int res = opus_decode(_dec,data,data_length,audio,samples,1);
+    int nr_of_frames = opus_packet_get_nb_frames(audiobuffer,audiobuffersize);
+    int fs = 960 * nr_of_frames;
+    short *pcm = new short[fs*sizeof(short)];
+
+    samples = opus_decode(_dec,audiobuffer,audiobuffersize, pcm, fs, 0);
+    return pcm;
+}
+
+unsigned char* AudioEncoder::encode_codec2(short *audiobuffer, int audiobuffersize)
+{
+    int bits = codec2_bits_per_frame(_codec2);
+    int bytes = (bits + 7) / 8;
+    unsigned char *encoded = new unsigned char[bytes];
+    codec2_encode(_codec2, encoded, audiobuffer);
+    return encoded;
+}
+
+short* AudioEncoder::decode_codec2(unsigned char *audiobuffer, int audiobuffersize)
+{
+    int samples = codec2_samples_per_frame(_codec2);
+    short* decoded = new short[samples];
+    codec2_decode(_codec2, decoded, audiobuffer);
+    return decoded;
 }

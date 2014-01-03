@@ -34,7 +34,8 @@ SOURCES += main.cpp \
     audioencoder.cpp \
     mumbleclient.cpp \
     sslclient.cpp \
-    iaxclient.cpp
+    ext/utils.cpp
+
 
 HEADERS += speech.h \
     audiointerface.h \
@@ -57,12 +58,14 @@ HEADERS += speech.h \
     audioencoder.h \
     mumbleclient.h \
     sslclient.h \
-    iaxclient.h
+    ext/utils.h
 
 
 
 
-unix:!symbian: LIBS += -lssl -lprotobuf -lopus -lestools -lFestival -lpulse-simple -L$$PWD/iaxclient/build -liaxclient_lib
+unix:!symbian: LIBS += -lssl -lprotobuf -lopus -lestools -lFestival -lpulse-simple
+unix:!symbian: LIBS += -L$$PWD/codec2 -lcodec2
+unix:!symbian: LIBS += -L$$PWD/iaxclient/build -liaxclient_lib
 DEPENDPATH += $$PWD/iaxclient/build
 INCLUDEPATH += /usr/include/speech_tools
 

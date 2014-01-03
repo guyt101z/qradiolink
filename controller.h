@@ -19,7 +19,9 @@
 
 #include <QObject>
 #include <QString>
+#ifndef MUMBLE
 #include "iaxclient.h"
+#endif
 #include "speech.h"
 #include "telnetclient.h"
 #include "databaseapi.h"
@@ -52,7 +54,9 @@ signals:
     void readyInput();
     void speak(QString);
 private:
+#ifndef MUMBLE
     IaxClient *_client;
+#endif
     DatabaseApi *_db;
     int _in_conference;
     int _id;

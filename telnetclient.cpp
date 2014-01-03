@@ -66,7 +66,6 @@ void TelnetClient::connectionFailed(QAbstractSocket::SocketError error)
     }
     else
     {
-
         emit connectionFailure();
     }
 
@@ -131,12 +130,8 @@ void TelnetClient::processData()
                     if (_socket->bytesAvailable()==0)
                     {
                         endOfLine = true;
-
                     }
-
-
                     data.append( ch );
-
                 }
             }
             else

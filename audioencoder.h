@@ -19,18 +19,22 @@
 
 #include <QDebug>
 #include <opus/opus.h>
+#include "codec2/codec2.h"
 
 class AudioEncoder
 {
 public:
     AudioEncoder();
     ~AudioEncoder();
-    void encode(short *audio, int samples, unsigned char *encoded, int length=4000);
-    void decode(unsigned char *data, int data_length, short *audio, int samples);
+    unsigned char *encode_opus(short *audiobuffer, int audiobuffersize, int &encoded_size);
+    short *decode_opus(unsigned char *audiobuffer, int data_length, int &samples);
+    unsigned char* encode_codec2(short *audiobuffer, int audiobuffersize);
+    short* decode_codec2(unsigned char *audiobuffer, int audiobuffersize);
 
 private:
     OpusEncoder *_enc;
     OpusDecoder *_dec;
+    struct CODEC2 *_codec2;
 };
 
 #endif // AUDIOENCODER_H

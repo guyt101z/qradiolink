@@ -18,7 +18,9 @@
 #define AUDIOINTERFACE_H
 
 #include <QObject>
+#include <QString>
 #include <stdio.h>
+#include "ext/utils.h"
 #include <pulse/simple.h>
 #include <pulse/error.h>
 
