@@ -24,7 +24,7 @@ SSLClient::SSLClient(QObject *parent) :
 {
     _connection_tries=0;
     _status=0;
-    _hostname = "localhost";
+    _hostname = "127.0.0.1";
     _port= CONTROL_PORT;
     QSslSocket::addDefaultCaCertificates(QSslSocket::systemCaCertificates());
     {

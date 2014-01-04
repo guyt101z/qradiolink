@@ -65,19 +65,21 @@ short* AudioEncoder::decode_opus(unsigned char *audiobuffer, int audiobuffersize
     return pcm;
 }
 
-unsigned char* AudioEncoder::encode_codec2(short *audiobuffer, int audiobuffersize)
+unsigned char* AudioEncoder::encode_codec2(short *audiobuffer, int audiobuffersize, int &length)
 {
     int bits = codec2_bits_per_frame(_codec2);
     int bytes = (bits + 7) / 8;
     unsigned char *encoded = new unsigned char[bytes];
     codec2_encode(_codec2, encoded, audiobuffer);
+    length = bytes;
     return encoded;
 }
 
-short* AudioEncoder::decode_codec2(unsigned char *audiobuffer, int audiobuffersize)
+short* AudioEncoder::decode_codec2(unsigned char *audiobuffer, int audiobuffersize, int &samples)
 {
-    int samples = codec2_samples_per_frame(_codec2);
-    short* decoded = new short[samples];
+    int samp = codec2_samples_per_frame(_codec2);
+    short* decoded = new short[samp];
     codec2_decode(_codec2, decoded, audiobuffer);
+    samples = samp;
     return decoded;
 }

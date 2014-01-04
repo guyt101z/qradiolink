@@ -441,7 +441,7 @@ class PacketDataStream {
 			}
 			return *this;
 		}
-
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 		template <typename T,typename U>
 		PacketDataStream &operator <<(const QPair<T,U> &p) {
 			return *this << p.first << p.second;
@@ -451,7 +451,7 @@ class PacketDataStream {
 		PacketDataStream &operator >>(QPair<T,U> &p) {
 			return *this >> p.first >> p.second;
 		}
-
+#endif
 };
 
 #endif

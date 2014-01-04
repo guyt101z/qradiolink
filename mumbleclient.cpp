@@ -81,7 +81,12 @@ void MumbleClient::authenticate()
 {
     qDebug() << "authenticating...";
     MumbleProto::Authenticate auth;
-    auth.set_username("test");
+    int rand_len = 4;
+    char rand[4];
+    genRandomStr(rand,rand_len);
+    QString username = "test_";
+    username += QString::fromLocal8Bit(rand);
+    auth.set_username(username.toStdString().c_str());
     auth.set_password("");
     auth.set_opus(true);
     int size = auth.ByteSize();
@@ -107,7 +112,9 @@ void MumbleClient::pingServer()
     quint8 data[size];
     ping.SerializeToArray(data,size);
     this->sendMessage(data,3,size);
+#ifndef NO_CRYPT
     sendUDPPing();
+#endif
 }
 
 
@@ -172,7 +179,9 @@ void MumbleClient::processServerSync(quint8 *message, quint64 size)
     std::string welcome = sync.welcome_text();
     _synchronized = true;
     qDebug() << QString::fromStdString(welcome) << " max bandwidth: " << _max_bandwidth;
+#ifndef NO_CRYPT
     createChannel();
+#endif
 }
 
 void MumbleClient::processChannelState(quint8 *message, quint64 size)

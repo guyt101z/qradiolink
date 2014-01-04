@@ -32,8 +32,7 @@ AudioInterface::AudioInterface(QObject *parent, unsigned sample_rate, unsigned c
     QString q_play = "qradiolink_" + instance_name;
     QString audio_rec = "qradiolink_audio_" + instance_name;
 
-    int dd;
-    //pa_usec_to_bytes(20000, &dd);
+
     pa_buffer_attr attr;
     attr.fragsize = 1280;
     attr.maxlength = -1;
@@ -44,7 +43,6 @@ AudioInterface::AudioInterface(QObject *parent, unsigned sample_rate, unsigned c
     if(!normal)
     {
         pa_sample_spec ss;
-        //ss.format = PA_SAMPLE_S16LE;
         ss.format = PA_SAMPLE_FLOAT32LE;
         ss.rate = sample_rate;
         ss.channels = channels;
@@ -61,7 +59,6 @@ AudioInterface::AudioInterface(QObject *parent, unsigned sample_rate, unsigned c
     else
     {
         pa_sample_spec ss_short;
-        //ss.format = PA_SAMPLE_S16LE;
         ss_short.format = PA_SAMPLE_S16LE;
         ss_short.rate = sample_rate;
         ss_short.channels = channels;

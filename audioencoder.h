@@ -28,8 +28,8 @@ public:
     ~AudioEncoder();
     unsigned char *encode_opus(short *audiobuffer, int audiobuffersize, int &encoded_size);
     short *decode_opus(unsigned char *audiobuffer, int data_length, int &samples);
-    unsigned char* encode_codec2(short *audiobuffer, int audiobuffersize);
-    short* decode_codec2(unsigned char *audiobuffer, int audiobuffersize);
+    unsigned char* encode_codec2(short *audiobuffer, int audiobuffersize, int &length);
+    short* decode_codec2(unsigned char *audiobuffer, int audiobuffersize, int &samples);
 
 private:
     OpusEncoder *_enc;
