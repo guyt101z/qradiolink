@@ -24,6 +24,7 @@ MumbleClient::MumbleClient(QObject *parent) :
 {
     _telnet = new SSLClient;
     _crypt_state = new CryptState;
+    _codec = new AudioEncoder;
     _encryption_set = false;
     _authenticated = false;
     _synchronized = false;
@@ -41,6 +42,7 @@ MumbleClient::~MumbleClient()
 {
     delete _telnet;
     delete _crypt_state;
+    delete _codec;
     opus_encoder_destroy(_opus_encoder);
     opus_decoder_destroy(_opus_decoder);
 }
@@ -253,6 +255,7 @@ void MumbleClient::processAudio(short *audiobuffer, short audiobuffersize)
 
     if(!_synchronized)
         return;
+    /*
     int opus_bandwidth;
     opus_encoder_ctl(_opus_encoder, OPUS_SET_BITRATE(4000));
     opus_encoder_ctl(_opus_encoder, OPUS_SET_SIGNAL(OPUS_SIGNAL_VOICE));
@@ -263,8 +266,16 @@ void MumbleClient::processAudio(short *audiobuffer, short audiobuffersize)
 
     unsigned char encoded_audio[opus_bandwidth];
     int packet_size = opus_encode(_opus_encoder, audiobuffer, audiobuffersize/sizeof(short), encoded_audio, opus_bandwidth);
+    */
+    int packet_size = 0;
+#ifdef USE_CODEC2
+    unsigned char *encoded_audio = _codec->encode_codec2(audiobuffer, audiobuffersize, packet_size);
+#else
+    unsigned char *encoded_audio = _codec->encode_opus(audiobuffer, audiobuffersize, packet_size);
+#endif
 
     createVoicePacket(encoded_audio, packet_size);
+    delete[] encoded_audio;
 }
 
 void MumbleClient::createVoicePacket(unsigned char *encoded_audio, int packet_size)
@@ -314,7 +325,7 @@ void MumbleClient::processIncomingAudioPacket(quint8 *data, quint64 size)
     int audio_size = pds.left();
     QByteArray qba = pds.dataBlock(pds.left());
     unsigned char *encoded_audio = reinterpret_cast<unsigned char*>(qba.data());
-    //qDebug() << audio_head;
+
     decodeAudio(encoded_audio,audio_size);
 
 }
@@ -323,11 +334,13 @@ void MumbleClient::processUDPData(QByteArray data)
 {
     if(!_encryption_set)
         return;
-    unsigned char decrypted[1024];
+
     unsigned char *encrypted = reinterpret_cast<unsigned char*>(data.data());
+#ifndef NO_CRYPT
+    unsigned char decrypted[1024];
     _crypt_state->decrypt(encrypted, decrypted, data.size());
     int decrypted_length = data.size() - 4;
-#ifndef NO_CRYPT
+
     processIncomingAudioPacket(decrypted, decrypted_length);
 #else
     processIncomingAudioPacket(encrypted, data.size());
@@ -336,13 +349,19 @@ void MumbleClient::processUDPData(QByteArray data)
 
 void MumbleClient::decodeAudio(unsigned char *audiobuffer, short audiobuffersize)
 {
+    /*
     int nr_of_frames = opus_packet_get_nb_frames(audiobuffer,audiobuffersize);
     int fs = 960 * nr_of_frames;
     short pcm[fs*sizeof(short)];
 
-
-    //qDebug() << nr_of_frames;
     int samples = opus_decode(_opus_decoder,audiobuffer,audiobuffersize, pcm, fs, 0);
+    */
+    int samples =0;
+#ifdef USE_CODEC2
+    short *pcm = _codec->decode_codec2(audiobuffer,audiobuffersize, samples);
+#else
+    short *pcm = _codec->decode_opus(audiobuffer,audiobuffersize, samples);
+#endif
 
     emit pcmAudio(pcm, samples);
 }
@@ -366,19 +385,18 @@ void MumbleClient::sendMessage(quint8 *message, quint16 type, int size)
 void MumbleClient::sendUDPMessage(quint8 *message, int size)
 {
 
-    int new_size = size+4;
 
-    quint8 bin_data[new_size];
-
+#ifndef NO_CRYPT
     if(_encryption_set)
     {
-#ifndef NO_CRYPT
+        int new_size = size+4;
+        quint8 bin_data[new_size];
         _crypt_state->encrypt(message,bin_data,size);
         _telnet->sendUDP(bin_data,new_size);
-#else
-        _telnet->sendUDP(message,size);
-#endif
     }
+#else
+     _telnet->sendUDP(message,size);
+#endif
 }
 
 void MumbleClient::sendUDPPing()

@@ -29,6 +29,7 @@
 #include "ext/utils.h"
 #include "sslclient.h"
 #include "audiointerface.h"
+#include "audioencoder.h"
 #include "opus/opus.h"
 #include "config_defines.h"
 
@@ -85,6 +86,7 @@ private:
     int _channel_id;
     OpusEncoder *_opus_encoder;
     OpusDecoder *_opus_decoder;
+    AudioEncoder *_codec;
     quint64 _sequence_number;
 
     

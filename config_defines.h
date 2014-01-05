@@ -2,6 +2,7 @@
 #define CONFIG_DEFINES_H
 
 #define NO_CRYPT 1
+#define USE_CODEC2 1
 #define MUMBLE 1
 #define MUMBLE_PORT 64738
 #define MUMBLE_TCP_AUDIO 0

@@ -121,6 +121,7 @@ void ServerWrapper::run()
 void ServerWrapper::pcmAudio(short *pcm, short samples)
 {
     _audio->write_short(pcm,samples*sizeof(short));
+    delete[] pcm;
 }
 
 void ServerWrapper::connectToConference(int number, int id, int server_id)
