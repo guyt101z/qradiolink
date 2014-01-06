@@ -164,7 +164,7 @@ void Controller::haveCall(QVector<char> *dtmf)
              join.SerializeToArray(data+2, size);
              data[0]= JoinConference;
              data[1] = size;
-             QByteArray bin_data(data);
+             QByteArray bin_data(data,size+2);
             _telnet->sendBin(bin_data.constData(), bin_data.size());
             QString voice= "Calling the station into the conference.";
             emit speak(voice);
@@ -271,24 +271,24 @@ void Controller::getStationParameters(Station *s)
 {
     _current_station = s;
     _current_station->_waiting=1;
-
+    qDebug() << "Getting station information";
     QObject::connect(_telnet,SIGNAL(haveMessage(QByteArray)),this,SLOT(setStationParameters(QByteArray)));
     QRadioLink::Parameters params;
     params.set_station_id(s->_id);
     int size = params.ByteSize();
     char data[size+2];
-    params.SerializeToArray(data+2, size);\
-    data[0] = Parameters;
-    data[1] = size;
-    QByteArray bin_data( data);
+    params.SerializeToArray(data+2, size);
+    data[0] = static_cast<char>(Parameters);
+    data[1] = static_cast<char>(size);
+    QByteArray bin_data(data, size+2);
     _telnet->sendBin(bin_data.constData(), bin_data.size());
-
 }
 
 void Controller::setStationParameters(QByteArray data)
 {
-    quint8 *type = reinterpret_cast<quint8*>(data.at(0));
-    if(*type!=Parameters)
+    qDebug() << "Configuring peer station";
+    quint8 type = static_cast<quint8>(data.at(0));
+    if(type!=static_cast<quint8>(Parameters))
     {
         qDebug() << "invalid message";
         return;
@@ -311,15 +311,16 @@ int Controller::getChannel()
 
 void Controller::joinConference(int number, int id, int server_id)
 {
-
     Server *server = _db->get_server_by_id(server_id);
+    /** FIXME: no valid server is returned
     if(server->_id < 1)
     {
         QString voice= "There are no active servers in the list.";
         emit speak(voice);
         return;
     }
-
+    */
+    server->_ip="192.168.1.2";
     QString voice= "Joining conference.";
     emit speak(voice);
     Station *s = _db->get_local_station();
@@ -382,7 +383,7 @@ void Controller::disconnectedFromCall()
                     msg_leave.SerializeToArray(data+2, size);
                     data[0] = LeaveConference;
                     data[1] = size;
-                    QByteArray bin_msg(data);
+                    QByteArray bin_msg(data, size+2);
                     _telnet->sendBin(bin_msg.constData(), bin_msg.size());
                 }
             }

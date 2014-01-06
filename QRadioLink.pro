@@ -58,7 +58,8 @@ HEADERS += speech.h \
     audioencoder.h \
     mumbleclient.h \
     sslclient.h \
-    ext/utils.h
+    ext/utils.h \
+    codec2/codec2.h
 
 
 

@@ -90,7 +90,6 @@ void TelnetServer::processData()
 {
 
     QTcpSocket *socket = dynamic_cast<QTcpSocket*>(QObject::sender());
-
     QByteArray data;
 
     bool endOfLine = false;
@@ -121,7 +120,7 @@ void TelnetServer::processData()
 
 
     }
-    //qDebug() << "Received message from: " << socket->peerAddress().toString() << line;
+    qDebug() << "Good message from: " << socket->peerAddress().toString();
     QByteArray response = processCommand(data);
     socket->write(response.data(),response.size());
 
@@ -129,15 +128,15 @@ void TelnetServer::processData()
 
 QByteArray TelnetServer::processCommand(QByteArray data)
 {
-    quint8 *type = reinterpret_cast<quint8*>(data.at(0));
-    quint8 *size = reinterpret_cast<quint8*>(data.at(1));
+    quint8 type = static_cast<quint8>(data.at(0));
+    quint8 size = static_cast<quint8>(data.at(1));
     QByteArray command = data.remove(0,2);
-    if(*size < 2)
+    if(size < 2)
     {
-        qDebug() << "Invalid command " << *type;
+        qDebug() << "Invalid command " << type;
         return NULL;
     }
-    if(*type == Parameters)
+    if(type == static_cast<quint8>(Parameters))
     {
         QRadioLink::Parameters param;
         param.ParseFromArray(command.data(),command.size());
@@ -148,19 +147,18 @@ QByteArray TelnetServer::processCommand(QByteArray data)
         quint8 size = param.ByteSize();
         char bin_data[size+2];
         param.SerializeToArray(bin_data+2, size);
-        bin_data[0] = data.at(0);
-        bin_data[1] = size;
-
-        return QByteArray(bin_data);
+        bin_data[0] = static_cast<char>(Parameters);
+        bin_data[1] = static_cast<char>(size);
+        return QByteArray(bin_data, size+2);
     }
-    else if(*type == JoinConference)
+    else if(type == static_cast<quint8>(JoinConference))
     {
         QRadioLink::JoinConference join;
         join.ParseFromArray(command.data(),command.size());
         emit joinConference(join.channel_id(),join.caller_id(),join.server_id());
         return QByteArray(0);
     }
-    else if(*type == LeaveConference)
+    else if(type == static_cast<quint8>(LeaveConference))
     {
         QRadioLink::LeaveConference leave;
         leave.ParseFromArray(command.data(),command.size());

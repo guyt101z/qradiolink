@@ -69,6 +69,7 @@ void ServerWrapper::run()
         }
         short audiobuffer[audiobuffer_size];
         _audio->read_short(audiobuffer,audiobuffer_size);
+
         float sum=1.0;
         for(int j=0;j< audiobuffer_size;j++)
         {
@@ -83,7 +84,7 @@ void ServerWrapper::run()
             treshhold_set = true;
         }
 
-        if(power > treshhold+hyst)
+        if((power > treshhold+hyst))
         {
             if(!hyst_active)
             {
@@ -96,6 +97,8 @@ void ServerWrapper::run()
             }
             emit audioData(audiobuffer,audiobuffer_size);
         }
+
+
         if((hyst_active) && (hyst_counter>50))
         {
             hyst +=5.0;

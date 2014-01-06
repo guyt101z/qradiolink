@@ -48,7 +48,7 @@ public slots:
 signals:
     void connectionFailure();
     void connectedToHost();
-    void haveMessage(QString prop);
+    void haveMessage(QByteArray data);
     void disconnectedFromHost();
 
 private:

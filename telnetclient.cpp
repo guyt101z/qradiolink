@@ -110,7 +110,6 @@ void TelnetClient::sendBin(const char *payload, int size)
 void TelnetClient::processData()
 {
     if (_status !=1) return;
-
     QByteArray data;
 
     bool endOfLine = false;
@@ -142,7 +141,7 @@ void TelnetClient::processData()
 
     }
 
-    //qDebug() << "Received message from " << _socket->peerAddress().toString() << " :" << line;
+    qDebug() << "Good message from " << _socket->peerAddress().toString();
     emit haveMessage(data);
 }
 
