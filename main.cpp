@@ -23,11 +23,10 @@
 #include "dtmfdecoder.h"
 #include "databaseapi.h"
 #include "serverwrapper.h"
-#include "speech.h"
 #include "config_defines.h"
 #include "controller.h"
 #include "mumbleclient.h"
-#include "festival/festival.h"
+
 
 
 int main(int argc, char *argv[])

@@ -551,9 +551,9 @@ float goertzel(float *x, int N, float frequency, int samplerate) {
     for (int i=0; i<N; i++)
     {
         if(x[i] > 1.0)
-            continue;
+            x[i]=0;
         if(x[i] < -1.0)
-            continue;
+            x[i]=0;
         Skn2 = Skn1;
         Skn1 = Skn;
         Skn = 2*cos(2*PI*frequency/(float)samplerate)*Skn1 - Skn2 + x[i];

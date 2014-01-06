@@ -114,9 +114,9 @@ void MumbleClient::pingServer()
     quint8 data[size];
     ping.SerializeToArray(data,size);
     this->sendMessage(data,3,size);
-#ifndef NO_CRYPT
+
     sendUDPPing();
-#endif
+
 }
 
 
@@ -343,6 +343,9 @@ void MumbleClient::processUDPData(QByteArray data)
 
     processIncomingAudioPacket(decrypted, decrypted_length);
 #else
+    quint8 type = data.at(0);
+    if(type == 32) // UDP ping reply
+        return;
     processIncomingAudioPacket(encrypted, data.size());
 #endif
 }
@@ -411,10 +414,14 @@ void MumbleClient::sendUDPPing()
     quint8 message[sizeof(quint8) + sizeof(quint64)];
     memcpy(message,&head,sizeof(quint8));
     memcpy(message+sizeof(quint8),&ts,sizeof(quint64));
+#ifndef NO_CRYPT
     quint8 encrypted[sizeof(quint8) + sizeof(quint64)+4];
     _crypt_state->encrypt(message,encrypted,sizeof(quint8) + sizeof(quint64));
 
-    _telnet->sendUDP(message,sizeof(quint8) + sizeof(quint64)+4);
+    _telnet->sendUDP(encrypted,sizeof(quint8) + sizeof(quint64)+4);
+#else
+    _telnet->sendUDP(message,sizeof(quint8) + sizeof(quint64));
+#endif
 }
 
 
