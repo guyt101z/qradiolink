@@ -1,10 +1,11 @@
 #ifndef CONFIG_DEFINES_H
 #define CONFIG_DEFINES_H
 
-#define LOCAL
+#define LOCAL // for testing purposes
 #define NO_CRYPT 1 // send UDP voice unencrypted
-#define USE_CODEC2 1 // use Codec2 instead of Opus
-#define MUMBLE 1
+//#define USE_CODEC2 1 // use Codec2 instead of Opus
+
+#define MUMBLE 1 // use Mumble protocol
 #define MUMBLE_PORT 64738
 #define MUMBLE_TCP_AUDIO 0 // send voice via TCP SSL?
 

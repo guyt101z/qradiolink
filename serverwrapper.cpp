@@ -48,13 +48,16 @@ void ServerWrapper::run()
     int last_ping_time = 0;
     int audiobuffer_size = 640; //40 ms
     double treshhold = -15;
-    double hyst = 0.2;
+    double hyst = 0.1;
     bool treshhold_set = false;
     bool hyst_active = false;
     int hyst_counter = 0;
+
     Speech spp;
     while(true)
     {
+
+        QCoreApplication::processEvents();
         usleep(10000);
         int time = QDateTime::currentDateTime().toTime_t();
         if((time - last_time) > 300)
@@ -112,7 +115,6 @@ void ServerWrapper::run()
         }
         _speech_text->clear();
 
-        QCoreApplication::processEvents();
         if(_stop)
             break;
     }
