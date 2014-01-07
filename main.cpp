@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
     qDebug() << start_time;
     DatabaseApi db;
     AudioInterface audio;
-    MumbleClient client;
+    MumbleClient client(&audio);
     client.connectToServer("127.0.0.1",MUMBLE_PORT);
     Controller *controller = new Controller(&db,&client);
 
