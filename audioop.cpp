@@ -41,6 +41,7 @@ void AudioOp::run()
     int hyst_counter = 0;
     _audio = new AudioInterface;
     agc_st *agc = initAGC(0.8);
+    vox_st *vox = initVOX(50,500);
     while(true)
     {
 
@@ -72,7 +73,7 @@ void AudioOp::run()
         {
             if(!hyst_active)
             {
-                hyst -= 5.0;
+                hyst -= 10.0;
                 hyst_active = true;
             }
             else
@@ -83,11 +84,14 @@ void AudioOp::run()
             AGC(agc,audiobuffer,audiobuffer_size);
             emit audioData(audiobuffer,audiobuffer_size);
 
+
         }
+
+
 
         if((hyst_active) && (hyst_counter> 50)) // 2 second drop-down period
         {
-            hyst +=5.0;
+            hyst +=10.0;
             hyst_active = false;
             hyst_counter = 0;
         }
@@ -97,6 +101,7 @@ void AudioOp::run()
             break;
     }
     delete agc;
+    delete vox;
     delete _audio;
     emit finished();
 }

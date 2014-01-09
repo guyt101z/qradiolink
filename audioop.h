@@ -8,6 +8,7 @@
 #include <math.h>
 #include "audiointerface.h"
 #include "ext/agc.h"
+#include "ext/vox.h"
 
 class AudioOp : public QObject
 {
