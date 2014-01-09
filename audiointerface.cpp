@@ -34,12 +34,7 @@ AudioInterface::AudioInterface(QObject *parent, unsigned sample_rate, unsigned c
     QString audio_rec = "qradiolink_audio_" + instance_name;
 
 
-    pa_buffer_attr attr;
-    attr.fragsize = 1280;
-    attr.maxlength = -1;
-    attr.minreq = -1;
-    attr.prebuf = -1;
-    attr.tlength = 1280;
+
 
     if(!normal)
     {
@@ -47,6 +42,13 @@ AudioInterface::AudioInterface(QObject *parent, unsigned sample_rate, unsigned c
         ss.format = PA_SAMPLE_FLOAT32LE;
         ss.rate = sample_rate;
         ss.channels = channels;
+
+        pa_buffer_attr attr;
+        attr.fragsize = 1280;
+        attr.maxlength = -1;
+        attr.minreq = -1;
+        attr.prebuf = -1;
+        attr.tlength = 1280;
 
         if (!(_s_rec = pa_simple_new(NULL, dtmf_rec.toStdString().c_str(), PA_STREAM_RECORD, NULL, "record", &ss, NULL, &attr, &_error)))
         {
@@ -63,6 +65,13 @@ AudioInterface::AudioInterface(QObject *parent, unsigned sample_rate, unsigned c
         ss_short.format = PA_SAMPLE_S16LE;
         ss_short.rate = sample_rate;
         ss_short.channels = channels;
+
+        pa_buffer_attr attr;
+        attr.fragsize = 1280;
+        attr.maxlength = -1;
+        attr.minreq = -1;
+        attr.prebuf = -1;
+        attr.tlength = 1280;
 
         if (!(_s_short_play = pa_simple_new(NULL, q_play.toStdString().c_str(), PA_STREAM_PLAYBACK, NULL, "play", &ss_short, NULL, &attr, &_error)))
         {

@@ -15,15 +15,15 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 #include "serverwrapper.h"
-#include <cstdlib>
 
-ServerWrapper::ServerWrapper(AudioInterface *audio, DatabaseApi *db, QObject *parent) :
+
+ServerWrapper::ServerWrapper(DatabaseApi *db, QObject *parent) :
     QObject(parent)
 {
     _db = db;
     _stop=false;
     _speech_text = new QVector<QString>;
-    _audio = audio;
+
 }
 
 void ServerWrapper::stop()
@@ -46,19 +46,12 @@ void ServerWrapper::run()
 
     int last_time = 0;
     int last_ping_time = 0;
-    int audiobuffer_size = 640; //40 ms
-    double treshhold = -15;
-    double hyst = 0.1;
-    bool treshhold_set = false;
-    bool hyst_active = false;
-    int hyst_counter = 0;
 
     Speech spp;
     while(true)
     {
 
-        QCoreApplication::processEvents();
-        usleep(10000);
+        usleep(50000);
         int time = QDateTime::currentDateTime().toTime_t();
         if((time - last_time) > 300)
         {
@@ -69,52 +62,16 @@ void ServerWrapper::run()
         {
             emit pingServer();
             last_ping_time = time;
-        }
-        short audiobuffer[audiobuffer_size];
-        _audio->read_short(audiobuffer,audiobuffer_size);
 
-        float sum=1.0;
-        for(int j=0;j< audiobuffer_size;j++)
-        {
-            sum += static_cast<float>(audiobuffer[j]*audiobuffer[j]);
         }
 
-        float rms = sqrt(sum/(static_cast<float>(audiobuffer_size)));
-        double power = 20*log10(rms/32768.0f);
-        if(!treshhold_set)
-        {
-            treshhold = power;
-            treshhold_set = true;
-        }
-
-        if((power > treshhold+hyst))
-        {
-            if(!hyst_active)
-            {
-                hyst -= 5.0;
-                hyst_active = true;
-            }
-            else
-            {
-                hyst_counter++;
-            }
-            emit audioData(audiobuffer,audiobuffer_size);
-        }
-
-
-        if((hyst_active) && (hyst_counter>50))
-        {
-            hyst +=5.0;
-            hyst_active = false;
-            hyst_counter = 0;
-        }
 
         for(int o =0;o<_speech_text->size();o++)
         {
             spp.fspeak(_speech_text->at(o).toLocal8Bit().data());
         }
         _speech_text->clear();
-
+        QCoreApplication::processEvents();
         if(_stop)
             break;
     }
@@ -123,11 +80,6 @@ void ServerWrapper::run()
     emit finished();
 }
 
-void ServerWrapper::pcmAudio(short *pcm, short samples)
-{
-    _audio->write_short(pcm,samples*sizeof(short));
-    delete[] pcm;
-}
 
 void ServerWrapper::connectToConference(int number, int id, int server_id)
 {

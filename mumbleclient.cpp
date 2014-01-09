@@ -69,7 +69,7 @@ void MumbleClient::sendVersion()
     qDebug() << "sending version";
     MumbleProto::Version v;
     v.set_version(PROTOCOL_VERSION);
-    v.set_release("QRadioLink 1");
+    v.set_release("QRadioLink 0.1.1");
     v.set_os("Linux");
     v.set_os_version("3.2");
     int size = v.ByteSize();

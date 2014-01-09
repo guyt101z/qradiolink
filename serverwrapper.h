@@ -20,7 +20,6 @@
 #include <QObject>
 #include <QVector>
 #include <QString>
-#include "audiointerface.h"
 #include <mumbleclient.h>
 #include <unistd.h>
 #include "telnetserver.h"
@@ -34,7 +33,7 @@ class ServerWrapper : public QObject
 {
     Q_OBJECT
 public:
-    explicit ServerWrapper(AudioInterface *audio, DatabaseApi *db, QObject *parent = 0);
+    explicit ServerWrapper(DatabaseApi *db, QObject *parent = 0);
     void stop();
 
 signals:
@@ -42,20 +41,18 @@ signals:
     void joinConference(int number, int id, int server_id);
     void leaveConference(int number, int id, int server_id);
     void pingServer();
-    void audioData(short *data, short size);
 public slots:
     void run();
     void addSpeech(QString);
     void connectToConference(int ip, int id, int server_id);
     void disconnectFromConference(int number, int id, int server_id);
-    void pcmAudio(short *pcm, short samples);
 
 private:
     bool _stop;
     Speech *_speech;
     QVector<QString> *_speech_text;
     DatabaseApi *_db;
-    AudioInterface *_audio;
+
 
 };
 

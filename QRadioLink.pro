@@ -34,7 +34,8 @@ SOURCES += main.cpp \
     audioencoder.cpp \
     mumbleclient.cpp \
     sslclient.cpp \
-    ext/utils.cpp
+    ext/utils.cpp \
+    audioop.cpp
 
 
 HEADERS += speech.h \
@@ -59,7 +60,8 @@ HEADERS += speech.h \
     mumbleclient.h \
     sslclient.h \
     ext/utils.h \
-    codec2/codec2.h
+    codec2/codec2.h \
+    audioop.h
 
 
 
