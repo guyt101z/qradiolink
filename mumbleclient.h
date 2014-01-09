@@ -38,7 +38,7 @@ class MumbleClient : public QObject
 {
     Q_OBJECT
 public:
-    explicit MumbleClient(AudioInterface *audio, QObject *parent = 0);
+    explicit MumbleClient(QObject *parent = 0);
     ~MumbleClient();
     void connectToServer(QString address, unsigned port);
     void disconnectFromServer();
@@ -87,7 +87,7 @@ private:
     OpusEncoder *_opus_encoder;
     OpusDecoder *_opus_decoder;
     AudioEncoder *_codec;
-    AudioInterface *_audio;
+
     quint64 _sequence_number;
 
     

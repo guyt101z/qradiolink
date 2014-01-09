@@ -37,8 +37,8 @@ int main(int argc, char *argv[])
     QString start_time= QDateTime::currentDateTime().toString("d/MMM/yyyy hh:mm:ss");
     qDebug() << start_time;
     DatabaseApi db;
-    AudioInterface audio;
-    MumbleClient client(&audio);
+
+    MumbleClient client;
     client.connectToServer("127.0.0.1",MUMBLE_PORT);
     Controller *controller = new Controller(&db,&client);
 
@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
     t2->start();
 
     QThread *t3 = new QThread;
-    AudioOp *audio_op = new AudioOp(&audio);
+    AudioOp *audio_op = new AudioOp();
     audio_op->moveToThread(t3);
     QObject::connect(audio_op,SIGNAL(audioData(short*,short)),&client,SLOT(processAudio(short*,short)));
     QObject::connect(&client,SIGNAL(pcmAudio(short*,short)),audio_op,SLOT(pcmAudio(short*,short)));

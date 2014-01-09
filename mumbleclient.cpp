@@ -19,13 +19,13 @@
 
 
 
-MumbleClient::MumbleClient(AudioInterface *audio, QObject *parent) :
+MumbleClient::MumbleClient( QObject *parent) :
     QObject(parent)
 {
     _telnet = new SSLClient;
     _crypt_state = new CryptState;
     _codec = new AudioEncoder;
-    _audio = audio;
+
     _encryption_set = false;
     _authenticated = false;
     _synchronized = false;
@@ -367,9 +367,8 @@ void MumbleClient::decodeAudio(unsigned char *audiobuffer, short audiobuffersize
     short *pcm = _codec->decode_opus(audiobuffer,audiobuffersize, samples);
 #endif
 
-    //emit pcmAudio(pcm, samples);
-    _audio->write_short(pcm,samples*sizeof(short));
-    delete[] pcm;
+    emit pcmAudio(pcm, samples);
+
 }
 
 

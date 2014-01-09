@@ -11,7 +11,7 @@ class AudioOp : public QObject
 {
     Q_OBJECT
 public:
-    explicit AudioOp(AudioInterface *audio, QObject *parent = 0);
+    explicit AudioOp(QObject *parent = 0);
     void stop();
 signals:
     void finished();
@@ -21,9 +21,8 @@ public slots:
     void pcmAudio(short *pcm, short samples);
 
 private:
-    AudioInterface *_audio;
     bool _stop;
-    
+    AudioInterface *_audio;
 };
 
 #endif // AUDIOOP_H

@@ -18,10 +18,10 @@
 #include "audioop.h"
 #include <cstdlib>
 
-AudioOp::AudioOp(AudioInterface *audio, QObject *parent) :
+AudioOp::AudioOp(QObject *parent) :
     QObject(parent)
 {
-    _audio = audio;
+
 }
 
 
@@ -35,11 +35,11 @@ void AudioOp::run()
 {
     int audiobuffer_size = 640; //40 ms
     double treshhold = -15;
-    double hyst = 0.1;
+    double hyst = 0.2;
     bool treshhold_set = false;
     bool hyst_active = false;
     int hyst_counter = 0;
-
+    _audio = new AudioInterface;
     while(true)
     {
         usleep(10000);
@@ -73,13 +73,7 @@ void AudioOp::run()
             {
                 hyst_counter++;
             }
-            /*
-            short gain_factor = 32000 / max;
-            for(int j=0;j< audiobuffer_size;j++)
-            {
-                audiobuffer[j] *= gain_factor;
-            }
-            */
+
             emit audioData(audiobuffer,audiobuffer_size);
         }
 
