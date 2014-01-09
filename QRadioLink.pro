@@ -35,7 +35,9 @@ SOURCES += main.cpp \
     mumbleclient.cpp \
     sslclient.cpp \
     ext/utils.cpp \
-    audioop.cpp
+    audioop.cpp \
+    ext/goertzel.cpp \
+    ext/agc.cpp
 
 
 HEADERS += speech.h \
@@ -61,7 +63,9 @@ HEADERS += speech.h \
     sslclient.h \
     ext/utils.h \
     codec2/codec2.h \
-    audioop.h
+    audioop.h \
+    ext/goertzel.h \
+    ext/agc.h
 
 
 

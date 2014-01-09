@@ -21,7 +21,7 @@
 AudioOp::AudioOp(QObject *parent) :
     QObject(parent)
 {
-
+    _stop =false;
 }
 
 
@@ -35,25 +35,31 @@ void AudioOp::run()
 {
     int audiobuffer_size = 640; //40 ms
     double treshhold = -15;
-    double hyst = 0.2;
+    double hyst = 0.5;
     bool treshhold_set = false;
     bool hyst_active = false;
     int hyst_counter = 0;
     _audio = new AudioInterface;
+    agc_st *agc = initAGC(0.8);
     while(true)
     {
+
         usleep(10000);
         short audiobuffer[audiobuffer_size];
         _audio->read_short(audiobuffer,audiobuffer_size);
 
         float sum=1.0;
         short max = 0;
+        int level = 0;
         for(int j=0;j< audiobuffer_size;j++)
         {
             sum += static_cast<float>(audiobuffer[j]*audiobuffer[j]);
             max = (max > abs(audiobuffer[j])) ? max : audiobuffer[j];
+            level = (audiobuffer[j] > 0) ? level + audiobuffer[j] : level - audiobuffer[j];
         }
-
+        level /= audiobuffer_size;
+        int th = 400;
+        int noisefloor = static_cast<int>( exp(log(32767.0) * ((1000 - th) / 1000.0)));
         float rms = sqrt(sum/(static_cast<float>(audiobuffer_size)));
         double power = 20*log10(rms/32768.0f);
         if(!treshhold_set)
@@ -74,7 +80,9 @@ void AudioOp::run()
                 hyst_counter++;
             }
 
+            AGC(agc,audiobuffer,audiobuffer_size);
             emit audioData(audiobuffer,audiobuffer_size);
+
         }
 
         if((hyst_active) && (hyst_counter> 50)) // 2 second drop-down period
@@ -88,6 +96,8 @@ void AudioOp::run()
         if(_stop)
             break;
     }
+    delete agc;
+    delete _audio;
     emit finished();
 }
 

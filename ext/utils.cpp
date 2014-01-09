@@ -1,3 +1,34 @@
+/* Copyright (C) 2009-2013, Martin Johansson <martin@fatbob.nu>
+   Copyright (C) 2005-2013, Thorvald Natvig <thorvald@natvig.com>
+
+   All rights reserved.
+
+   Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions
+   are met:
+
+   - Redistributions of source code must retain the above copyright notice,
+     this list of conditions and the following disclaimer.
+   - Redistributions in binary form must reproduce the above copyright notice,
+     this list of conditions and the following disclaimer in the documentation
+     and/or other materials provided with the distribution.
+   - Neither the name of the Developers nor the names of its contributors may
+     be used to endorse or promote products derived from this software without
+     specific prior written permission.
+
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+   ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+   A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE FOUNDATION OR
+   CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+   EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+   PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+   PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+   LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
 #include "utils.h"
 
 void addPreamble(quint8 *buffer, quint16 type, quint32 len)
@@ -34,100 +65,6 @@ void genRandomStr(char *str, const int len)
     str[len] = 0;
 }
 
-#include <cmath>
-#include <cstdlib>
-
-using std::rand;
-// math stuff
-using std::cos;
-using std::abs;
-using std::exp;
-using std::log10;
-/**
-  Written by: Espen Riskedal, espenr@ii.uib.no, july-2002
-  */
 
 
-/** Generates a tone of the specified frequency
-*  Gotten from: http://groups.google.com/groups?hl=en&lr=&ie=UTF-8&oe=UTF-8&safe=off&selm=3c641e%243jn%40uicsl.csl.uiuc.edu
-*/
-float *makeTone(int samplerate, float frequency, int length, float gain) {
-    //y(n) = 2 * cos(A) * y(n-1) - y(n-2)
-    //A= (frequency of interest) * 2 * PI / (sampling frequency)
-    //A is in radians.
-    // frequency of interest MUST be <= 1/2 the sampling frequency.
-    float *tone = new float[length];
-    float A = frequency*2*PI/samplerate;
-
-    for (int i=0; i<length; i++)
-    {
-        if (i > 1) tone[i]= 2*cos(A)*tone[i-1] - tone[i-2];
-        else if (i > 0) tone[i] = 2*cos(A)*tone[i-1] - (cos(A));
-        else tone[i] = 2*cos(A)*cos(A) - cos(2*A);
-    }
-
-    for (int i=0; i<length; i++) tone[i] = tone[i]*gain;
-
-    return tone;
-}
-
-float goertzel(float *x, int N, float frequency, int samplerate) {
-    float Skn, Skn1, Skn2;
-    Skn = Skn1 = Skn2 = 0;
-
-    for (int i=0; i<N; i++)
-    {
-        if(x[i] > 1.0)
-            x[i]=0;
-        if(x[i] < -1.0)
-            x[i]=0;
-        Skn2 = Skn1;
-        Skn1 = Skn;
-        Skn = 2*cos(2*PI*frequency/(float)samplerate)*Skn1 - Skn2 + x[i];
-    }
-
-    float WNk = exp(-2*PI*frequency/(float)samplerate); // this one ignores complex stuff
-    //float WNk = exp(-2*j*PI*k/N);
-    return (Skn - WNk*Skn1);
-}
-
-float power(float value) {
-    if(fabs(value-0.0)<=0.0001) return 0;
-    return 20*log10(fabs(value));
-}
-
-// this one doesn't ignore complex stuff
-float goertzel_magnitude(float* data, int numSamples,int TARGET_FREQUENCY,int SAMPLING_RATE )
-{
-    int     k,i;
-    float   floatnumSamples;
-    float   omega,sine,cosine,coeff,q0,q1,q2,magnitude,real,imag;
-
-    float   scalingFactor = numSamples / 2.0;
-
-    floatnumSamples = (float) numSamples;
-    k = (int) (0.5 + ((floatnumSamples * TARGET_FREQUENCY) / SAMPLING_RATE));
-    omega = (2.0 * M_PI * k) / floatnumSamples;
-    sine = sin(omega);
-    cosine = cos(omega);
-    coeff = 2.0 * cosine;
-    q0=0;
-    q1=0;
-    q2=0;
-
-    for(i=0; i<numSamples; i++)
-    {
-        q0 = coeff * q1 - q2 + data[i];
-        q2 = q1;
-        q1 = q0;
-    }
-
-    // calculate the real and imaginary results
-    // scaling appropriately
-    real = (q1 - q2 * cosine) / scalingFactor;
-    imag = (q2 * sine);
-
-    magnitude = sqrtf(real*real + imag*imag);
-    return magnitude;
-}
 

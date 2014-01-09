@@ -25,7 +25,7 @@
 #include "audiointerface.h"
 #include "speech.h"
 #include "config_defines.h"
-#include "ext/utils.h"
+#include "ext/goertzel.h"
 
 class DtmfDecoder : public QObject
 {

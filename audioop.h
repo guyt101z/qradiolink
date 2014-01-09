@@ -2,10 +2,12 @@
 #define AUDIOOP_H
 
 #include <QObject>
+#include <QDebug>
 #include <QCoreApplication>
 #include <unistd.h>
 #include <math.h>
 #include "audiointerface.h"
+#include "ext/agc.h"
 
 class AudioOp : public QObject
 {

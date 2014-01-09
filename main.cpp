@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
     t2->start();
 
     QThread *t3 = new QThread;
-    AudioOp *audio_op = new AudioOp();
+    AudioOp *audio_op = new AudioOp;
     audio_op->moveToThread(t3);
     QObject::connect(audio_op,SIGNAL(audioData(short*,short)),&client,SLOT(processAudio(short*,short)));
     QObject::connect(&client,SIGNAL(pcmAudio(short*,short)),audio_op,SLOT(pcmAudio(short*,short)));
