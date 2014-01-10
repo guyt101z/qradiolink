@@ -39,7 +39,7 @@ void ServerWrapper::addSpeech(QString s)
 
 void ServerWrapper::run()
 {
-    TelnetServer *server = new TelnetServer(_db);
+    TelnetServer *server = new TelnetServer(_settings, _db);
     QObject::connect(server,SIGNAL(joinConference(int, int,int)),this,SLOT(connectToConference(int, int, int)));
     QObject::connect(server,SIGNAL(leaveConference(int, int,int)),this,SLOT(disconnectFromConference(int, int, int)));
     qDebug() << "Server running";
@@ -53,7 +53,7 @@ void ServerWrapper::run()
 
         usleep(50000);
         int time = QDateTime::currentDateTime().toTime_t();
-        if((time - last_time) > 300)
+        if((time - last_time) > _settings->_ident_time)
         {
             //spp.fspeak("This is Q radio link, test U H F.");
             last_time = time;

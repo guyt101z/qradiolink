@@ -21,6 +21,7 @@ public:
     quint16 _codec2_bitrate;
     quint8 _enable_vox;
     quint8 _enable_agc;
+    quint16 _ident_time;
 
 };
 

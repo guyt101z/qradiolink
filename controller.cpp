@@ -18,6 +18,7 @@
 
 Controller::Controller(Settings *settings, DatabaseApi *db, MumbleClient *mumble, QObject *parent) : QObject(parent)
 {
+    _settings = settings;
     _db = db;
 #ifndef MUMBLE
     _client = new IaxClient;
@@ -33,7 +34,7 @@ Controller::Controller(Settings *settings, DatabaseApi *db, MumbleClient *mumble
     _id = s->_id;
     delete s;
     _telnet = new TelnetClient;
-    _settings = settings;
+
     _mumble = mumble;
     _conference_id = -1;
 }

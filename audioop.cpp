@@ -36,8 +36,8 @@ void AudioOp::stop()
 void AudioOp::run()
 {
     int audiobuffer_size = 640; //40 ms
-    double treshhold = -15;
-    double hyst = 0.5;
+    double treshhold = _settings->_audio_treshhold;
+    double hyst = _settings->_voice_activation;
     bool treshhold_set = false;
     bool hyst_active = false;
     int hyst_counter = 0;
@@ -69,7 +69,7 @@ void AudioOp::run()
             treshhold_set = true;
         }
 
-        if((power > treshhold+hyst))
+        if((power > treshhold+hyst) || (!_settings->_enable_vox))
         {
             if(!hyst_active)
             {
@@ -80,8 +80,10 @@ void AudioOp::run()
             {
                 hyst_counter++;
             }
-
-            AGC(agc,audiobuffer,audiobuffer_size);
+            if(_settings->_enable_agc)
+            {
+                AGC(agc,audiobuffer,audiobuffer_size);
+            }
             emit audioData(audiobuffer,audiobuffer_size);
 
 
@@ -89,7 +91,7 @@ void AudioOp::run()
 
 
 
-        if((hyst_active) && (hyst_counter> 50)) // 2 second drop-down period
+        if((hyst_active) && (hyst_counter> _settings->_voice_activation_timeout)) // 2 second drop-down period
         {
             hyst +=10.0;
             hyst_active = false;

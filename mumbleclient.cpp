@@ -33,9 +33,6 @@ MumbleClient::MumbleClient(Settings *settings, QObject *parent) :
     _max_bandwidth = -1;
     _channel_id = -1;
     _temp_channel_name = "";
-    int opus_error;
-    _opus_encoder = opus_encoder_create(8000,1,OPUS_APPLICATION_VOIP,&opus_error);
-    _opus_decoder = opus_decoder_create(8000,1,&opus_error);
     _sequence_number = 0;
 }
 
@@ -44,8 +41,6 @@ MumbleClient::~MumbleClient()
     delete _telnet;
     delete _crypt_state;
     delete _codec;
-    opus_encoder_destroy(_opus_encoder);
-    opus_decoder_destroy(_opus_decoder);
 }
 
 void MumbleClient::connectToServer(QString address, unsigned port)
@@ -257,11 +252,15 @@ void MumbleClient::processAudio(short *audiobuffer, short audiobuffersize)
         return;
 
     int packet_size = 0;
-#ifdef USE_CODEC2
-    unsigned char *encoded_audio = _codec->encode_codec2(audiobuffer, audiobuffersize, packet_size);
-#else
-    unsigned char *encoded_audio = _codec->encode_opus(audiobuffer, audiobuffersize, packet_size);
-#endif
+    unsigned char *encoded_audio;
+    if(_settings->_use_codec2)
+    {
+        encoded_audio = _codec->encode_codec2(audiobuffer, audiobuffersize, packet_size);
+    }
+    else
+    {
+        encoded_audio = _codec->encode_opus(audiobuffer, audiobuffersize, packet_size);
+    }
 
     createVoicePacket(encoded_audio, packet_size);
     delete[] encoded_audio;
@@ -291,7 +290,7 @@ void MumbleClient::createVoicePacket(unsigned char *encoded_audio, int packet_si
     pds.append(audio_packet,real_packet_size);
 
     unsigned char *bin_data = reinterpret_cast<unsigned char*>(data);
-    if(MUMBLE_TCP_AUDIO) // TCP tunnel
+    if(_settings->_mumble_tcp) // TCP tunnel
     {
         this->sendMessage(bin_data,1,pds.size()+1);
     }
@@ -343,11 +342,15 @@ void MumbleClient::decodeAudio(unsigned char *audiobuffer, short audiobuffersize
 {
 
     int samples =0;
-#ifdef USE_CODEC2
-    short *pcm = _codec->decode_codec2(audiobuffer,audiobuffersize, samples);
-#else
-    short *pcm = _codec->decode_opus(audiobuffer,audiobuffersize, samples);
-#endif
+    short *pcm;
+    if(_settings->_use_codec2)
+    {
+        pcm = _codec->decode_codec2(audiobuffer,audiobuffersize, samples);
+    }
+    else
+    {
+        pcm = _codec->decode_opus(audiobuffer,audiobuffersize, samples);
+    }
 
     emit pcmAudio(pcm, samples);
 

@@ -18,7 +18,7 @@
 
 static QString CRLF ="\r\n";
 
-TelnetServer::TelnetServer(DatabaseApi *db, QObject *parent) :
+TelnetServer::TelnetServer(Settings *settings, DatabaseApi *db, QObject *parent) :
     QObject(parent)
 {
     _hostname = QHostAddress::Any;
@@ -26,7 +26,10 @@ TelnetServer::TelnetServer(DatabaseApi *db, QObject *parent) :
     _stop=false;
     _server = new QTcpServer;
     _db = db;
-    _server->listen(_hostname,_listen_port);
+    if(settings->_control_port != 0)
+        _server->listen(_hostname,settings->_control_port);
+    else
+        _server->listen(_hostname,_listen_port);
     QObject::connect(_server,SIGNAL(newConnection()),this,SLOT(getConnection()));
     qDebug() << "Telnet server init completed";
 }

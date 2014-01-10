@@ -249,6 +249,7 @@ Settings* DatabaseApi::get_settings()
     int codec2_bitrate_idx = query.record().indexOf("codec2_bitrate");
     int enable_vox_idx = query.record().indexOf("enable_vox");
     int enable_agc_idx = query.record().indexOf("enable_agc");
+    int ident_time_idx = query.record().indexOf("ident_time");
     if(query.next())
     {
         settings->_id = query.value(id_idx).toInt();
@@ -265,6 +266,7 @@ Settings* DatabaseApi::get_settings()
         settings->_codec2_bitrate = query.value(codec2_bitrate_idx).toInt();
         settings->_enable_vox = query.value(enable_vox_idx).toInt();
         settings->_enable_agc = query.value(enable_agc_idx).toInt();
+        settings->_ident_time = query.value(ident_time_idx).toInt();
     }
 
     return settings;

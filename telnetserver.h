@@ -32,12 +32,13 @@
 #include "config_defines.h"
 #include "ext/dec.h"
 #include "ext/QRadioLink.pb.h"
+#include "settings.h"
 
 class TelnetServer : public QObject
 {
     Q_OBJECT
 public:
-    explicit TelnetServer(DatabaseApi *db, QObject *parent = 0);
+    explicit TelnetServer(Settings *settings, DatabaseApi *db, QObject *parent = 0);
     ~TelnetServer();
     void stop();
 
