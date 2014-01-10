@@ -17,13 +17,13 @@
 #include "serverwrapper.h"
 
 
-ServerWrapper::ServerWrapper(DatabaseApi *db, QObject *parent) :
+ServerWrapper::ServerWrapper(Settings *settings, DatabaseApi *db, QObject *parent) :
     QObject(parent)
 {
     _db = db;
     _stop=false;
     _speech_text = new QVector<QString>;
-
+    _settings = settings;
 }
 
 void ServerWrapper::stop()

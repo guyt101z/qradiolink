@@ -226,3 +226,46 @@ Server* DatabaseApi::get_server_by_id(int id)
 
     return server;
 }
+
+
+Settings* DatabaseApi::get_settings()
+{
+    Settings *settings=new Settings;
+    QSqlQuery query(_db);
+    query.prepare("SELECT * FROM settings WHERE id=1 LIMIT 1");
+    query.exec();
+
+    int id_idx = query.record().indexOf("id");
+    int use_mumble_idx = query.record().indexOf("use_mumble");
+    int mumble_tcp_idx = query.record().indexOf("mumble_tcp");
+    int use_codec2_idx = query.record().indexOf("use_codec2");
+    int audio_treshhold_idx = query.record().indexOf("audio_treshhold");
+    int voice_activation_idx = query.record().indexOf("voice_activation");
+    int voice_activation_timeout_idx = query.record().indexOf("voice_activation_timeout");
+    int voice_server_port_idx = query.record().indexOf("voice_server_port");
+    int local_udp_port_idx = query.record().indexOf("local_udp_port");
+    int control_port_idx = query.record().indexOf("control_port");
+    int opus_bitrate_idx = query.record().indexOf("opus_bitrate");
+    int codec2_bitrate_idx = query.record().indexOf("codec2_bitrate");
+    int enable_vox_idx = query.record().indexOf("enable_vox");
+    int enable_agc_idx = query.record().indexOf("enable_agc");
+    if(query.next())
+    {
+        settings->_id = query.value(id_idx).toInt();
+        settings->_use_mumble = query.value(use_mumble_idx).toInt();
+        settings->_mumble_tcp = query.value(mumble_tcp_idx).toInt();
+        settings->_use_codec2 = query.value(use_codec2_idx).toInt();
+        settings->_audio_treshhold = query.value(audio_treshhold_idx).toFloat();
+        settings->_voice_activation = query.value(voice_activation_idx).toFloat();
+        settings->_voice_activation_timeout = query.value(voice_activation_timeout_idx).toInt();
+        settings->_voice_server_port = query.value(voice_server_port_idx).toInt();
+        settings->_local_udp_port = query.value(local_udp_port_idx).toInt();
+        settings->_control_port = query.value(control_port_idx).toInt();
+        settings->_opus_bitrate = query.value(opus_bitrate_idx).toInt();
+        settings->_codec2_bitrate = query.value(codec2_bitrate_idx).toInt();
+        settings->_enable_vox = query.value(enable_vox_idx).toInt();
+        settings->_enable_agc = query.value(enable_agc_idx).toInt();
+    }
+
+    return settings;
+}

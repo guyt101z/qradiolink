@@ -9,12 +9,13 @@
 #include "audiointerface.h"
 #include "ext/agc.h"
 #include "ext/vox.h"
+#include "settings.h"
 
 class AudioOp : public QObject
 {
     Q_OBJECT
 public:
-    explicit AudioOp(QObject *parent = 0);
+    explicit AudioOp(Settings *settings, QObject *parent = 0);
     void stop();
 signals:
     void finished();
@@ -26,6 +27,7 @@ public slots:
 private:
     bool _stop;
     AudioInterface *_audio;
+    Settings *_settings;
 };
 
 #endif // AUDIOOP_H

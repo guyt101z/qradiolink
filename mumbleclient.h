@@ -32,13 +32,14 @@
 #include "audioencoder.h"
 #include "opus/opus.h"
 #include "config_defines.h"
+#include "settings.h"
 
 
 class MumbleClient : public QObject
 {
     Q_OBJECT
 public:
-    explicit MumbleClient(QObject *parent = 0);
+    explicit MumbleClient(Settings *settings, QObject *parent = 0);
     ~MumbleClient();
     void connectToServer(QString address, unsigned port);
     void disconnectFromServer();
@@ -87,7 +88,7 @@ private:
     OpusEncoder *_opus_encoder;
     OpusDecoder *_opus_decoder;
     AudioEncoder *_codec;
-
+    Settings *_settings;
     quint64 _sequence_number;
 
     

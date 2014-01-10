@@ -30,13 +30,14 @@
 #include "mumbleclient.h"
 #include "ext/dec.h"
 #include "ext/QRadioLink.pb.h"
+#include "settings.h"
 
 class Controller : public QObject
 {
     Q_OBJECT
 
 public:
-    Controller(DatabaseApi *db, MumbleClient *mumble, QObject *parent = 0);
+    Controller(Settings *settings, DatabaseApi *db, MumbleClient *mumble, QObject *parent = 0);
     ~Controller();
     int getChannel();
 
@@ -70,6 +71,7 @@ private:
     Station *_current_station;
     TelnetClient *_telnet;
     MumbleClient *_mumble;
+    Settings *_settings;
 };
 
 #endif // CONTROLLER_H

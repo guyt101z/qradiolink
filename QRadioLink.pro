@@ -38,7 +38,8 @@ SOURCES += main.cpp \
     audioop.cpp \
     ext/goertzel.cpp \
     ext/agc.cpp \
-    ext/vox.cpp
+    ext/vox.cpp \
+    settings.cpp
 
 
 HEADERS += speech.h \
@@ -67,7 +68,8 @@ HEADERS += speech.h \
     audioop.h \
     ext/goertzel.h \
     ext/agc.h \
-    ext/vox.h
+    ext/vox.h \
+    settings.h
 
 
 

@@ -18,10 +18,12 @@
 #include "audioop.h"
 #include <cstdlib>
 
-AudioOp::AudioOp(QObject *parent) :
+
+AudioOp::AudioOp(Settings *settings, QObject *parent) :
     QObject(parent)
 {
     _stop =false;
+    _settings = settings;
 }
 
 
@@ -41,7 +43,7 @@ void AudioOp::run()
     int hyst_counter = 0;
     _audio = new AudioInterface;
     agc_st *agc = initAGC(0.8);
-    vox_st *vox = initVOX(50,500);
+    vox_st *vox = initVOX(99000,50);
     while(true)
     {
 
@@ -51,16 +53,14 @@ void AudioOp::run()
 
         float sum=1.0;
         short max = 0;
-        int level = 0;
+
         for(int j=0;j< audiobuffer_size;j++)
         {
             sum += static_cast<float>(audiobuffer[j]*audiobuffer[j]);
             max = (max > abs(audiobuffer[j])) ? max : audiobuffer[j];
-            level = (audiobuffer[j] > 0) ? level + audiobuffer[j] : level - audiobuffer[j];
+
         }
-        level /= audiobuffer_size;
-        int th = 400;
-        int noisefloor = static_cast<int>( exp(log(32767.0) * ((1000 - th) / 1000.0)));
+
         float rms = sqrt(sum/(static_cast<float>(audiobuffer_size)));
         double power = 20*log10(rms/32768.0f);
         if(!treshhold_set)

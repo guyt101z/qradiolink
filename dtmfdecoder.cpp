@@ -20,7 +20,7 @@
 
 
 
-DtmfDecoder::DtmfDecoder(QObject *parent) :
+DtmfDecoder::DtmfDecoder(Settings *settings, QObject *parent) :
     QObject(parent)
 {
     _stop=false;
@@ -39,6 +39,7 @@ DtmfDecoder::DtmfDecoder(QObject *parent) :
     _previous_letter= ' ';
     _processing = true;
     _receiving = false;
+    _settings = settings;
 
 }
 
@@ -99,25 +100,7 @@ void DtmfDecoder::run()
         float *buf = new float[buffer_size];
 
         audio->read(buf, buffer_size);
-        /*
-        float sum=0;
-        for(int x=0;x<buffer_size;x++)
-        {
-            if(buf[x] >= 0)
-                sum += buf[x];
-            else
-                sum -= buf[x];
-        }
-        */
-        if(1> 2)
-        {
-            _receiving = true;
-            //qDebug() << "sum: " << sum/treshhold_audio_power;
-        }
-        else
-        {
-            _receiving = false;
-        }
+
 
         char letter = decode(buf,buffer_size,samp_rate, treshhold_audio_power, tone_difference);
         // fill a buffer of decoded letters

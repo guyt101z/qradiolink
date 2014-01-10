@@ -26,6 +26,7 @@
 #include "databaseapi.h"
 #include "speech.h"
 #include "mumbleclient.h"
+#include "settings.h"
 
 
 
@@ -33,7 +34,7 @@ class ServerWrapper : public QObject
 {
     Q_OBJECT
 public:
-    explicit ServerWrapper(DatabaseApi *db, QObject *parent = 0);
+    explicit ServerWrapper(Settings *settings, DatabaseApi *db, QObject *parent = 0);
     void stop();
 
 signals:
@@ -52,7 +53,7 @@ private:
     Speech *_speech;
     QVector<QString> *_speech_text;
     DatabaseApi *_db;
-
+    Settings *_settings;
 
 };
 

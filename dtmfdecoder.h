@@ -26,12 +26,13 @@
 #include "speech.h"
 #include "config_defines.h"
 #include "ext/goertzel.h"
+#include "settings.h"
 
 class DtmfDecoder : public QObject
 {
     Q_OBJECT
 public:
-    explicit DtmfDecoder(QObject *parent = 0);
+    explicit DtmfDecoder(Settings *settings, QObject *parent = 0);
     ~DtmfDecoder();
     void stop();
     void process(bool p);
@@ -70,6 +71,7 @@ private:
     char _previous_letter;
     bool _processing;
     bool _receiving;
+    Settings *_settings;
 
 
 };

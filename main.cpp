@@ -37,15 +37,15 @@ int main(int argc, char *argv[])
     QString start_time= QDateTime::currentDateTime().toString("d/MMM/yyyy hh:mm:ss");
     qDebug() << start_time;
     DatabaseApi db;
-
-    MumbleClient client;
+    Settings *settings = db.get_settings();
+    MumbleClient client(settings);
     client.connectToServer("127.0.0.1",MUMBLE_PORT);
-    Controller *controller = new Controller(&db,&client);
+    Controller *controller = new Controller(settings, &db,&client);
 
 
 
     QThread *t1= new QThread;
-    DtmfDecoder *decoder = new DtmfDecoder;
+    DtmfDecoder *decoder = new DtmfDecoder(settings);
     decoder->moveToThread(t1);
     QObject::connect(decoder,SIGNAL(haveCall(QVector<char>*)),controller,SLOT(haveCall(QVector<char>*)));
     QObject::connect(decoder,SIGNAL(haveCommand(QVector<char>*)),controller,SLOT(haveCommand(QVector<char>*)));
@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 
 
     QThread *t2= new QThread;
-    ServerWrapper *telnet_server_wrapper = new ServerWrapper(&db);
+    ServerWrapper *telnet_server_wrapper = new ServerWrapper(settings, &db);
     telnet_server_wrapper->moveToThread(t2);
     QObject::connect(controller,SIGNAL(speak(QString)),telnet_server_wrapper,SLOT(addSpeech(QString)));
     QObject::connect(telnet_server_wrapper,SIGNAL(pingServer()),&client,SLOT(pingServer()));
@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
     t2->start();
 
     QThread *t3 = new QThread;
-    AudioOp *audio_op = new AudioOp;
+    AudioOp *audio_op = new AudioOp(settings);
     audio_op->moveToThread(t3);
     QObject::connect(audio_op,SIGNAL(audioData(short*,short)),&client,SLOT(processAudio(short*,short)));
     QObject::connect(&client,SIGNAL(pcmAudio(short*,short)),audio_op,SLOT(pcmAudio(short*,short)));

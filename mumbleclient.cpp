@@ -19,13 +19,13 @@
 
 
 
-MumbleClient::MumbleClient( QObject *parent) :
+MumbleClient::MumbleClient(Settings *settings, QObject *parent) :
     QObject(parent)
 {
     _telnet = new SSLClient;
     _crypt_state = new CryptState;
     _codec = new AudioEncoder;
-
+    _settings = settings;
     _encryption_set = false;
     _authenticated = false;
     _synchronized = false;
