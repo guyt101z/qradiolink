@@ -46,7 +46,7 @@ public:
 
     QString getChannelName();
     int getChannelId();
-    QString createChannel();
+    QString createChannel(QString channel_name="");
     void joinChannel(int id);
 signals:
     void channelName(QString name);

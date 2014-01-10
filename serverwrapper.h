@@ -45,7 +45,7 @@ signals:
 public slots:
     void run();
     void addSpeech(QString);
-    void connectToConference(int ip, int id, int server_id);
+    void connectToConference(int number, int id, int server_id);
     void disconnectFromConference(int number, int id, int server_id);
 
 private:

@@ -226,12 +226,20 @@ int MumbleClient::getChannelId()
     return _channel_id;
 }
 
-QString MumbleClient::createChannel()
+QString MumbleClient::createChannel(QString channel_name)
 {
-    int rand_len = 8;
-    char rand[8];
-    genRandomStr(rand,rand_len);
-    QString name = QString::fromLocal8Bit(rand);
+    QString name;
+    if(channel_name == "")
+    {
+        int rand_len = 8;
+        char rand[8];
+        genRandomStr(rand,rand_len);
+        name = QString::fromLocal8Bit(rand);
+    }
+    else
+    {
+        name = channel_name;
+    }
     _temp_channel_name = name;
     MumbleProto::ChannelState channel;
     channel.set_parent(0);
