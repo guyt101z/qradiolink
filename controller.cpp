@@ -113,7 +113,7 @@ void Controller::haveCall(QVector<char> *dtmf)
         }
         // TODO: how do we pick a server?
         Server *server = servers[0];
-        if(s->_in_call == 1)
+        if(_current_station->_in_call == 1)
         {
             // check if the station is already in conference;
             // if it is, just join it
@@ -124,16 +124,16 @@ void Controller::haveCall(QVector<char> *dtmf)
             QString voice= "Joining the station in the conference.";
             emit speak(voice);
 #ifdef MUMBLE
-            _mumble->connectToServer(server->_ip,MUMBLE_PORT);
-            _mumble->joinChannel(s->_conference_id);
+            _mumble->connectToServer(server->_ip,_settings->_voice_server_port);
+            _mumble->joinChannel(_current_station->_conference_id);
 #else
             _client->init();
             _client->setProperties(server->_username,server->_password,server->_ip);
             _client->makeCall(s->_conference_id.toStdString());
 #endif
             _in_conference =1;
-            _conference_id = s->_conference_id;
-            _conference_stations->append(s);
+            _conference_id = _current_station->_conference_id;
+            _conference_stations->append(_current_station);
             Station *st = _db->get_local_station();
             st->_called_by=0;
             st->_conference_id=_conference_id;
@@ -145,7 +145,7 @@ void Controller::haveCall(QVector<char> *dtmf)
         {
             // if it's not, get the number of the first free conference and make a new conference
 #ifdef MUMBLE
-            _mumble->connectToServer(server->_ip,MUMBLE_PORT);
+            _mumble->connectToServer(server->_ip,_settings->_voice_server_port);
             QString channel = _mumble->createChannel();
             if(channel.length() > 1)
             {
@@ -234,7 +234,7 @@ bool Controller::testConnection(QString host)
     QObject::connect(_telnet,SIGNAL(connectedToHost()),this,SLOT(readyConnect()));
     QObject::connect(_telnet,SIGNAL(connectionFailure()),this,SLOT(noConnection()));
     QObject::connect(_telnet,SIGNAL(disconnectedFromHost()),this,SLOT(disconnectedLink()));
-    _telnet->connectHost(host,CONTROL_PORT);
+    _telnet->connectHost(host,_settings->_control_port);
     int time = QDateTime::currentDateTime().toTime_t();
     while ((QDateTime::currentDateTime().toTime_t() - time) < 5)
     {
@@ -313,15 +313,19 @@ int Controller::getChannel()
 
 void Controller::joinConference(int number, int id, int server_id)
 {
+    qDebug() << server_id;
     Server *server = _db->get_server_by_id(server_id);
-    /** FIXME: no valid server is returned
+
     if(server->_id < 1)
     {
+
         QString voice= "There are no active servers in the list.";
         emit speak(voice);
+        /** FIXME: no valid server is returned
         return;
+        */
     }
-    */
+    qDebug() << server->_id;
     server->_ip="192.168.1.2";
     QString voice= "Joining conference.";
     emit speak(voice);
@@ -339,7 +343,7 @@ void Controller::joinConference(int number, int id, int server_id)
 
 
 #ifdef MUMBLE
-    _mumble->connectToServer(server->_ip,MUMBLE_PORT);
+    _mumble->connectToServer(server->_ip,_settings->_voice_server_port);
     _mumble->joinChannel(number);
 #else
     QObject::connect(_client,SIGNAL(callEnded()),this,SLOT(disconnectedFromCall()));
@@ -369,7 +373,7 @@ void Controller::disconnectedFromCall()
             {
                 //FIXME:
                 _telnet->disconnectHost();
-                _telnet->connectHost(s->_ip,CONTROL_PORT);
+                _telnet->connectHost(s->_ip,_settings->_control_port);
                 int retries = 0;
                 while((_telnet->connectionStatus()!=1) && (retries<3))
                 {

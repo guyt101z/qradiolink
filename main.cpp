@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
     DatabaseApi db;
     Settings *settings = db.get_settings();
     MumbleClient client(settings);
-    client.connectToServer("127.0.0.1",MUMBLE_PORT);
+    //client.connectToServer("127.0.0.1",MUMBLE_PORT);
     Controller *controller = new Controller(settings, &db,&client);
 
 

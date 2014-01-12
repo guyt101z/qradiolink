@@ -122,9 +122,9 @@ void SSLClient::sslError(QList<QSslError> errors)
 
 void SSLClient::connectHost(const QString &host, const unsigned &port)
 {
-    qDebug() << "trying " << host;
-    if(_status==1) return;
 
+    if(_status==1) return;
+    qDebug() << "trying " << host;
     _socket->connectToHostEncrypted(host, port);
     _hostname = host;
     _port = port;

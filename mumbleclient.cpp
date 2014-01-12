@@ -56,6 +56,13 @@ void MumbleClient::disconnectFromServer()
     if(_authenticated)
     {
         _telnet->disconnectHost();
+        QObject::disconnect(_telnet,SIGNAL(connectedToHost()),this,SLOT(sendVersion()));
+        QObject::disconnect(_telnet,SIGNAL(haveMessage(QByteArray)),this,SLOT(processProtoMessage(QByteArray)));
+        QObject::disconnect(_telnet,SIGNAL(haveUDPData(QByteArray)),this,SLOT(processUDPData(QByteArray)));
+        _encryption_set = false;
+        _authenticated = false;
+        _synchronized = false;
+        _session_id = -1;
     }
 }
 
