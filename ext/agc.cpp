@@ -28,6 +28,10 @@
 
 #include "agc.h"
 
+namespace hvdi
+{
+
+
 agc_st* initAGC(float level)
 {
     agc_st *agc = new agc_st;
@@ -108,4 +112,6 @@ void AGC(agc_st *agc, short *buffer, int len)
         }
         buffer[i] = (short) ((buffer[i] * agc->igain) >> 16);
     }
+}
+
 }

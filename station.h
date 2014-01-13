@@ -36,6 +36,8 @@ public:
     int _local;
     int _active;
     int _waiting;
+    bool _mute;
+    bool _deaf;
 };
 
 #endif // STATION_H

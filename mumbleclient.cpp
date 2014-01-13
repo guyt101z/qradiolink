@@ -91,7 +91,8 @@ void MumbleClient::authenticate()
     genRandomStr(rand,rand_len);
     QString username = "test_";
     username += QString::fromLocal8Bit(rand);
-    auth.set_username(username.toStdString().c_str());
+    //auth.set_username(username.toStdString().c_str());
+    auth.set_username(_settings->_radio_id.toStdString().c_str());
     auth.set_password("");
     auth.set_opus(true);
     int size = auth.ByteSize();
@@ -153,6 +154,9 @@ void MumbleClient::processProtoMessage(QByteArray data)
     case 9: // UserState
         processUserState(message, message_size);
         break;
+    case 8: // UserRemove
+        processUserRemove(message, message_size);
+        break;
     case 1: // UDPTunnel
         processIncomingAudioPacket(message, message_size);
     default:
@@ -183,10 +187,22 @@ void MumbleClient::processServerSync(quint8 *message, quint64 size)
     _max_bandwidth = sync.max_bandwidth();
     std::string welcome = sync.welcome_text();
     _synchronized = true;
-    qDebug() << QString::fromStdString(welcome) << " max bandwidth: " << _max_bandwidth;
+    qDebug() << QString::fromStdString(welcome)
+             << " max bandwidth: " << _max_bandwidth
+             << " session: " << QString::number(_session_id);
 #ifndef NO_CRYPT
     createChannel();
 #endif
+    MumbleProto::UserState us;
+    us.set_session(_session_id);
+    us.set_actor(_session_id);
+    us.set_self_deaf(true);
+    us.set_self_mute(true);
+    us.set_comment(_settings->_callsign.toStdString().c_str());
+    int msize = us.ByteSize();
+    quint8 data[msize];
+    us.SerializeToArray(data,msize);
+    this->sendMessage(data,9,msize);
 }
 
 void MumbleClient::processChannelState(quint8 *message, quint64 size)
@@ -203,22 +219,228 @@ void MumbleClient::processUserState(quint8 *message, quint64 size)
 
     MumbleProto::UserState us;
     us.ParseFromArray(message,size);
-    if(us.session() == _session_id)
+    if((_session_id==-1))
     {
         _channel_id = us.channel_id();
         qDebug() << " Joined channel: " << _channel_id;
+
+    }
+    if(us.session() == _session_id)
+    {
+        if(us.has_channel_id())
+        {
+            _channel_id = us.channel_id();
+            qDebug() << " Joined channel: " << _channel_id;
+            if(_channel_id > 1)
+            {
+                emit channelReady(_channel_id);
+            }
+        }
+        for(int i=0; i < _stations.size();i++)
+        {
+            Station *s = _stations.at(i);
+            if(s->_id == _session_id)
+            {
+
+                delete s;
+                _stations.remove(i);
+            }
+        }
+    }
+    else
+    {
+        bool set_station = false;
+        for(int i=0; i < _stations.size();i++)
+        {
+            Station *s = _stations.at(i);
+            if(s->_id == us.session())
+            {
+                s->_conference_id = us.channel_id();
+                if(us.has_mute())
+                    s->_mute = us.mute();
+                if(us.has_deaf())
+                    s->_deaf = us.deaf();
+                if(us.has_comment())
+                    s->_callsign = QString::fromStdString(us.comment());
+                set_station = true;
+            }
+        }
+        if(!set_station)
+        {
+            Station *s = new Station;
+            s->_id = us.session();
+            s->_radio_id = QString::fromStdString(us.name());
+            s->_conference_id = us.channel_id();
+            if(us.has_mute())
+                s->_mute = us.mute();
+            if(us.has_deaf())
+                s->_deaf = us.deaf();
+            if(us.has_comment())
+                s->_callsign = QString::fromStdString(us.comment());
+            _stations.push_back(s);
+            emit newStation(s);
+        }
+    }
+    for(int i = 0;i < _stations.size();i++)
+    {
+        Station *s = _stations.at(i);
+        qDebug() << "Session: " << QString::number(s->_id)
+                 << " radio_id: " << s->_radio_id << " channel: "
+                 << QString::number(s->_conference_id) << s->_callsign;
     }
 
+    emit onlineStations(_stations);
+}
+
+void MumbleClient::processUserRemove(quint8 *message, quint64 size)
+{
+
+    MumbleProto::UserRemove us;
+    us.ParseFromArray(message,size);
+    for(int i=0; i < _stations.size(); i++)
+    {
+        Station *s = _stations.at(i);
+        if(s->_id == us.session())
+        {
+            delete s;
+            _stations.remove(i);
+        }
+    }
+    for(int i = 0;i < _stations.size();i++)
+    {
+        Station *s = _stations.at(i);
+        qDebug() << "Session: " << QString::number(s->_id)
+                 << " radio_id: " << s->_radio_id << " channel: "
+                 << QString::number(s->_conference_id) << s->_callsign;
+    }
+    emit onlineStations(_stations);
 }
 
 void MumbleClient::joinChannel(int id)
 {
     MumbleProto::UserState us;
+    us.set_session(_session_id);
+    us.set_self_deaf(false);
+    us.set_self_mute(false);
     us.set_channel_id(id);
     int size = us.ByteSize();
     quint8 data[size];
     us.SerializeToArray(data,size);
     this->sendMessage(data,9,size);
+    _channel_id = id;
+
+}
+
+int MumbleClient::callStation(QString radio_id)
+{
+    int sessid = 0;
+    for(int i =0;i<_stations.size();i++)
+    {
+        Station *s = _stations.at(i);
+        if(s->_radio_id == radio_id)
+        {
+            sessid = s->_id;
+            if(s->_conference_id > 1)
+                return s->_conference_id;
+            s->_called_by = _session_id;
+            s->_in_call = 1;
+            s->_conference_id = _channel_id;
+        }
+    }
+    if(sessid ==0)
+        return -1;
+    MumbleProto::UserState us;
+    us.set_channel_id(_channel_id);
+    us.set_session(sessid);
+    us.set_actor(_session_id);
+    us.set_mute(false);
+    us.set_deaf(false);
+    int size = us.ByteSize();
+    quint8 data[size];
+    us.SerializeToArray(data,size);
+    this->sendMessage(data,9,size);
+    return 0;
+}
+
+void MumbleClient::disconnectFromCall()
+{
+    if(_channel_id < 2)
+    {
+        qDebug() << "something went wrong";
+        return;
+    }
+    _temp_channel_name = "";
+    MumbleProto::UserState us;
+    us.set_channel_id(1);
+    us.set_session(_session_id);
+    us.set_self_mute(true);
+    us.set_self_deaf(true);
+    int size = us.ByteSize();
+    quint8 data[size];
+    us.SerializeToArray(data,size);
+    this->sendMessage(data,9,size);
+}
+
+int MumbleClient::disconnectStation(QString radio_id)
+{
+    int sessid = 0;
+    for(int i =0;i<_stations.size();i++)
+    {
+        Station *s = _stations.at(i);
+        if(s->_radio_id == radio_id)
+        {
+            sessid = s->_id;
+            if(s->_conference_id != _channel_id)
+                return -2;
+            if(s->_called_by != _session_id)
+                return -3;
+            s->_called_by = 0;
+            s->_in_call = 0;
+            s->_conference_id = -1;
+        }
+    }
+    if(sessid ==0)
+        return -1;
+    MumbleProto::UserState us;
+    us.set_channel_id(1);
+    us.set_session(sessid);
+    us.set_actor(_session_id);
+    us.set_mute(true);
+    us.set_deaf(true);
+    int size = us.ByteSize();
+    quint8 data[size];
+    us.SerializeToArray(data,size);
+    this->sendMessage(data,9,size);
+    return 0;
+}
+
+void MumbleClient::disconnectAllStations()
+{
+
+    for(int i =0;i<_stations.size();i++)
+    {
+        Station *s = _stations.at(i);
+        if((s->_called_by == _session_id) &&
+                (s->_in_call == 1) &&
+                (s->_conference_id == _channel_id))
+        {
+            s->_called_by = 0;
+            s->_in_call = 0;
+            s->_conference_id = -1;
+
+            MumbleProto::UserState us;
+            us.set_channel_id(1);
+            us.set_session(s->_id);
+            us.set_actor(_session_id);
+            us.set_mute(true);
+            us.set_deaf(true);
+            int size = us.ByteSize();
+            quint8 data[size];
+            us.SerializeToArray(data,size);
+            this->sendMessage(data,9,size);
+        }
+    }
+
 
 }
 
@@ -258,6 +480,15 @@ QString MumbleClient::createChannel(QString channel_name)
     quint16 type = 7;
     this->sendMessage(data,type,size);
     emit channelName(_temp_channel_name);
+    MumbleProto::UserState us;
+    us.set_self_deaf(false);
+    us.set_self_mute(false);
+    us.set_session(_session_id);
+    us.set_actor(_session_id);
+    int msize = us.ByteSize();
+    quint8 mdata[msize];
+    us.SerializeToArray(mdata,msize);
+    this->sendMessage(mdata,9,msize);
     return name;
 }
 

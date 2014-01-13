@@ -76,8 +76,8 @@ void DtmfDecoder::run()
     float tone_difference = 6.0; //dB
     int analysis_buffer = 25;
     char call_key='C';
-    char call_direct_key='D';
-    char command_key='#';
+    char call_direct_key='Q';
+    char command_key='D';
     char clear_key = '*';
     AudioInterface *audio= new AudioInterface(0,samp_rate,1,0);
 
@@ -132,14 +132,14 @@ void DtmfDecoder::run()
         {
 
             _dtmf_command->append(_current_letter);
-            _processing =false;
+            //_processing =false;
 
             emit haveCall(_dtmf_command);
         }
         else if(_current_letter==command_key)
         {
             _dtmf_command->append(_current_letter);
-            _processing =false;
+            //_processing =false;
             emit haveCommand(_dtmf_command);
         }
         else

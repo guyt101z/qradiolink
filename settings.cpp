@@ -17,4 +17,7 @@ Settings::Settings()
     _enable_vox = 1; // used
     _enable_agc = 1; // used
     _ident_time = 300; // used
+    _radio_id = "";
+    _callsign = "";
+    _voice_server_ip="127.0.0.1";
 }

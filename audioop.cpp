@@ -42,8 +42,8 @@ void AudioOp::run()
     bool hyst_active = false;
     int hyst_counter = 0;
     _audio = new AudioInterface;
-    agc_st *agc = initAGC(0.8);
-    vox_st *vox = initVOX(99000,50);
+    hvdi::agc_st *agc = hvdi::initAGC(0.8);
+    hvdi::vox_st *vox = hvdi::initVOX(99000,50);
     while(true)
     {
 
@@ -82,7 +82,7 @@ void AudioOp::run()
             }
             if(_settings->_enable_agc)
             {
-                AGC(agc,audiobuffer,audiobuffer_size);
+                hvdi::AGC(agc,audiobuffer,audiobuffer_size);
             }
             emit audioData(audiobuffer,audiobuffer_size);
 

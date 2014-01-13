@@ -22,6 +22,9 @@
 
 #include "vox.h"
 
+namespace hvdi
+{
+
 vox_st* initVOX(int voxspeed, int noisethreshold)
 {
     vox_st *vox;
@@ -71,4 +74,6 @@ int VOX(vox_st *vox, short *buffer, int buflen)
         vox->samplecount = vox->rate;
     }
     return 1;
+}
+
 }

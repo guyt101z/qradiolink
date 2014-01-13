@@ -19,6 +19,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QVector>
 #include <QDateTime>
 #include <QtEndian>
 #include <string>
@@ -33,6 +34,7 @@
 #include "opus/opus.h"
 #include "config_defines.h"
 #include "settings.h"
+#include "station.h"
 
 
 class MumbleClient : public QObject
@@ -48,9 +50,17 @@ public:
     int getChannelId();
     QString createChannel(QString channel_name="");
     void joinChannel(int id);
+    int callStation(QString radio_id);
+    void disconnectFromCall();
+    int disconnectStation(QString radio_id);
+    void disconnectAllStations();
 signals:
     void channelName(QString name);
     void pcmAudio(short *pcm, short size);
+    void onlineStations(QVector<Station*>);
+    void newStation(Station*);
+    void leftStation(Station*);
+    void channelReady(int chan_number);
     
 public slots:
     void sendVersion();
@@ -69,6 +79,7 @@ private:
     void processServerSync(quint8 *message, quint64 size);
     void processChannelState(quint8 *message, quint64 size);
     void processUserState(quint8 *message, quint64 size);
+    void processUserRemove(quint8 *message, quint64 size);
     void createVoicePacket(unsigned char *encoded_audio, int packet_size);
     void processIncomingAudioPacket(quint8 *data, quint64 size);
     void decodeAudio(unsigned char *audiobuffer, short audiobuffersize);
@@ -90,7 +101,7 @@ private:
     AudioEncoder *_codec;
     Settings *_settings;
     quint64 _sequence_number;
-
+    QVector<Station*> _stations;
     
 };
 

@@ -22,6 +22,9 @@ public:
     quint8 _enable_vox;
     quint8 _enable_agc;
     quint16 _ident_time;
+    QString _radio_id;
+    QString _callsign;
+    QString _voice_server_ip;
 
 };
 

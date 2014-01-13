@@ -40,6 +40,8 @@ SOURCES += main.cpp \
     ext/agc.cpp \
     ext/vox.cpp \
     settings.cpp
+#    videoop.cpp \
+#    videoencoder.cpp
 
 
 HEADERS += speech.h \
@@ -69,7 +71,10 @@ HEADERS += speech.h \
     ext/goertzel.h \
     ext/agc.h \
     ext/vox.h \
+    ext/dec.h \
     settings.h
+#    videoop.h \
+#    videoencoder.h
 
 
 
@@ -77,6 +82,9 @@ HEADERS += speech.h \
 unix:!symbian: LIBS += -lssl -lprotobuf -lopus -lestools -lFestival -lpulse-simple
 unix:!symbian: LIBS += -L$$PWD/codec2 -lcodec2
 unix:!symbian: LIBS += -L$$PWD/iaxclient/build -liaxclient_lib
+
+#unix:!symbian: LIBS += -lopencv_highgui -lopencv_core -lopencv_imgproc -ltheora
+
 DEPENDPATH += $$PWD/iaxclient/build
 INCLUDEPATH += /usr/include/speech_tools
 
