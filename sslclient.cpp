@@ -47,6 +47,7 @@ SSLClient::SSLClient(QObject *parent) :
     _socket->setProtocol(QSsl::TlsV1);
 #endif
     QObject::connect(_socket,SIGNAL(error(QAbstractSocket::SocketError )),this,SLOT(connectionFailed(QAbstractSocket::SocketError)));
+    QObject::connect(_socket,SIGNAL(disconnected()),this,SLOT(tryReconnect()));
     QObject::connect(_socket,SIGNAL(sslErrors(QList<QSslError>)),this,SLOT(sslError(QList<QSslError>)));
     QObject::connect(_socket,SIGNAL(encrypted()),this,SLOT(connectionSuccess()));
     QObject::connect(_socket,SIGNAL(readyRead()),this,SLOT(processData()));
@@ -91,19 +92,38 @@ QSslCipher SSLClient::getCipher()
 
 void SSLClient::connectionFailed(QAbstractSocket::SocketError)
 {
-    _status=0;
+
+
     qDebug() << "Outgoing connection failed" << _socket->errorString();
-    _connection_tries++;
-    if(_connection_tries < 2)
+    if(_status==1)
     {
-        this->connectHost(_hostname,_port);
+        _socket->close();
+        _status=0;
+        return;
+    }
+    else
+    {
+        QMetaObject::invokeMethod(this, "tryReconnect", Qt::QueuedConnection);
+    }
+
+}
+
+void SSLClient::tryReconnect()
+{
+    qDebug() << "Disconnected";
+    _connection_tries++;
+    usleep(2000000);
+    if(_connection_tries < 2000000)
+    {
+        QMetaObject::invokeMethod(this, "connectHost", Qt:: QueuedConnection,
+        Q_ARG(QString, _hostname), Q_ARG(const unsigned, _port));
+        //connectHost(_hostname,_port);
     }
     else
     {
 
         emit connectionFailure();
     }
-
 }
 
 void SSLClient::sslError(QList<QSslError> errors)
@@ -122,8 +142,11 @@ void SSLClient::sslError(QList<QSslError> errors)
 
 void SSLClient::connectHost(const QString &host, const unsigned &port)
 {
-
-    if(_status==1) return;
+    if(_status==1)
+    {
+        _socket->close();
+        _status=0;
+    }
     qDebug() << "trying " << host;
     _socket->connectToHostEncrypted(host, port);
     _hostname = host;

@@ -29,7 +29,7 @@
 #include <QStringList>
 #include <QTime>
 #include <QCoreApplication>
-#include <QLatin1String>
+#include <unistd.h>
 #include "config_defines.h"
 
 class SSLClient : public QObject
@@ -71,6 +71,7 @@ private slots:
     void connectionSuccess();
     void connectionFailed(QAbstractSocket::SocketError);
     void sslError(QList<QSslError> errors);
+    void tryReconnect();
 
 };
 

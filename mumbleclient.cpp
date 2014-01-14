@@ -71,8 +71,8 @@ void MumbleClient::sendVersion()
     qDebug() << "sending version";
     MumbleProto::Version v;
     v.set_version(PROTOCOL_VERSION);
-    v.set_release("QRadioLink 0.1.1");
-    v.set_os("Linux");
+    v.set_release("QRadioLink 0.2");
+    v.set_os("GNU/Linux");
     v.set_os_version("3.2");
     int size = v.ByteSize();
     quint8 data[size];
@@ -281,6 +281,7 @@ void MumbleClient::processUserState(quint8 *message, quint64 size)
             emit newStation(s);
         }
     }
+    /* Just debug code
     for(int i = 0;i < _stations.size();i++)
     {
         Station *s = _stations.at(i);
@@ -288,7 +289,7 @@ void MumbleClient::processUserState(quint8 *message, quint64 size)
                  << " radio_id: " << s->_radio_id << " channel: "
                  << QString::number(s->_conference_id) << s->_callsign;
     }
-
+    */
     emit onlineStations(_stations);
 }
 
@@ -306,6 +307,7 @@ void MumbleClient::processUserRemove(quint8 *message, quint64 size)
             _stations.remove(i);
         }
     }
+    /* Just debug code
     for(int i = 0;i < _stations.size();i++)
     {
         Station *s = _stations.at(i);
@@ -313,6 +315,7 @@ void MumbleClient::processUserRemove(quint8 *message, quint64 size)
                  << " radio_id: " << s->_radio_id << " channel: "
                  << QString::number(s->_conference_id) << s->_callsign;
     }
+    */
     emit onlineStations(_stations);
 }
 
@@ -355,6 +358,8 @@ int MumbleClient::callStation(QString radio_id)
     us.set_actor(_session_id);
     us.set_mute(false);
     us.set_deaf(false);
+    us.set_self_deaf(false); // won't work, server side code
+    us.set_self_mute(false); // won't work, server side code
     int size = us.ByteSize();
     quint8 data[size];
     us.SerializeToArray(data,size);
