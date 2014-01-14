@@ -303,6 +303,8 @@ void MumbleClient::processUserRemove(quint8 *message, quint64 size)
         Station *s = _stations.at(i);
         if(s->_id == us.session())
         {
+            emit leftStation(s);
+            usleep(1000000);
             delete s;
             _stations.remove(i);
         }
@@ -520,7 +522,10 @@ void MumbleClient::processAudio(short *audiobuffer, short audiobuffersize)
 void MumbleClient::createVoicePacket(unsigned char *encoded_audio, int packet_size)
 {
     int type = 0;
-    type |= (4 << 5);
+    if(_settings->_use_codec2)
+        type |= (5 << 5);
+    else
+        type |= (4 << 5);
 
     int data_size = 1024;
     char data[data_size];
@@ -582,9 +587,14 @@ void MumbleClient::processUDPData(QByteArray data)
 
     processIncomingAudioPacket(decrypted, decrypted_length);
 #else
+    quint8 codec2 = 0;
     quint8 type = data.at(0);
     if(type == 32) // UDP ping reply
         return;
+    if(type == 128) // Opus
+        int opus =1;
+    if(type == 160)
+        codec2 = 1; //Codec2
     processIncomingAudioPacket(encrypted, data.size());
 #endif
 }

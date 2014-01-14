@@ -124,3 +124,15 @@ void DtmfCommand::haveCommand(QVector<char> *dtmf)
     emit speak(voice);
 
 }
+
+void DtmfCommand::newStation(Station *s)
+{
+    QString voice = "Station connected:  " + s->_radio_id;
+    emit speak(voice);
+}
+
+void DtmfCommand::leftStation(Station *s)
+{
+    QString voice = "Station disconnected:  " + s->_radio_id;
+    emit speak(voice);
+}

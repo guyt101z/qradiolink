@@ -24,6 +24,7 @@
 #include <QtEndian>
 #include <string>
 #include <sys/time.h>
+#include <unistd.h>
 #include "ext/Mumble.pb.h"
 #include "ext/CryptState.h"
 #include "ext/PacketDataStream.h"

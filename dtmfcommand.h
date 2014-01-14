@@ -24,6 +24,8 @@ public slots:
     void haveCall(QVector<char> *dtmf);
     void haveCommand(QVector<char> *dtmf);
     void channelReady(int chan_number);
+    void newStation(Station *s);
+    void leftStation(Station *s);
 
 private:
     DatabaseApi *_db;

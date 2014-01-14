@@ -44,6 +44,8 @@ int main(int argc, char *argv[])
     //Controller *controller = new Controller(settings, &db,&client);
     DtmfCommand *dtmfcommand = new DtmfCommand(settings, &db,&client);
     QObject::connect(&client,SIGNAL(channelReady(int)),dtmfcommand,SLOT(channelReady(int)));
+    QObject::connect(&client,SIGNAL(newStation(Station*)),dtmfcommand,SLOT(newStation(Station*)));
+    QObject::connect(&client,SIGNAL(leftStation(Station*)),dtmfcommand,SLOT(leftStation(Station*)));
 
     QThread *t1= new QThread;
     DtmfDecoder *decoder = new DtmfDecoder(settings);

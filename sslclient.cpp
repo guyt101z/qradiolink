@@ -128,7 +128,6 @@ void SSLClient::tryReconnect()
 
 void SSLClient::sslError(QList<QSslError> errors)
 {
-    _status=0;
     qDebug() << "SSL errors occured";
     for(int i =0;i<errors.size();i++)
     {
