@@ -85,7 +85,7 @@ void DtmfDecoder::run()
     {
         int last_time = 0;
         int time = QDateTime::currentDateTime().toTime_t();
-        usleep(1000);
+        usleep(10000);
         QCoreApplication::processEvents();
         if(_stop)
             break;
@@ -185,11 +185,13 @@ char DtmfDecoder::decode(float *buf,int buffer_size,int samp_rate, float treshho
             qDebug() << "overflow " << tone_power;
             continue; // error
         }
+
         for(int j=-5;j<6;j++)
         {
             float tone_power1 = power(goertzel(buf, buffer_size, t+static_cast<float>(j), samp_rate));
             if(tone_power1>tone_power) tone_power = tone_power1;
         }
+
         if(tone_power < largest_tone_power) continue;
         if(tone_power < treshhold_audio_power) continue;
 
@@ -216,11 +218,13 @@ char DtmfDecoder::decode(float *buf,int buffer_size,int samp_rate, float treshho
             qDebug() << "overflow " << tone_power;
             continue; // error
         }
+
         for(int j=-5;j<6;j++)
         {
             float tone_power1 = power(goertzel(buf, buffer_size, t+static_cast<float>(j), samp_rate));
             if(tone_power1>tone_power) tone_power = tone_power1;
         }
+
         if(tone_power < largest_tone_power) continue;
         if(tone_power < treshhold_audio_power) continue;
 

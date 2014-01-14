@@ -86,11 +86,13 @@ void MumbleClient::authenticate()
 {
     qDebug() << "authenticating...";
     MumbleProto::Authenticate auth;
+
     int rand_len = 4;
-    char rand[4];
+    char rand[5];
     genRandomStr(rand,rand_len);
     QString username = "test_";
     username += QString::fromLocal8Bit(rand);
+
     //auth.set_username(username.toStdString().c_str());
     auth.set_username(_settings->_radio_id.toStdString().c_str());
     auth.set_password("");
@@ -592,7 +594,7 @@ void MumbleClient::processUDPData(QByteArray data)
     if(type == 32) // UDP ping reply
         return;
     if(type == 128) // Opus
-        int opus =1;
+        codec2 =0;
     if(type == 160)
         codec2 = 1; //Codec2
     processIncomingAudioPacket(encrypted, data.size());
