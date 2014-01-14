@@ -470,7 +470,7 @@ QString MumbleClient::createChannel(QString channel_name)
     if(channel_name == "")
     {
         int rand_len = 8;
-        char rand[8];
+        char rand[9];
         genRandomStr(rand,rand_len);
         name = QString::fromLocal8Bit(rand);
     }

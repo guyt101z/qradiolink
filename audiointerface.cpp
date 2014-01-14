@@ -25,7 +25,7 @@ AudioInterface::AudioInterface(QObject *parent, unsigned sample_rate, unsigned c
     _s_short_rec = NULL;
     _error=0;
     int rand_len = 4;
-    char rand[4];
+    char rand[5];
     genRandomStr(rand,rand_len);
     static QString instance_name = QString::fromLocal8Bit(rand);
 
