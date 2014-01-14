@@ -82,8 +82,8 @@ private:
     void processUserState(quint8 *message, quint64 size);
     void processUserRemove(quint8 *message, quint64 size);
     void createVoicePacket(unsigned char *encoded_audio, int packet_size);
-    void processIncomingAudioPacket(quint8 *data, quint64 size);
-    void decodeAudio(unsigned char *audiobuffer, short audiobuffersize);
+    void processIncomingAudioPacket(quint8 *data, quint64 size, quint8 type);
+    void decodeAudio(unsigned char *audiobuffer, short audiobuffersize, quint8 type);
 
     SSLClient *_telnet;
     CryptState *_crypt_state;

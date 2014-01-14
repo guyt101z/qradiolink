@@ -160,7 +160,7 @@ void MumbleClient::processProtoMessage(QByteArray data)
         processUserRemove(message, message_size);
         break;
     case 1: // UDPTunnel
-        processIncomingAudioPacket(message, message_size);
+        processIncomingAudioPacket(message, message_size, type);
     default:
         break;
     }
@@ -558,7 +558,7 @@ void MumbleClient::createVoicePacket(unsigned char *encoded_audio, int packet_si
     }
 }
 
-void MumbleClient::processIncomingAudioPacket(quint8 *data, quint64 size)
+void MumbleClient::processIncomingAudioPacket(quint8 *data, quint64 size, quint8 type)
 {
     PacketDataStream pds(data+1, size-1);
     quint64 seq_number;
@@ -567,12 +567,16 @@ void MumbleClient::processIncomingAudioPacket(quint8 *data, quint64 size)
     pds >> session;
     pds >> seq_number;
     pds >> audio_head;
-    audio_head &= 0x1fff;
+    //audio_head &= 0x1fff;
+    if(type == 1) // Received UDPTunnel
+    {
+        type = audio_head >> 5;
+    }
     int audio_size = pds.left();
     QByteArray qba = pds.dataBlock(pds.left());
     unsigned char *encoded_audio = reinterpret_cast<unsigned char*>(qba.data());
 
-    decodeAudio(encoded_audio,audio_size);
+    decodeAudio(encoded_audio,audio_size, type);
 
 }
 
@@ -593,20 +597,17 @@ void MumbleClient::processUDPData(QByteArray data)
     quint8 type = data.at(0);
     if(type == 32) // UDP ping reply
         return;
-    if(type == 128) // Opus
-        codec2 =0;
-    if(type == 160)
-        codec2 = 1; //Codec2
-    processIncomingAudioPacket(encrypted, data.size());
+    type = type >> 5;
+    processIncomingAudioPacket(encrypted, data.size(), type);
 #endif
 }
 
-void MumbleClient::decodeAudio(unsigned char *audiobuffer, short audiobuffersize)
+void MumbleClient::decodeAudio(unsigned char *audiobuffer, short audiobuffersize, quint8 type)
 {
 
     int samples =0;
     short *pcm;
-    if(_settings->_use_codec2)
+    if(type == 5)
     {
         pcm = _codec->decode_codec2(audiobuffer,audiobuffersize, samples);
     }
