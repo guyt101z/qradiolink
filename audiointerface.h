@@ -23,6 +23,7 @@
 #include "ext/utils.h"
 #include <pulse/simple.h>
 #include <pulse/error.h>
+#include "unistd.h"
 
 class AudioInterface : public QObject
 {

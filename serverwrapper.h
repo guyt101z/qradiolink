@@ -27,9 +27,10 @@
 #include "speech.h"
 #include "mumbleclient.h"
 #include "settings.h"
+#include "station.h"
 
 
-
+typedef QVector<Station*> StationList;
 class ServerWrapper : public QObject
 {
     Q_OBJECT
@@ -47,14 +48,15 @@ public slots:
     void addSpeech(QString);
     void connectToConference(int number, int id, int server_id);
     void disconnectFromConference(int number, int id, int server_id);
+    void tellOnlineStations(StationList stations);
 
 private:
     bool _stop;
-    Speech *_speech;
+
     QVector<QString> *_speech_text;
     DatabaseApi *_db;
     Settings *_settings;
-
+    Speech *_speaker;
 };
 
 #endif // SERVERWRAPPER_H

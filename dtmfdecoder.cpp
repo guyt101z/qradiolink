@@ -28,11 +28,12 @@ DtmfDecoder::DtmfDecoder(Settings *settings, QObject *parent) :
     _dtmf_frequencies[1]= 770;
     _dtmf_frequencies[2]= 852;
     _dtmf_frequencies[3]= 941;
-    _dtmf_frequencies[4]= 1209;
-    _dtmf_frequencies[5]= 1336;
-    _dtmf_frequencies[6]= 1477;
-    _dtmf_frequencies[7]= 1633;
-    _dtmf_frequencies[8]= 2500;
+    _dtmf_frequencies[4]= 1100;
+    _dtmf_frequencies[5]= 1209;
+    _dtmf_frequencies[6]= 1336;
+    _dtmf_frequencies[7]= 1477;
+    _dtmf_frequencies[8]= 1633;
+    _dtmf_frequencies[9]= 2500;
     _dtmf_sequence = new QVector<char>;
     _dtmf_command = new QVector<char>;
     _current_letter = ' ';
@@ -72,13 +73,14 @@ void DtmfDecoder::run()
     float cw_tone_freq = 900.0;
     int buffer_size = 512;
     int samp_rate = 8000;
-    float treshhold_audio_power = 12.0; // dB
+    float treshhold_audio_power = 100.0; // no more dB
     float tone_difference = 6.0; //dB
     int analysis_buffer = 25;
     char call_key='C';
     char call_direct_key='Q';
     char command_key='D';
     char clear_key = '*';
+
     AudioInterface *audio= new AudioInterface(0,samp_rate,1,0);
 
     while(true)
@@ -87,23 +89,20 @@ void DtmfDecoder::run()
         int time = QDateTime::currentDateTime().toTime_t();
         usleep(10000);
         QCoreApplication::processEvents();
-        if(_stop)
-            break;
-
-        if(!_processing)
-        {
-            usleep(100000);
-            continue;
-        }
 
 
-        float *buf = new float[buffer_size];
+        float buf[buffer_size];
+        memset(buf,0,buffer_size*sizeof(float));
 
         audio->read(buf, buffer_size);
 
+        char letter = '?';
 
-        char letter = decode(buf,buffer_size,samp_rate, treshhold_audio_power, tone_difference);
-        // fill a buffer of decoded letters
+        letter = newDecode(buf,buffer_size,samp_rate, treshhold_audio_power, tone_difference);
+
+        /** this function uses code with unknown license
+        letter = decode(buf,buffer_size,samp_rate, treshhold_audio_power, tone_difference);
+        */
 
         if(_dtmf_sequence->size()>analysis_buffer)
         {
@@ -113,7 +112,7 @@ void DtmfDecoder::run()
         // make a statistical analysis of the buffer
         analyse(analysis_buffer);
 
-        delete[] buf;
+
         if(_current_letter==' ')
         {
             _previous_letter = _current_letter;
@@ -132,15 +131,26 @@ void DtmfDecoder::run()
         {
 
             _dtmf_command->append(_current_letter);
-            //_processing =false;
 
-            emit haveCall(_dtmf_command);
+            QVector<char> *dtmf = new QVector<char>;
+            for(int i=0;i<_dtmf_command->size();i++)
+            {
+                dtmf->append(_dtmf_command->at(i));
+            }
+            emit haveCall(dtmf);
+            _dtmf_command->clear();
         }
         else if(_current_letter==command_key)
         {
             _dtmf_command->append(_current_letter);
-            //_processing =false;
-            emit haveCommand(_dtmf_command);
+            QVector<char> *dtmf = new QVector<char>;
+            for(int i=0;i<_dtmf_command->size();i++)
+            {
+                dtmf->append(_dtmf_command->at(i));
+            }
+            emit haveCall(dtmf);
+            emit haveCommand(dtmf);
+            _dtmf_command->clear();
         }
         else
         {
@@ -155,12 +165,6 @@ void DtmfDecoder::run()
         }
         _previous_letter=_current_letter;
 
-
-
-        //float *cw_sound = makeTone(samp_rate,cw_tone_freq,buffer_size,1);
-        //audio->write(cw_sound,buffer_size);
-
-
     }
 
     finish:
@@ -168,7 +172,146 @@ void DtmfDecoder::run()
     emit finished();
 }
 
+/** Goertzel class is GPL, from SVXLINK */
+char DtmfDecoder::newDecode(float *buf,int buffer_size,int samp_rate, float treshhold_audio_power, float tone_difference)
+{
+    int tones[2];
+    tones[0] = 0;
+    tones[1] = 0;
+    float largest_tone_power = 0.0;
+    for(int i=0;i<5;i++)
+    {
+        Goertzel gk(static_cast<float>(_dtmf_frequencies[i]), samp_rate);
+        for(int j=0;j<buffer_size;j++)
+        {
+            buf[j] = (buf[j] > 1.0) ? 0.0 : buf[j];
+            buf[j] = (buf[j] < -1.0) ? 0.0 : buf[j];
+            gk.calc(buf[j]);
+        }
+        float tone_power = gk.magnitudeSquared();
+        if(!isfinite(tone_power))
+        {
+            qDebug() << "infinite value";
+        }
 
+        if(tone_power != tone_power) continue; // no ffast-math here
+        if(tone_power < largest_tone_power) continue;
+        if(tone_power < treshhold_audio_power) continue;
+
+        tones[0] = _dtmf_frequencies[i];
+        largest_tone_power = tone_power;
+    }
+    largest_tone_power = 0.0;
+    for(int i=5;i<9;i++)
+    {
+        Goertzel gk(static_cast<float>(_dtmf_frequencies[i]), samp_rate);
+        for(int j=0;j<buffer_size;j++)
+        {
+            buf[j] = (buf[j] > 1.0) ? 0.0 : buf[j];
+            buf[j] = (buf[j] < -1.0) ? 0.0 : buf[j];
+            gk.calc(buf[j]);
+        }
+        float tone_power = gk.magnitudeSquared();
+        if(!isfinite(tone_power))
+        {
+            qDebug() << "infinite value";
+        }
+
+        if(tone_power != tone_power) continue; // no ffast-math here
+        if(tone_power < largest_tone_power) continue;
+        if(tone_power < treshhold_audio_power) continue;
+
+        tones[1] = _dtmf_frequencies[i];
+        largest_tone_power = tone_power;
+    }
+    char letter;
+    switch(tones[0])
+    {
+    case 697:
+        switch(tones[1])
+        {
+        case 1209:
+            letter = '1';
+            break;
+        case 1336:
+            letter = '2';
+            break;
+        case 1477:
+            letter = '3';
+            break;
+        case 1633:
+            letter = 'A';
+            break;
+        default:
+            letter = ' ';
+        }
+
+        break;
+    case 770:
+        switch(tones[1])
+        {
+        case 1209:
+            letter = '4';
+            break;
+        case 1336:
+            letter = '5';
+            break;
+        case 1477:
+            letter = '6';
+            break;
+        case 1633:
+            letter = 'B';
+            break;
+        default:
+            letter = ' ';
+        }
+        break;
+    case 852:
+        switch(tones[1])
+        {
+        case 1209:
+            letter = '7';
+            break;
+        case 1336:
+            letter = '8';
+            break;
+        case 1477:
+            letter = '9';
+            break;
+        case 1633:
+            letter = 'C';
+            break;
+        default:
+            letter = ' ';
+        }
+        break;
+    case 941:
+        switch(tones[1])
+        {
+        case 1209:
+            letter = '*';
+            break;
+        case 1336:
+            letter = '0';
+            break;
+        case 1477:
+            letter = '#';
+            break;
+        case 1633:
+            letter = 'D';
+            break;
+        default:
+            letter = ' ';
+        }
+        break;
+    default:
+        letter = ' ';
+    }
+    return letter;
+}
+
+/** This function uses goertzel code with unknown license, maybe public domain, but just to be sure
+ *  use Goertzel class from SVXLINK which is GPL
 char DtmfDecoder::decode(float *buf,int buffer_size,int samp_rate, float treshhold_audio_power, float tone_difference)
 {
     int tones[2];
@@ -201,9 +344,9 @@ char DtmfDecoder::decode(float *buf,int buffer_size,int samp_rate, float treshho
     }
     if(first<0)
         return ' ';
-    float first_test_tone_power = power(goertzel(buf, buffer_size, 500.0, samp_rate));
-    if((fabs(largest_tone_power - first_test_tone_power) < 5) )
-        return ' ';
+    //float first_test_tone_power = power(goertzel(buf, buffer_size, 500.0, samp_rate));
+    //if((fabs(largest_tone_power - first_test_tone_power) < 5) )
+    //    return ' ';
     float first_tone_power=0.0;
     if(tones[0]!=0)
         first_tone_power=largest_tone_power;
@@ -234,9 +377,9 @@ char DtmfDecoder::decode(float *buf,int buffer_size,int samp_rate, float treshho
     }
     if(second<0)
         return ' ';
-    float second_test_tone_power = power(goertzel(buf, buffer_size, 2000.0, samp_rate));
-    if((fabs(largest_tone_power - second_test_tone_power) < 5))
-        return ' ';
+    //float second_test_tone_power = power(goertzel(buf, buffer_size, 2000.0, samp_rate));
+    //if((fabs(largest_tone_power - second_test_tone_power) < 5))
+    //    return ' ';
 
     float second_tone_power=0.0;
     if(tones[1]!=0)
@@ -344,12 +487,14 @@ char DtmfDecoder::decode(float *buf,int buffer_size,int samp_rate, float treshho
     }
     return letter;
 }
+*/
 
 void DtmfDecoder::analyse(int analysis_buffer)
 {
-    // wait until the buffer is full
+
     if(_dtmf_sequence->size()<analysis_buffer)
         return;
+
 
     int x1,x2,x3,x4,x5,x6,x7,x8,x9,x0,xa,xb,xc,xd,xs,xq,xx;
     x1=x2=x3=x4=x5=x6=x7=x8=x9=x0=xa=xb=xc=xd=xs=xq=xx=0;
@@ -395,12 +540,16 @@ void DtmfDecoder::analyse(int analysis_buffer)
 
     if(xx > round(_dtmf_sequence->size()/2))
     {
+        /*
         for(int i =analysis_buffer-1;i>analysis_buffer-5;i--)
         {
             if(_dtmf_sequence->at(i)!=' ')
                 //wait for another iteration
+                _current_letter = ' ';
                 return;
         }
+        */
+
         _current_letter = ' ';
         return;
     }
@@ -489,6 +638,7 @@ void DtmfDecoder::analyse(int analysis_buffer)
             return;
         }
         // no letter has prevalence, wait for another iteration
+
         return;
     }
 }

@@ -69,6 +69,7 @@ HEADERS += speech.h \
     codec2/codec2.h \
     audioop.h \
     ext/goertzel.h \
+    ext/Goertzel.h \
     ext/agc.h \
     ext/vox.h \
     ext/dec.h \

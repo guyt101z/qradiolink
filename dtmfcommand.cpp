@@ -50,6 +50,7 @@ void DtmfCommand::haveCall(QVector<char> *dtmf)
     }
 
     dtmf->clear();
+
     emit readyInput();
     _dialing_number = number;
     if(_conference_id < 2)
@@ -98,6 +99,7 @@ void DtmfCommand::haveCommand(QVector<char> *dtmf)
         }
     }
     dtmf->clear();
+
     emit readyInput();
 
     if(number=="B")
@@ -133,6 +135,6 @@ void DtmfCommand::newStation(Station *s)
 
 void DtmfCommand::leftStation(Station *s)
 {
-    QString voice = "Station disconnected:  " + s->_radio_id;
+    QString voice = "Station " + s->_radio_id + " disconnected:  ";
     emit speak(voice);
 }

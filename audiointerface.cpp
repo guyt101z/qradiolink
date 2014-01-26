@@ -89,6 +89,8 @@ AudioInterface::~AudioInterface()
       pa_simple_free(_s_short_rec);
 }
 
+
+
 int AudioInterface::read(float *buf, short bufsize)
 {
     if(!_s_rec)

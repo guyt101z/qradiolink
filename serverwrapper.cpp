@@ -24,6 +24,7 @@ ServerWrapper::ServerWrapper(Settings *settings, DatabaseApi *db, QObject *paren
     _stop=false;
     _speech_text = new QVector<QString>;
     _settings = settings;
+    _speaker =NULL;
 }
 
 void ServerWrapper::stop()
@@ -48,6 +49,7 @@ void ServerWrapper::run()
     int last_ping_time = 0;
 
     Speech spp;
+    _speaker = &spp;
     while(true)
     {
 
@@ -89,4 +91,15 @@ void ServerWrapper::connectToConference(int number, int id, int server_id)
 void ServerWrapper::disconnectFromConference(int number, int id, int server_id)
 {
     emit leaveConference(number, id, server_id);
+}
+
+void ServerWrapper::tellOnlineStations(StationList stations)
+{
+
+    _speaker->fspeak("Online station list: ");
+    for(int i=0; i < stations.size();i++)
+    {
+        Station *s=stations.at(i);
+        _speaker->fspeak(const_cast<char*>(s->_radio_id.toStdString().c_str()));
+    }
 }

@@ -20,6 +20,8 @@
 #include <QObject>
 #include <QDateTime>
 #include <QString>
+#include <QVector>
+#include <QMetaType>
 #include "dtmfdecoder.h"
 #include "databaseapi.h"
 #include "serverwrapper.h"
@@ -28,6 +30,7 @@
 #include "mumbleclient.h"
 #include "audioop.h"
 #include "dtmfcommand.h"
+#include "station.h"
 
 
 
@@ -41,12 +44,14 @@ int main(int argc, char *argv[])
     Settings *settings = db.get_settings();
     MumbleClient client(settings);
     client.connectToServer(settings->_voice_server_ip, settings->_voice_server_port);
+    //client.setMute(false);
     //Controller *controller = new Controller(settings, &db,&client);
     DtmfCommand *dtmfcommand = new DtmfCommand(settings, &db,&client);
     QObject::connect(&client,SIGNAL(channelReady(int)),dtmfcommand,SLOT(channelReady(int)));
     QObject::connect(&client,SIGNAL(newStation(Station*)),dtmfcommand,SLOT(newStation(Station*)));
     QObject::connect(&client,SIGNAL(leftStation(Station*)),dtmfcommand,SLOT(leftStation(Station*)));
-
+    typedef QVector<Station*> StationList;
+    qRegisterMetaType<StationList >("StationList");
     QThread *t1= new QThread;
     DtmfDecoder *decoder = new DtmfDecoder(settings);
     decoder->moveToThread(t1);
@@ -63,7 +68,7 @@ int main(int argc, char *argv[])
     QObject::connect(decoder, SIGNAL(finished()), t1, SLOT(quit()));
     QObject::connect(decoder, SIGNAL(finished()), decoder, SLOT(deleteLater()));
     QObject::connect(t1, SIGNAL(finished()), t1, SLOT(deleteLater()));
-    t1->start(QThread::HighPriority);
+    t1->start();
 
 
     QThread *t2= new QThread;
@@ -72,6 +77,7 @@ int main(int argc, char *argv[])
     //QObject::connect(controller,SIGNAL(speak(QString)),telnet_server_wrapper,SLOT(addSpeech(QString)));
     QObject::connect(dtmfcommand,SIGNAL(speak(QString)),telnet_server_wrapper,SLOT(addSpeech(QString)));
     QObject::connect(telnet_server_wrapper,SIGNAL(pingServer()),&client,SLOT(pingServer()));
+    ///QObject::connect(&client,SIGNAL(onlineStations(StationList)),telnet_server_wrapper,SLOT(tellOnlineStations(StationList)));
     //QObject::connect(telnet_server_wrapper,SIGNAL(joinConference(int,int,int)),controller,SLOT(joinConference(int,int,int)));
     //QObject::connect(telnet_server_wrapper,SIGNAL(leaveConference(int,int,int)),controller,SLOT(leaveConference(int,int,int)));
     QObject::connect(t2, SIGNAL(started()), telnet_server_wrapper, SLOT(run()));
@@ -89,7 +95,7 @@ int main(int argc, char *argv[])
     QObject::connect(audio_op, SIGNAL(finished()), t3, SLOT(quit()));
     QObject::connect(audio_op, SIGNAL(finished()), audio_op, SLOT(deleteLater()));
     QObject::connect(t3, SIGNAL(finished()), t3, SLOT(deleteLater()));
-    t3->start(QThread::HighPriority);
+    t3->start();
 
     return a.exec();
 }

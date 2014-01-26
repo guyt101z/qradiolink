@@ -221,7 +221,7 @@ void MumbleClient::processUserState(quint8 *message, quint64 size)
 
     MumbleProto::UserState us;
     us.ParseFromArray(message,size);
-    if((_session_id==-1))
+    if((_session_id==-1) && (us.has_channel_id()))
     {
         _channel_id = us.channel_id();
         qDebug() << " Joined channel: " << _channel_id;
@@ -245,6 +245,7 @@ void MumbleClient::processUserState(quint8 *message, quint64 size)
             {
 
                 delete s;
+                s = NULL;
                 _stations.remove(i);
             }
         }
@@ -501,6 +502,24 @@ QString MumbleClient::createChannel(QString channel_name)
     return name;
 }
 
+void MumbleClient::setMute(bool mute)
+{
+    while(!_synchronized)
+    {
+        usleep(10000);
+        QCoreApplication::processEvents();
+    }
+    MumbleProto::UserState us;
+    us.set_self_deaf(mute);
+    us.set_self_mute(mute);
+    us.set_session(_session_id);
+    us.set_actor(_session_id);
+    int msize = us.ByteSize();
+    quint8 mdata[msize];
+    us.SerializeToArray(mdata,msize);
+    this->sendMessage(mdata,9,msize);
+}
+
 void MumbleClient::processAudio(short *audiobuffer, short audiobuffersize)
 {
     if(!_synchronized)
@@ -593,7 +612,6 @@ void MumbleClient::processUDPData(QByteArray data)
 
     processIncomingAudioPacket(decrypted, decrypted_length);
 #else
-    quint8 codec2 = 0;
     quint8 type = data.at(0);
     if(type == 32) // UDP ping reply
         return;

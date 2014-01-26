@@ -22,6 +22,7 @@
 #include <QVector>
 #include <QDateTime>
 #include <QtEndian>
+#include <QCoreApplication>
 #include <string>
 #include <sys/time.h>
 #include <unistd.h>
@@ -37,7 +38,7 @@
 #include "settings.h"
 #include "station.h"
 
-
+typedef QVector<Station*> StationList;
 class MumbleClient : public QObject
 {
     Q_OBJECT
@@ -55,10 +56,11 @@ public:
     void disconnectFromCall();
     int disconnectStation(QString radio_id);
     void disconnectAllStations();
+    void setMute(bool mute);
 signals:
     void channelName(QString name);
     void pcmAudio(short *pcm, short size);
-    void onlineStations(QVector<Station*>);
+    void onlineStations(StationList);
     void newStation(Station*);
     void leftStation(Station*);
     void channelReady(int chan_number);
@@ -103,7 +105,7 @@ private:
     Settings *_settings;
     quint64 _sequence_number;
     QVector<Station*> _stations;
-    
+
 };
 
 

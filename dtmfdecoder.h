@@ -25,7 +25,8 @@
 #include "audiointerface.h"
 #include "speech.h"
 #include "config_defines.h"
-#include "ext/goertzel.h"
+//#include "ext/goertzel.h" // Goertzel class below is GPL
+#include "ext/Goertzel.h"
 #include "settings.h"
 
 class DtmfDecoder : public QObject
@@ -59,12 +60,12 @@ private:
      * @return
      */
     char decode(float *buf, int buffer_size, int samp_rate, float treshhold_audio_power, float tone_difference);
-
+    char newDecode(float *buf,int buffer_size,int samp_rate, float treshhold_audio_power, float tone_difference);
     /**
      * @brief Statistical analysis of char buffer
      */
     void analyse(int analysis_buffer);
-    int _dtmf_frequencies[9];
+    int _dtmf_frequencies[10];
     QVector<char> *_dtmf_sequence;
     QVector<char> *_dtmf_command;
     char _current_letter;
