@@ -22,6 +22,9 @@
 #include <QString>
 #include <QVector>
 #include <QMetaType>
+#include <QFile>
+#include <QtGlobal>
+#include <QTextStream>
 #include "dtmfdecoder.h"
 #include "databaseapi.h"
 #include "serverwrapper.h"
@@ -32,12 +35,46 @@
 #include "dtmfcommand.h"
 #include "station.h"
 
-
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+void logMessage(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+#else
+void logMessage(QtMsgType type, const char *msg)
+#endif
+{
+    QString txt;
+    switch (type) {
+    case QtDebugMsg:
+        txt = QString("Debug: %1").arg(msg);
+        break;
+    case QtWarningMsg:
+        txt = QString("Warning: %1").arg(msg);
+    break;
+    case QtCriticalMsg:
+        txt = QString("Critical: %1").arg(msg);
+    break;
+    case QtFatalMsg:
+        txt = QString("Fatal: %1").arg(msg);
+    break;
+    }
+    QFile outFile("qradiolink.log");
+    outFile.open(QIODevice::WriteOnly | QIODevice::Append);
+    QTextStream ts(&outFile);
+    ts << txt << endl;
+}
 
 int main(int argc, char *argv[])
 {
 
+    typedef QVector<Station> StationList;
+    qRegisterMetaType<StationList>("StationList");
     QCoreApplication a(argc, argv);
+#if 0
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+    qInstallMessageHandler(logMessage);
+#else
+    qInstallMsgHandler(logMessage);
+#endif
+#endif
     QString start_time= QDateTime::currentDateTime().toString("d/MMM/yyyy hh:mm:ss");
     qDebug() << start_time;
     DatabaseApi db;
@@ -50,8 +87,7 @@ int main(int argc, char *argv[])
     QObject::connect(&client,SIGNAL(channelReady(int)),dtmfcommand,SLOT(channelReady(int)));
     QObject::connect(&client,SIGNAL(newStation(Station*)),dtmfcommand,SLOT(newStation(Station*)));
     QObject::connect(&client,SIGNAL(leftStation(Station*)),dtmfcommand,SLOT(leftStation(Station*)));
-    typedef QVector<Station*> StationList;
-    qRegisterMetaType<StationList >("StationList");
+
     QThread *t1= new QThread;
     DtmfDecoder *decoder = new DtmfDecoder(settings);
     decoder->moveToThread(t1);

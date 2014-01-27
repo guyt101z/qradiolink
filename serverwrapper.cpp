@@ -57,7 +57,7 @@ void ServerWrapper::run()
         int time = QDateTime::currentDateTime().toTime_t();
         if((time - last_time) > _settings->_ident_time)
         {
-            //spp.fspeak("This is Q radio link, test U H F.");
+            spp.fspeak(const_cast<char*>(QString("This is " + _settings->_callsign+  ", test U H F.").toStdString().c_str()));
             last_time = time;
         }
         if(((time - last_ping_time) > 5) )
@@ -96,10 +96,11 @@ void ServerWrapper::disconnectFromConference(int number, int id, int server_id)
 void ServerWrapper::tellOnlineStations(StationList stations)
 {
 
-    _speaker->fspeak("Online station list: ");
+    _speaker->fspeak(const_cast<char*>(QString("Online station list: ").toStdString().c_str()));
+
     for(int i=0; i < stations.size();i++)
     {
-        Station *s=stations.at(i);
-        _speaker->fspeak(const_cast<char*>(s->_radio_id.toStdString().c_str()));
+        Station s=stations.at(i);
+        _speaker->fspeak(const_cast<char*>(QString(s._radio_id + ", " + s._callsign).toStdString().c_str()));
     }
 }

@@ -30,7 +30,7 @@
 #include "station.h"
 
 
-typedef QVector<Station*> StationList;
+typedef QVector<Station> StationList;
 class ServerWrapper : public QObject
 {
     Q_OBJECT

@@ -259,10 +259,11 @@ void MumbleClient::processUserState(quint8 *message, quint64 size)
             if(s->_id == us.session())
             {
                 s->_conference_id = us.channel_id();
-                if(us.has_mute())
-                    s->_mute = us.mute();
+
+                if(us.has_self_mute())
+                    s->_mute = us.self_mute();
                 if(us.has_deaf())
-                    s->_deaf = us.deaf();
+                    s->_deaf = us.self_deaf();
                 if(us.has_comment())
                     s->_callsign = QString::fromStdString(us.comment());
                 set_station = true;
@@ -274,10 +275,11 @@ void MumbleClient::processUserState(quint8 *message, quint64 size)
             s->_id = us.session();
             s->_radio_id = QString::fromStdString(us.name());
             s->_conference_id = us.channel_id();
-            if(us.has_mute())
-                s->_mute = us.mute();
+
+            if(us.has_self_mute())
+                s->_mute = us.self_mute();
             if(us.has_deaf())
-                s->_deaf = us.deaf();
+                s->_deaf = us.self_deaf();
             if(us.has_comment())
                 s->_callsign = QString::fromStdString(us.comment());
             _stations.push_back(s);
@@ -293,7 +295,15 @@ void MumbleClient::processUserState(quint8 *message, quint64 size)
                  << QString::number(s->_conference_id) << s->_callsign;
     }
     */
-    emit onlineStations(_stations);
+    if(_stations.size() > 0)
+    {
+        StationList sl;
+        for(int i =0;i<_stations.size();++i)
+        {
+            sl.append(*(_stations.at(i)));
+        }
+        emit onlineStations(sl);
+    }
 }
 
 void MumbleClient::processUserRemove(quint8 *message, quint64 size)
@@ -321,7 +331,15 @@ void MumbleClient::processUserRemove(quint8 *message, quint64 size)
                  << QString::number(s->_conference_id) << s->_callsign;
     }
     */
-    emit onlineStations(_stations);
+    if(_stations.size() > 0)
+    {
+        StationList sl;
+        for(int i =0;i<_stations.size();++i)
+        {
+            sl.append(*(_stations.at(i)));
+        }
+        emit onlineStations(sl);
+    }
 }
 
 void MumbleClient::joinChannel(int id)
@@ -361,10 +379,8 @@ int MumbleClient::callStation(QString radio_id)
     us.set_channel_id(_channel_id);
     us.set_session(sessid);
     us.set_actor(_session_id);
-    us.set_mute(false);
-    us.set_deaf(false);
-    us.set_self_deaf(false); // won't work, server side code
-    us.set_self_mute(false); // won't work, server side code
+    us.set_self_deaf(false);
+    us.set_self_mute(false);
     int size = us.ByteSize();
     quint8 data[size];
     us.SerializeToArray(data,size);
@@ -415,8 +431,8 @@ int MumbleClient::disconnectStation(QString radio_id)
     us.set_channel_id(1);
     us.set_session(sessid);
     us.set_actor(_session_id);
-    us.set_mute(true);
-    us.set_deaf(true);
+    us.set_self_mute(true);
+    us.set_self_deaf(true);
     int size = us.ByteSize();
     quint8 data[size];
     us.SerializeToArray(data,size);
@@ -442,12 +458,13 @@ void MumbleClient::disconnectAllStations()
             us.set_channel_id(1);
             us.set_session(s->_id);
             us.set_actor(_session_id);
-            us.set_mute(true);
-            us.set_deaf(true);
+            us.set_self_mute(true);
+            us.set_self_deaf(true);
             int size = us.ByteSize();
             quint8 data[size];
             us.SerializeToArray(data,size);
             this->sendMessage(data,9,size);
+
         }
     }
 

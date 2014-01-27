@@ -38,7 +38,7 @@
 #include "settings.h"
 #include "station.h"
 
-typedef QVector<Station*> StationList;
+typedef QVector<Station> StationList;
 class MumbleClient : public QObject
 {
     Q_OBJECT
