@@ -1,0 +1,80 @@
+
+Requirements
+============
+
+QRadioLink requires libssl, libopus, libestools, libprotobuf,
+libFestival (for text-to-speech voice announcements), libpulse-simple, pulseaudio,
+libcodec2, libiaxclient, libQtCore, libQtNetwork, libQtSql, speech-tools
+System sqlite is required. Libcodec2 is included, as well as libiaxclient, so you
+don't need to worry about them.
+If you have multiple soundcards, use the pavucontrol utility to select the input
+and output for qradiolink. Pulseaudio can be configured per-user.
+This version was built against Qt 4.8.2 from Debian stable.
+
+The voip server requires OpenSSL, libconfig, libprotoc-c to be present.
+Warning, the binaries are compiled for x86. You will need to compile them for ARM
+if you want to run them on the Raspberry Pi.
+
+
+Running the server
+=================
+
+From the directory, open a terminal and execute:
+./umurmurd  -d -c umurmur.conf 
+This command will run the voice server in the foreground, with debug log level.
+
+
+Running the client
+==================
+
+From this directory, open a terminal and execute:
+./qradiolink
+All log information will be displayed in the terminal, for debugging purposes.
+To call another node, dial its number as found in the database, and end the
+command with the letter "C".
+To disconnect your station from a conference, dial "BD"
+To disconnect all stations from the conference, dial "AD"
+To clear out the DTMF command without executing it, dial "*"
+DTMF codes received are also output to the terminal stdout.
+The database is a standard sqlite database. You can edit the values inside it
+with any Sqlite editor, or by using the command line sqlite utility.
+
+
+QRadioLink configuration
+========================
+
+Configuration can be modified by editing the sqlite table "settings".
+The only fields which are absolutely required to be modified are "radio_id",
+"callsign" and "voice_server_ip". The rest of them can be used as defaults.
+
+Fields:
+* use_mumble - values 1 and 0; whether to use Mumble protocol or IAX2, default 1
+* mumble_tcp - values 1 and 0; whether to tunnel voice data through TCP, default 0
+* use_codec2 - values 1 and 0; whether to use Codec2 instead of Opus, default 0
+* audio_treshhold - treshhold of audio signal in dB. Should be set automatically.
+* voice_activation - dB above treshhold to activate voice transmission, default 0.5
+* voice_activation_timeout - timeout in 1/4 seconds, default 50 (2 seconds)
+* voice_server_port - port number as configured in the server .conf file, default 64738
+* local_udp_port - port for peer to peer voice, default 4938. Unused for the moment.
+* control_port - QRadioLink main TCP port, default 4939. Unused currently
+* opus_bitrate - bitrate for opus codec, default 8000. Unused.
+* codec2_bitrate - codec2 bitrate, default 1200. Unused.
+* enable_vox - values 1 and 0; whether to use software VOX to limit used bandwidth
+* enable_agc - values 1 and 0; whether to use AGC on audio frames, default 1
+* ident_time - time in seconds between station audio ident message
+* radio_id - mandatory identification code which can be dialed by DTMF; only numbers.
+* callsign - the callsign of the station; will be used in the future for anouncements
+* voice_server_ip - mandatory IPV4 address of the voice server, must be set before startup
+
+Notes
+=====
+
+This is an alpha build. Bugs are likely to be present.
+The following ports need to be open and accessible from the network:
+* 64738 TCP and UDP for the VoIP server, unless you configure it differently
+- 4939 TCP used by QRadioLink for inter-station communications, unused now.
+- 4938 UDP (for peer-to-peer voice), unused now.
+Asterisk protocol connection is disabled by default.
+Before reporting bugs, please check your soundcard recording and playing volumes.
+Soundcard latency has a great influence on voice quality.
+Please report any bugs on the mailing list or with the issue tracker at Github.
