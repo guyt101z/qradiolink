@@ -27,8 +27,6 @@ SOURCES += main.cpp \
     controller.cpp \
     station.cpp \
     server.cpp \
-    ext/CryptState.cpp \
-    ext/Timer.cpp \
     ext/Mumble.pb.cc \
     ext/QRadioLink.pb.cc \
     audioencoder.cpp \
@@ -56,8 +54,6 @@ HEADERS += speech.h \
     station.h \
     server.h \
     config_defines.h \
-    ext/CryptState.h \
-    ext/Timer.h \
     ext/Mumble.pb.h \
     ext/murmur_pch.h \
     ext/PacketDataStream.h \

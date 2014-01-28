@@ -23,7 +23,9 @@ MumbleClient::MumbleClient(Settings *settings, QObject *parent) :
     QObject(parent)
 {
     _telnet = new SSLClient;
+#ifndef NO_CRYPT
     _crypt_state = new CryptState;
+#endif
     _codec = new AudioEncoder;
     _settings = settings;
     _encryption_set = false;
@@ -39,7 +41,9 @@ MumbleClient::MumbleClient(Settings *settings, QObject *parent) :
 MumbleClient::~MumbleClient()
 {
     delete _telnet;
+#ifndef NO_CRYPT
     delete _crypt_state;
+#endif
     delete _codec;
 }
 
@@ -173,9 +177,11 @@ void MumbleClient::setupEncryption(quint8 *message, quint64 size)
     _key = crypt.key();
     _client_nonce = crypt.client_nonce();
     _server_nonce = crypt.server_nonce();
+#ifndef NO_CRYPT
     _crypt_state->setKey(reinterpret_cast<const unsigned char*>(_key.c_str()),
                          reinterpret_cast<const unsigned char*>(_client_nonce.c_str()),
                          reinterpret_cast<const unsigned char*>(_server_nonce.c_str()));
+#endif
     _encryption_set = true;
     qDebug() << "Encryption setup ok ";
     pingServer();

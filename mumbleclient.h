@@ -27,7 +27,6 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include "ext/Mumble.pb.h"
-#include "ext/CryptState.h"
 #include "ext/PacketDataStream.h"
 #include "ext/utils.h"
 #include "sslclient.h"
@@ -88,7 +87,9 @@ private:
     void decodeAudio(unsigned char *audiobuffer, short audiobuffersize, quint8 type);
 
     SSLClient *_telnet;
+#ifndef NO_CRYPT
     CryptState *_crypt_state;
+#endif
     std::string _key;
     std::string _client_nonce;
     std::string _server_nonce;

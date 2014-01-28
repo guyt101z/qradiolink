@@ -148,7 +148,7 @@ void DtmfDecoder::run()
             {
                 dtmf->append(_dtmf_command->at(i));
             }
-            //emit haveCall(dtmf);
+
             emit haveCommand(dtmf);
             _dtmf_command->clear();
         }
