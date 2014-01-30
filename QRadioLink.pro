@@ -11,6 +11,7 @@ QT       -= gui
 TARGET = qradiolink
 CONFIG   += console
 CONFIG   -= app_bundle
+CONFIG  += thread
 
 TEMPLATE = app
 
@@ -76,13 +77,13 @@ HEADERS += speech.h \
 
 
 
-unix:!symbian: LIBS += -lssl -lprotobuf -lopus -lestools -lFestival -lpulse-simple
+unix:!symbian: LIBS += -lprotobuf -lopus -lestools -lFestival -lpulse-simple
 unix:!symbian: LIBS += -L$$PWD/codec2 -lcodec2
-unix:!symbian: LIBS += -L$$PWD/iaxclient/build -liaxclient_lib
+#unix:!symbian: LIBS += -L$$PWD/iaxclient/build -liaxclient_lib
 
 #unix:!symbian: LIBS += -lopencv_highgui -lopencv_core -lopencv_imgproc -ltheora
 
-DEPENDPATH += $$PWD/iaxclient/build
+#DEPENDPATH += $$PWD/iaxclient/build
 INCLUDEPATH += /usr/include/speech_tools
 
 
