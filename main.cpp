@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
     QObject::connect(decoder, SIGNAL(finished()), t1, SLOT(quit()));
     QObject::connect(decoder, SIGNAL(finished()), decoder, SLOT(deleteLater()));
     QObject::connect(t1, SIGNAL(finished()), t1, SLOT(deleteLater()));
-    t1->start();
+    t1->start(QThread::HighPriority);
 
 
     QThread *t2= new QThread;
@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
     QObject::connect(audio_op, SIGNAL(finished()), t3, SLOT(quit()));
     QObject::connect(audio_op, SIGNAL(finished()), audio_op, SLOT(deleteLater()));
     QObject::connect(t3, SIGNAL(finished()), t3, SLOT(deleteLater()));
-    t3->start();
+    t3->start(QThread::HighPriority);
 
     return a.exec();
 }

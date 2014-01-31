@@ -57,6 +57,10 @@ void DtmfCommand::haveCall(QVector<char> *dtmf)
     {
         QString channel_name = _mumble->createChannel();
     }
+    else
+    {
+        channelReady(_conference_id);
+    }
 
 }
 
