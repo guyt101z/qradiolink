@@ -20,6 +20,7 @@ public:
 signals:
     void speak(QString);
     void readyInput();
+    void tellStations();
 public slots:
     void haveCall(QVector<char> *dtmf);
     void haveCommand(QVector<char> *dtmf);

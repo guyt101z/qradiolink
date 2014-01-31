@@ -39,6 +39,7 @@ public:
     Settings* get_settings();
     void clear_stations();
     void insert_station(Station s);
+    QVector<Station> get_stations(int active=1);
 
 private:
     QSqlDatabase _db;

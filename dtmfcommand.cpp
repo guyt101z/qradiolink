@@ -121,6 +121,11 @@ void DtmfCommand::haveCommand(QVector<char> *dtmf)
         _mumble->disconnectFromCall();
         return;
     }
+    if(number=="#9")
+    {
+        emit tellStations();
+        return;
+    }
     int res;
     res = _mumble->disconnectStation(QString::fromStdString(number));
     QString voice= "Station "+QString::fromStdString(number) +" was disconnected.";

@@ -93,14 +93,19 @@ void ServerWrapper::disconnectFromConference(int number, int id, int server_id)
     emit leaveConference(number, id, server_id);
 }
 
-void ServerWrapper::tellOnlineStations(StationList stations)
+void ServerWrapper::tellOnlineStations()
 {
-
+    QVector<Station> online_stations = _db->get_stations(1);
+    if(online_stations.size()==0)
+    {
+        _speaker->fspeak(const_cast<char*>(QString("There are no other stations online. ").toStdString().c_str()));
+        return;
+    }
     _speaker->fspeak(const_cast<char*>(QString("Online station list: ").toStdString().c_str()));
 
-    for(int i=0; i < stations.size();i++)
+    for(int i=0; i < online_stations.size();i++)
     {
-        Station s=stations.at(i);
+        Station s=online_stations.at(i);
         _speaker->fspeak(const_cast<char*>(QString(s._radio_id + ", " + s._callsign).toStdString().c_str()));
     }
 }
