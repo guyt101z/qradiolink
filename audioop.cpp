@@ -49,7 +49,7 @@ void AudioOp::run()
 
         usleep(10000);
         short audiobuffer[audiobuffer_size];
-        memset(audiobuffer,0,audiobuffer_size*sizeof(short));
+        //memset(audiobuffer,0,audiobuffer_size*sizeof(short));
         _audio->read_short(audiobuffer,audiobuffer_size);
 
         float sum=1.0;

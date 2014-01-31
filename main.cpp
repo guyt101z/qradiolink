@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
     QObject::connect(decoder, SIGNAL(finished()), t1, SLOT(quit()));
     QObject::connect(decoder, SIGNAL(finished()), decoder, SLOT(deleteLater()));
     QObject::connect(t1, SIGNAL(finished()), t1, SLOT(deleteLater()));
-    t1->start(QThread::HighPriority);
+    t1->start();
 
 
     QThread *t2= new QThread;
