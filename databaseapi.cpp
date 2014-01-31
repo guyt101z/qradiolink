@@ -277,3 +277,26 @@ Settings* DatabaseApi::get_settings()
 
     return settings;
 }
+
+void DatabaseApi::insert_station(Station s)
+{
+    QSqlQuery query(_db);
+    query.prepare("INSERT INTO stations (in_call, conference_id, called_by, call_time, callsign, radio_id) VALUES "
+                  "(:in_call, :conference_id, :called_by, :call_time, "
+                  ":callsign, :radio_id)");
+    query.bindValue(":in_call", s._in_call);
+    query.bindValue(":conference_id", s._conference_id);
+    query.bindValue(":called_by", s._called_by);
+    query.bindValue(":call_time", s._call_time);
+    query.bindValue(":callsign", s._callsign);
+    query.bindValue(":radio_id", s._radio_id);
+    //query.bindValue(":id", s->_id);
+    query.exec();
+}
+
+void DatabaseApi::clear_stations()
+{
+    QSqlQuery query(_db);
+    query.prepare("DELETE FROM stations WHERE id!=0 ");
+    query.exec();
+}

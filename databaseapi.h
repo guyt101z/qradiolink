@@ -37,6 +37,8 @@ public:
     QVector<Server*> get_servers(int active = 1);
     Server* get_server_by_id(int id);
     Settings* get_settings();
+    void clear_stations();
+    void insert_station(Station s);
 
 private:
     QSqlDatabase _db;

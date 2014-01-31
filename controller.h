@@ -20,7 +20,7 @@
 #include <QObject>
 #include <QString>
 #ifndef MUMBLE
-#include "iaxclient.h"
+//#include "iaxclient.h"
 #endif
 #include "speech.h"
 #include "telnetclient.h"

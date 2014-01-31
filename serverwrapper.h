@@ -49,6 +49,7 @@ public slots:
     void connectToConference(int number, int id, int server_id);
     void disconnectFromConference(int number, int id, int server_id);
     void tellOnlineStations(StationList stations);
+    void updateOnlineStations(StationList stations);
 
 private:
     bool _stop;

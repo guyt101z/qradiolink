@@ -301,15 +301,14 @@ void MumbleClient::processUserState(quint8 *message, quint64 size)
                  << QString::number(s->_conference_id) << s->_callsign;
     }
     */
-    if(_stations.size() > 0)
+
+    StationList sl;
+    for(int i =0;i<_stations.size();++i)
     {
-        StationList sl;
-        for(int i =0;i<_stations.size();++i)
-        {
-            sl.append(*(_stations.at(i)));
-        }
-        emit onlineStations(sl);
+        sl.append(*(_stations.at(i)));
     }
+    emit onlineStations(sl);
+
 }
 
 void MumbleClient::processUserRemove(quint8 *message, quint64 size)
@@ -337,15 +336,14 @@ void MumbleClient::processUserRemove(quint8 *message, quint64 size)
                  << QString::number(s->_conference_id) << s->_callsign;
     }
     */
-    if(_stations.size() > 0)
+
+    StationList sl;
+    for(int i =0;i<_stations.size();++i)
     {
-        StationList sl;
-        for(int i =0;i<_stations.size();++i)
-        {
-            sl.append(*(_stations.at(i)));
-        }
-        emit onlineStations(sl);
+        sl.append(*(_stations.at(i)));
     }
+    emit onlineStations(sl);
+
 }
 
 void MumbleClient::joinChannel(int id)

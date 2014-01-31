@@ -104,3 +104,16 @@ void ServerWrapper::tellOnlineStations(StationList stations)
         _speaker->fspeak(const_cast<char*>(QString(s._radio_id + ", " + s._callsign).toStdString().c_str()));
     }
 }
+
+void ServerWrapper::updateOnlineStations(StationList stations)
+{
+    _db->clear_stations();
+    for(int i=0; i < stations.size();i++)
+    {
+        Station s=stations.at(i);
+        _db->insert_station(s);
+
+    }
+}
+
+
