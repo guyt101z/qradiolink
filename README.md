@@ -1,5 +1,5 @@
 QRadioLink overview
-===================
+-------------------
 
 Quick DIY Echolink alternative:
 QRadioLink is a software used for interconnecting radio stations
@@ -30,7 +30,7 @@ simple hardware interface to connect PTT to the GPIO pins or a serial
 port.
 
 Features in development
-=======================
+-----------------------
 
 - Network link control: enable or disable network linking with a DTMF
 command
@@ -53,7 +53,7 @@ access codes.
 - COS/PTT via serial/GPIO pins.
 
 Project status
-==============
+--------------
 
 QRadioLink is entering the alpha stage. This means we are out of the 
 planning stage and we can provide working alpha builds.
@@ -61,7 +61,7 @@ Testing them is encouraged, and bug reports are welcome.
 Please use the mailing list for discussion and bug reports.
 
 Design and comparison with other linking systems
-================================================
+------------------------------------------------
 
 Unlike Echolink, this software was designed so it can operate without
 a classic internet connection. If you can interconnect wirelessly two
@@ -79,7 +79,7 @@ Although QRadioLink is mostly designed to link amateur radio stations,
 it can also be used on any radio network to add VoIP capability.
 
 Use cases
-=========
+---------
 
 As a use case scenario, station A is a repeater which works normally in
 standalone mode (no connection to other stations). A user of the repeater
@@ -101,7 +101,7 @@ just like communication between two nodes happens in a peer to peer fashion,
 without having a central server to manage them.
 
 Servers
-=======
+-------
 
 Presently, the VoIP voice communication conferences require the presence of
 a VoIP server, which can handle a large number of nodes, and an unlimited
@@ -119,7 +119,7 @@ talking through a repeater via radio can be heard at the same time with an
 incoming network voice message.
 
 Voice codec
-===========
+-----------
 
 QRadioLink offers a choice of two voice codecs: a low-latency and high-quality
 Opus codec, which uses a variable bandwidth which is generally higher than
@@ -127,7 +127,7 @@ Opus codec, which uses a variable bandwidth which is generally higher than
 which is ideal for stations linked via a slow and unreliable wireless connection.
 
 Network protocol
-================
+----------------
 
 QRadioLink offers the choice between two operating protocols:
 1. IAX2, using Asterisk as a central conference server and Speex as a voice codec
@@ -147,7 +147,7 @@ possible to use QRadioLink. The voice servers are agnostic regarding the data st
 
 
 Software dependencies
-=====================
+---------------------
 
 Aside from being designed to run on the Linux operating system, QRadioLink also
 depends on some software packages: libssl, libopus, libestools, libprotobuf,
@@ -155,7 +155,7 @@ libFestival (for text-to-speech voice announcements), libpulse-simple, pulseaudi
 libcodec2, libiaxclient, libQtCore, libQtNetwork, libQtSql, speech-tools
 
 Installing and configuring
-==========================
+--------------------------
 
 Installing a binary build of the client should be quite simple, as well as configuring
 it. It is also intended to make voice servers also quite plug-and-play.
@@ -166,7 +166,7 @@ All configuration for the client will be held in a sqlite database, which can ea
 be deployed to multiple locations.
 
 License information
-===================
+-------------------
 
 QRadioLink is licensed under the GNU GPL v2 license, and also incorporates some code
 which is BSD licensed. The source code authors are credited in the source files.
