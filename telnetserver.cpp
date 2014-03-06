@@ -72,6 +72,7 @@ void TelnetServer::getConnection()
 
 void TelnetServer::connectionFailed(QAbstractSocket::SocketError error)
 {
+    Q_UNUSED(error);
     // ok
     QTcpSocket *socket = dynamic_cast<QTcpSocket*>(QObject::sender());
     qDebug() << "Connection error: " << socket->errorString();

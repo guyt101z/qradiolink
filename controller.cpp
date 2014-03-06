@@ -56,6 +56,7 @@ void Controller::haveCall(QVector<char> *dtmf)
 {
 
     bool p2p = false;
+    Q_UNUSED(p2p);
     std::string number;
     for(int i=0;i<dtmf->size();i++)
     {
@@ -417,6 +418,9 @@ void Controller::disconnectedLink()
 
 void Controller::leaveConference(int number, int id, int server_id)
 {
+    Q_UNUSED(number);
+    Q_UNUSED(id);
+    Q_UNUSED(server_id);
     disconnectedFromCall();
 #ifndef MUMBLE
     _client->disconnectCall();

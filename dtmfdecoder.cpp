@@ -71,6 +71,7 @@ void DtmfDecoder::resetInput()
 void DtmfDecoder::run()
 {
     float cw_tone_freq = 900.0;
+    Q_UNUSED(cw_tone_freq);
     int buffer_size = 512;
     int samp_rate = 8000;
     float treshhold_audio_power = 100.0; // no more dB
@@ -175,6 +176,7 @@ void DtmfDecoder::run()
 /** Goertzel class is GPL, from SVXLINK */
 char DtmfDecoder::newDecode(float *buf,int buffer_size,int samp_rate, float treshhold_audio_power, float tone_difference)
 {
+    Q_UNUSED(tone_difference);
     int tones[2];
     tones[0] = 0;
     tones[1] = 0;

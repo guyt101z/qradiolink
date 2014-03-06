@@ -66,6 +66,7 @@ void DtmfCommand::haveCall(QVector<char> *dtmf)
 
 void DtmfCommand::channelReady(int chan_number)
 {
+    Q_UNUSED(chan_number);
     if(_dialing_number =="")
         return;
     _conference_id = _mumble->getChannelId();
@@ -131,6 +132,7 @@ void DtmfCommand::haveCommand(QVector<char> *dtmf)
         return;
     }
     int res;
+    Q_UNUSED(res);
     res = _mumble->disconnectStation(QString::fromStdString(number));
     QString voice= "Station "+QString::fromStdString(number) +" was disconnected.";
     emit speak(voice);
