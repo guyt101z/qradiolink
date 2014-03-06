@@ -656,7 +656,8 @@ void MumbleClient::decodeAudio(unsigned char *audiobuffer, short audiobuffersize
     {
         pcm = _codec->decode_opus(audiobuffer,audiobuffersize, samples);
     }
-
+    if(pcm == NULL)
+        return;
     emit pcmAudio(pcm, samples);
 
 }

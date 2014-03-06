@@ -58,15 +58,23 @@ unsigned char* AudioEncoder::encode_opus(short *audiobuffer, int audiobuffersize
 short* AudioEncoder::decode_opus(unsigned char *audiobuffer, int audiobuffersize, int &samples)
 {
     int nr_of_frames = opus_packet_get_nb_frames(audiobuffer,audiobuffersize);
+    if(nr_of_frames <=0)
+        return NULL;
     int fs = 960 * nr_of_frames;
     short *pcm = new short[fs*sizeof(short)];
 
     samples = opus_decode(_dec,audiobuffer,audiobuffersize, pcm, fs, 0);
+    if(samples <= 0)
+    {
+        delete[] pcm;
+        return NULL;
+    }
     return pcm;
 }
 
 unsigned char* AudioEncoder::encode_codec2(short *audiobuffer, int audiobuffersize, int &length)
 {
+    Q_UNUSED(audiobuffersize);
     int bits = codec2_bits_per_frame(_codec2);
     int bytes = (bits + 7) / 8;
     unsigned char *encoded = new unsigned char[bytes];
@@ -77,6 +85,7 @@ unsigned char* AudioEncoder::encode_codec2(short *audiobuffer, int audiobuffersi
 
 short* AudioEncoder::decode_codec2(unsigned char *audiobuffer, int audiobuffersize, int &samples)
 {
+    Q_UNUSED(audiobuffersize);
     int samp = codec2_samples_per_frame(_codec2);
     short* decoded = new short[samp];
     codec2_decode(_codec2, decoded, audiobuffer);
