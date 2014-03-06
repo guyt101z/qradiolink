@@ -613,6 +613,8 @@ void MumbleClient::processIncomingAudioPacket(quint8 *data, quint64 size, quint8
         type = audio_head >> 5;
     }
     int audio_size = pds.left();
+    if(audio_size <= 0)
+        return;
     QByteArray qba = pds.dataBlock(pds.left());
     unsigned char *encoded_audio = reinterpret_cast<unsigned char*>(qba.data());
 
