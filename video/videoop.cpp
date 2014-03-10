@@ -28,6 +28,7 @@ void VideoOp::run()
         if(!can_capture)
             continue;
         cv::Mat frame;
+        cv::Mat rgbframe;
         cv::Mat yuvframe;
 
         bool bSuccess = cap.read(frame); // read a new frame from video
@@ -39,13 +40,14 @@ void VideoOp::run()
         }
         //qDebug() << frame.data << " " << frame.total() * frame.channels() ;
 
-        cv::cvtColor(frame, yuvframe, CV_BGR2RGB); //CV_BGR2YCrCb
+        cv::cvtColor(frame, rgbframe, CV_BGR2RGB); //CV_BGR2YCrCb
+        cv::cvtColor(frame, yuvframe, CV_BGR2YCrCb); //CV_BGR2YCrCb
         int framesize = yuvframe.total() * yuvframe.elemSize();
         uchar *data = yuvframe.data;
         //emit videoFrameData(data, framesize);
         //cv::imshow("MyVideo2", yuvframe); //show the frame in "MyVideo" window
 
-        emit imageData(yuvframe);
+        emit imageData(rgbframe);
 
 
     }
