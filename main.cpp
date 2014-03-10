@@ -15,6 +15,10 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 #include <QCoreApplication>
+
+#include <QApplication>
+#include <QtGui>
+#include "video/window.h"
 #include <QThread>
 #include <QDebug>
 #include <QObject>
@@ -34,6 +38,7 @@
 #include "audioop.h"
 #include "dtmfcommand.h"
 #include "station.h"
+#include "video/videoop.h"
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 void logMessage(QtMsgType type, const QMessageLogContext &context, const QString &msg)
@@ -41,7 +46,7 @@ void logMessage(QtMsgType type, const QMessageLogContext &context, const QString
 void logMessage(QtMsgType type, const char *msg)
 #endif
 {
-    Q_UNUSED(context);
+
     QString txt;
     switch (type) {
     case QtDebugMsg:
@@ -68,7 +73,8 @@ int main(int argc, char *argv[])
 
     typedef QVector<Station> StationList;
     qRegisterMetaType<StationList>("StationList");
-    QCoreApplication a(argc, argv);
+    qRegisterMetaType<cv::Mat>("cv::Mat");
+    QApplication a(argc, argv);
 #if 0
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     qInstallMessageHandler(logMessage);
@@ -135,5 +141,22 @@ int main(int argc, char *argv[])
     QObject::connect(t3, SIGNAL(finished()), t3, SLOT(deleteLater()));
     t3->start(QThread::HighPriority);
 
+
+    window w;
+    w.show();
+
+    QThread *t4 = new QThread;
+    VideoOp *video_op = new VideoOp();
+    video_op->moveToThread(t4);
+    QObject::connect(video_op,SIGNAL(imageData(cv::Mat)),&w,SLOT(refreshImage(cv::Mat)));
+    //QObject::connect(&client,SIGNAL(pcmAudio(short*,short)),audio_op,SLOT(pcmAudio(short*,short)));
+    QObject::connect(t4, SIGNAL(started()), video_op, SLOT(run()));
+    QObject::connect(video_op, SIGNAL(finished()), t4, SLOT(quit()));
+    QObject::connect(video_op, SIGNAL(finished()), video_op, SLOT(deleteLater()));
+    QObject::connect(t4, SIGNAL(finished()), t4, SLOT(deleteLater()));
+    t4->start(QThread::HighPriority);
+
     return a.exec();
 }
+
+
