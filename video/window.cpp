@@ -16,6 +16,11 @@ window::window(QWidget *parent) :
     w->show();
 }
 
+window::~window()
+{
+    delete _label;
+}
+
 void window::refreshImage(cv::Mat frame)
 {
     QImage imgIn= QImage(reinterpret_cast<uchar*>(frame.data), frame.cols, frame.rows, frame.step, QImage::Format_RGB888);

@@ -11,7 +11,7 @@ class window : public QMainWindow
     Q_OBJECT
 public:
     explicit window(QWidget *parent = 0);
-    
+    ~window();
 signals:
     
 public slots:
