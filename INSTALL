@@ -2,11 +2,11 @@
 Requirements
 ============
 
-QRadioLink requires libssl, libopus, libestools, libprotobuf,
+QRadioLink requires libssl, libopus, libestools, libprotobuf,libcodec2,
 libFestival (for text-to-speech voice announcements), libpulse-simple, pulseaudio,
 libcodec2, libiaxclient, libQtCore, libQtNetwork, libQtSql, speech-tools
-System sqlite is required. Libcodec2 is included, as well as libiaxclient, so you
-don't need to worry about them.
+and also all the development headers of these libraries in order to compile.
+System sqlite is required. 
 If you have multiple soundcards, use the pavucontrol utility to select the input
 and output for qradiolink. Pulseaudio can be configured per-user.
 This version was built against Qt 4.8.2 from Debian stable.

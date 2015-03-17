@@ -51,11 +51,11 @@ AudioInterface::AudioInterface(QObject *parent, unsigned sample_rate, unsigned c
 
         if (!(_s_rec = pa_simple_new(NULL, dtmf_rec.toStdString().c_str(), PA_STREAM_RECORD, NULL, "record", &ss, NULL, &attr, &_error)))
         {
-            fprintf(stderr, __FILE__": pa_simple_new() failed: %s\n", pa_strerror(_error));
+            fprintf(stderr, __FILE__": pa_simple_new() failed:\n");
         }
         if (!(_s_play = pa_simple_new(NULL, q_play.toStdString().c_str(), PA_STREAM_PLAYBACK, NULL, "play", &ss, NULL, &attr, &_error)))
         {
-            fprintf(stderr, __FILE__": pa_simple_new() failed: %s\n", pa_strerror(_error));
+            fprintf(stderr, __FILE__": pa_simple_new() failed:\n");
         }
     }
     else
@@ -68,11 +68,11 @@ AudioInterface::AudioInterface(QObject *parent, unsigned sample_rate, unsigned c
 
         if (!(_s_short_play = pa_simple_new(NULL, q_play.toStdString().c_str(), PA_STREAM_PLAYBACK, NULL, "play", &ss_short, NULL, &attr, &_error)))
         {
-            fprintf(stderr, __FILE__": pa_simple_new() failed: %s\n", pa_strerror(_error));
+            fprintf(stderr, __FILE__": pa_simple_new() failed:\n");
         }
         if (!(_s_short_rec = pa_simple_new(NULL, audio_rec.toStdString().c_str(), PA_STREAM_RECORD, NULL, "record", &ss_short, NULL, &attr, &_error)))
         {
-            fprintf(stderr, __FILE__": pa_simple_new() failed: %s\n", pa_strerror(_error));
+            fprintf(stderr, __FILE__": pa_simple_new() failed:\n");
         }
     }
 }
@@ -97,7 +97,7 @@ int AudioInterface::read(float *buf, short bufsize)
         return 1;
     if (pa_simple_read(_s_rec, buf, bufsize, &_error) < 0)
     {
-        fprintf(stderr, __FILE__": pa_simple_read() failed: %s\n", pa_strerror(_error));
+        fprintf(stderr, __FILE__": pa_simple_read() failed:\n");
         return 1;
     }
     return 0;
@@ -109,7 +109,7 @@ int AudioInterface::write(float *buf, short bufsize)
         return 1;
     if(pa_simple_write(_s_play, buf, bufsize, &_error) < 0)
     {
-        fprintf(stderr, __FILE__": pa_simple_write() failed: %s\n", pa_strerror(_error));
+        fprintf(stderr, __FILE__": pa_simple_write() failed:\n");
         return 1;
     }
     return 0;
@@ -121,7 +121,7 @@ int AudioInterface::write_short(short *buf, short bufsize)
         return 1;
     if(pa_simple_write(_s_short_play, buf, bufsize, &_error) < 0)
     {
-        fprintf(stderr, __FILE__": pa_simple_write() failed: %s\n", pa_strerror(_error));
+        fprintf(stderr, __FILE__": pa_simple_write() failed:\n");
         return 1;
     }
     return 0;
@@ -133,7 +133,7 @@ int AudioInterface::read_short(short *buf, short bufsize)
         return 1;
     if(pa_simple_read(_s_short_rec, buf, bufsize, &_error) < 0)
     {
-        fprintf(stderr, __FILE__": pa_simple_read() failed: %s\n", pa_strerror(_error));
+        fprintf(stderr, __FILE__": pa_simple_read() failed:\n");
         return 1;
     }
     return 0;

@@ -77,7 +77,7 @@ HEADERS += speech.h \
 
 
 
-unix:!symbian: LIBS += -lprotobuf -lopus -lestools -lFestival -lpulse-simple
+unix:!symbian: LIBS += -lprotobuf -lopus  -lFestival -lpulse-simple -lestools -lestbase -leststring
 unix:!symbian: LIBS += -L$$PWD/codec2 -lcodec2
 #unix:!symbian: LIBS += -L$$PWD/iaxclient/build -liaxclient_lib
 
