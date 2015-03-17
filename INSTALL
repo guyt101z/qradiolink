@@ -13,7 +13,23 @@ This version was built against Qt 4.8.2 from Debian stable.
 
 The voip server requires OpenSSL, libconfig, libprotoc-c to be present.
 Warning, the binaries are compiled for x86. You will need to compile them for ARM
-if you want to run them on the Raspberry Pi.
+if you want to run them on the Raspberry Pi. A static libcodec2 is provided for x86.
+
+Getting the latest version and compiling
+========================================
+
+Retrieve the latest source code from the Github repo:
+git clone https://github.com/QDeltaSoft/qradiolink
+cd qradiolink && mkdir build
+cd build
+qmake-qt4 ..
+make
+cd ../db
+cat qradiolink.sql | sqlite3 qradiolink.db
+
+
+There is no install target for the binary, so you may place it anywhere.
+You also need to place the sqlite database created above in the same directory.
 
 
 Running the server
